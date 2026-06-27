@@ -1,0 +1,40 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="TowersLastStand3D"
+run/main_scene="res://scenes/main/GameWorld.tscn"
+config/features=PackedStringArray("4.4", "Mobile")
+config/icon="res://icon.svg"
+
+[autoload]
+
+Constants="*res://autoloads/Constants.gd"
+EventBus="*res://autoloads/EventBus.gd"
+GameState="*res://autoloads/GameState.gd"
+MetaManager="*res://autoloads/MetaManager.gd"
+SpellRegistry="*res://autoloads/SpellRegistry.gd"
+WaveManager="*res://autoloads/WaveManager.gd"
+DraftManager="*res://autoloads/DraftManager.gd"
+ObjectPool="*res://autoloads/ObjectPool.gd"
+AudioManager="*res://autoloads/AudioManager.gd"
+
+[display]
+
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/size/window_width_override=405
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+renderer/rendering_method="mobile"

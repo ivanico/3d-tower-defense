@@ -1,0 +1,48 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scenes/enemies/enemy.gd" id="Script_enemy"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="Script_health"]
+[ext_resource type="Script" path="res://scripts/components/move_to_target_component.gd" id="Script_mover"]
+[ext_resource type="Script" path="res://scripts/components/hit_flash_component.gd" id="Script_flash"]
+[ext_resource type="Script" path="res://scripts/components/death_fx_component.gd" id="Script_death"]
+
+[sub_resource type="CapsuleMesh" id="Mesh_enemy"]
+radius = 0.3
+height = 1.2
+
+[sub_resource type="StandardMaterial3D" id="Mat_red"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="CapsuleShape3D" id="Shape_body"]
+radius = 0.3
+height = 1.2
+
+[sub_resource type="SphereShape3D" id="Shape_melee"]
+radius = 1.0
+
+[node name="Enemy" type="CharacterBody3D"]
+script = ExtResource("Script_enemy")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_enemy")
+surface_material_override/0 = SubResource("Mat_red")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("Shape_body")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("Script_health")
+
+[node name="MoveToTargetComponent" type="Node" parent="."]
+script = ExtResource("Script_mover")
+
+[node name="HitFlashComponent" type="Node" parent="."]
+script = ExtResource("Script_flash")
+
+[node name="DeathFXComponent" type="Node" parent="."]
+script = ExtResource("Script_death")
+
+[node name="MeleeRangeArea" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeleeRangeArea"]
+shape = SubResource("Shape_melee")

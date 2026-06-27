@@ -1,0 +1,42 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scenes/tower/tower.gd" id="Script_tower"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="Script_health"]
+[ext_resource type="Script" path="res://scripts/components/targeting_component.gd" id="Script_targeting"]
+[ext_resource type="Script" path="res://scripts/components/hit_flash_component.gd" id="Script_flash"]
+
+[sub_resource type="BoxMesh" id="Mesh_tower"]
+size = Vector3(1.0, 1.6, 1.0)
+
+[sub_resource type="StandardMaterial3D" id="Mat_blue"]
+albedo_color = Color(0.1, 0.3, 0.9, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_body"]
+size = Vector3(1.0, 1.6, 1.0)
+
+[sub_resource type="SphereShape3D" id="Shape_range"]
+radius = 8.0
+
+[node name="Tower" type="CharacterBody3D"]
+script = ExtResource("Script_tower")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_tower")
+surface_material_override/0 = SubResource("Mat_blue")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("Shape_body")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("Script_health")
+
+[node name="TargetingComponent" type="Node" parent="."]
+script = ExtResource("Script_targeting")
+
+[node name="HitFlashComponent" type="Node" parent="."]
+script = ExtResource("Script_flash")
+
+[node name="AttackRangeArea" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AttackRangeArea"]
+shape = SubResource("Shape_range")

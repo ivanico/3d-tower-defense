@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "chap1_enemy_01"
+model_path = ""
+base_hp = 100.0
+base_speed = 1.5
+base_damage = 10.0
+attack_cooldown = 1.0
+armor_type = 0
+xp_value = 10
+is_boss = false
+hold_height = 0.0
