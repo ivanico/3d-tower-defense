@@ -2,28 +2,41 @@
 
 > Prerequisite: Epic 05 complete and tested. The game must be fully playable
 > with primitive-mesh placeholders before touching this epic.
-> Goal: Replace every primitive placeholder mesh (capsules, boxes, planes)
-> with real Meshy-generated models, wired with real animations, correct
-> scale, and tuned real-time lighting/shadows. No `CapsuleMesh`/`BoxMesh`/
-> `PlaneMesh` placeholders remain on gameplay objects.
+> Goal: Replace every remaining primitive placeholder mesh (capsules, boxes,
+> planes — still used by `chap1_enemy_02`, `chap1_boss_01`, and the arena
+> ground) with real Meshy-generated models, and add real animations to
+> every model including `tower_default`/`chap1_enemy_01` — which already
+> have a real static-pose mesh from Epic 02 Task 02-00, but have never
+> played an animation. Correct scale and tuned real-time lighting/shadows
+> across everything. No `CapsuleMesh`/`BoxMesh`/`PlaneMesh` placeholders
+> remain on gameplay objects, and no model is still unanimated.
 > Completed epic delivers: the game looks like a finished 3D product, with
 > the Archero-style camera/lighting actually paying off.
 
 ---
 
-## Task 06-01 — Generate Models in Meshy
+## Task 06-01 — Generate Remaining Models & Animation Clips in Meshy
 
 **Ref**: `assets.md` Sections 1–3
 
-- [ ] Generate (or regenerate, iterating on results) every model listed in
-      `assets.md` Section 2: `tower_default.glb`, `chap1_enemy_01.glb`,
-      `chap1_enemy_02.glb`, `chap1_boss_01.glb`, `arena_chapter_01.glb`.
-- [ ] For each character/creature model, confirm Meshy's output includes (or
-      add via Blender/a rigging step if needed) the required animation clips
-      per `assets.md` Section 2 (`idle`/`attack` for the tower;
-      `walk`/`attack`/`death` for enemies; plus `attack_heavy` for the boss).
+- [ ] Generate (or regenerate, iterating on results) every model still
+      missing per `assets.md` Section 2: `chap1_enemy_02.glb`,
+      `chap1_boss_01.glb` (unless already swapped in during Epic 04), and
+      `arena_chapter_01.glb`.
+- [ ] For `tower_default.glb` and `chap1_enemy_01.glb` (already in the
+      project since Epic 02 Task 02-00, static-pose only): add the required
+      animation clips now — `idle`/`attack` for the tower, `walk`/`attack`/
+      `death` for the enemy — either by regenerating in Meshy with animation
+      support or rigging/animating the existing mesh in Blender. You do not
+      need to regenerate the base mesh if the Epic 02 version is good enough
+      — only add what's missing (animation).
+- [ ] For every other character/creature model, confirm Meshy's output
+      includes (or add via Blender/a rigging step if needed) the required
+      animation clips per `assets.md` Section 2 (`walk`/`attack`/`death` for
+      enemies; plus `attack_heavy` for the boss).
 - [ ] Apply the shared toon/cel shading approach from `assets.md` Section 1
-      consistently across all models.
+      consistently across all models, including the two from Epic 02 if they
+      don't already have it.
 - [ ] Confirm each model's scale roughly matches the table in `assets.md`
       Section 1 once imported (adjust import scale in Godot if Meshy's
       native export scale doesn't match — this is normal and expected, not a
@@ -31,7 +44,9 @@
 
 **Acceptance criteria**:
 - [ ] All 5 `.glb` files exist in `res://assets/models/` with the exact
-      filenames from `assets.md`.
+      filenames from `assets.md`, every one with its full required animation
+      set — including `tower_default`/`chap1_enemy_01`, which previously
+      only had a static pose.
 - [ ] Each imports into Godot with no import errors, correct embedded
       animations visible in the AnimationPlayer panel, and visually
       reasonable scale relative to each other (boss dramatically larger than
@@ -44,22 +59,28 @@
 **File**: `res://resources/towers/tower_default.tres`,
 `res://resources/enemies/*.tres`
 
-- [ ] Update every `Definition` resource's `model_path` field (currently
-      empty string from Epics 01/04) to point at the real `.glb` path.
-- [ ] In `tower.gd`/`enemy.gd`'s `_ready()`/`reset()`, replace the placeholder
-      `MeshInstance3D` setup: instance the `.glb` scene (via
-      `load(definition.model_path).instantiate()`) as a child, remove/hide
-      the old primitive `MeshInstance3D`.
+- [ ] Update the remaining `Definition` resources' `model_path` field
+      (`chap1_enemy_02`, `chap1_boss_01` — empty string since Epic 04 unless
+      already swapped in there; `tower_default`/`chap1_enemy_01` already
+      point at real `.glb` files since Epic 02 Task 02-00, no change needed
+      for those two) to point at the real `.glb` paths.
+- [ ] In `tower.gd`/`enemy.gd`'s `_ready()`/`reset()`, confirm the
+      mesh-instancing block built in Epic 02 Task 02-00 (instance the
+      `.glb` scene via `load(definition.model_path).instantiate()` as a
+      child) generically handles every enemy/tower now, including the ones
+      whose `model_path` just changed from empty to real this task — there
+      should be nothing enemy-type-specific to add here, since this code
+      path was already proven generic back in Epic 02.
 - [ ] Confirm this swap requires **zero changes** to any combat/movement/
-      component code — only the `model_path` field and the small mesh-
-      instancing block in `_ready()`/`reset()` change. This is the explicit
-      test of the "swap an asset without touching game logic" promise from
-      `project.md`.
+      component code for the *newly* swapped models — only the `model_path`
+      field changes. This is the explicit test of the "swap an asset without
+      touching game logic" promise from `project.md`, now checked a second
+      time on different entities than Epic 02's check covered.
 
 **Acceptance criteria**:
-- [ ] Running the project now shows the real Meshy models in place of every
-      primitive placeholder, with all existing combat/movement/draft
-      functionality from Epics 02–05 still working unchanged.
+- [ ] Running the project now shows real Meshy models in place of every
+      remaining primitive placeholder, with all existing combat/movement/
+      draft functionality from Epics 02–05 still working unchanged.
 - [ ] Deleting and re-pointing `model_path` to a different `.glb` (test with
       a swapped file) requires no script edits, only the resource field
       change — confirm this explicitly as a test.

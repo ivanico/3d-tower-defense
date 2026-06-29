@@ -1,18 +1,13 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=8 format=3 uid="uid://cwvht84pug1qp"]
 
-[ext_resource type="Script" path="res://scenes/tower/tower.gd" id="Script_tower"]
-[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="Script_health"]
-[ext_resource type="Script" path="res://scripts/components/targeting_component.gd" id="Script_targeting"]
-[ext_resource type="Script" path="res://scripts/components/hit_flash_component.gd" id="Script_flash"]
-
-[sub_resource type="BoxMesh" id="Mesh_tower"]
-size = Vector3(1.0, 1.6, 1.0)
-
-[sub_resource type="StandardMaterial3D" id="Mat_blue"]
-albedo_color = Color(0.1, 0.3, 0.9, 1)
+[ext_resource type="PackedScene" uid="uid://do7j7thegl4fa" path="res://assets/models/tower_default.glb" id="2_7awcb"]
+[ext_resource type="Script" uid="uid://dkw8yaayu0gsd" path="res://scripts/components/hit_flash_component.gd" id="Script_flash"]
+[ext_resource type="Script" uid="uid://c0goepcmwn7j3" path="res://scripts/components/health_component.gd" id="Script_health"]
+[ext_resource type="Script" uid="uid://dtvbxox7ysmmg" path="res://scripts/components/targeting_component.gd" id="Script_targeting"]
+[ext_resource type="Script" uid="uid://cjdt6pivkugg1" path="res://scenes/tower/tower.gd" id="Script_tower"]
 
 [sub_resource type="BoxShape3D" id="Shape_body"]
-size = Vector3(1.0, 1.6, 1.0)
+size = Vector3(1, 1.6, 1)
 
 [sub_resource type="SphereShape3D" id="Shape_range"]
 radius = 8.0
@@ -20,11 +15,11 @@ radius = 8.0
 [node name="Tower" type="CharacterBody3D"]
 script = ExtResource("Script_tower")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("Mesh_tower")
-surface_material_override/0 = SubResource("Mat_blue")
+[node name="tower_default" parent="." instance=ExtResource("2_7awcb")]
+transform = Transform3D(0.70789, 0, -0.514312, 0, 1.3, 0, 0.514312, 0, 0.70789, 0, 1.3, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1.15, 0, 0, 0, 1.15, 0, 0, 0, 1.15, 0, 1, 0)
 shape = SubResource("Shape_body")
 
 [node name="HealthComponent" type="Node" parent="."]

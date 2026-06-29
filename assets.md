@@ -20,16 +20,16 @@
 Archero is a genuinely 3D mobile game. The "looks 2D" impression comes from
 camera + animation staging choices, not from flat art:
 
-- **Orthographic camera, not perspective.** Orthographic is what makes the
-  ground fill the full screen with uniform tiles (no foreshortening), matching
-  the Archero look. Characters still read as 3D due to height, shadows, and
-  animations.
+- **Perspective camera, not orthographic.** A slight perspective is what
+  makes real 3D shadows/depth read correctly. Orthographic is the
+  spritesheet-render trick we explicitly rejected.
 - **Fixed pitch, no rotation.** The camera looks down at the arena from a
-  consistent angle and never turns. **~45° from horizontal** (oblique/
-  axonometric — confirmed Archero camera style). Setting camera_height ==
-  camera_distance gives exactly 45°. The ground plane is stretched in Z by
-  √2 ≈ 1.414× so that floor tiles appear as perfect squares on screen despite
-  the angle.
+  consistent angle and never turns. Start at **~60° from horizontal**
+  (i.e., steeply downward but not a true bird's-eye 90°) — this is a starting
+  value to tune by eye in Epic 01 once a placeholder tower/enemy/camera are in
+  scene together, not a value to treat as gospel. Epic 02 Task 02-00
+  re-checks this same value against real models as soon as they exist, since
+  primitive proportions and real model proportions won't necessarily match.
 - **Characters read clearly from above-and-behind.** Faces/fronts don't need
   to be highly detailed since the camera rarely sees them head-on — detail
   budget goes into silhouette (readable from above) and top/shoulder surfaces.
@@ -77,10 +77,23 @@ All models exported as `.glb` (geometry + material + skeleton + animations
 embedded in one file), placed in `res://assets/models/` with the exact
 filenames below.
 
+> **When each model actually gets made**: `tower_default.glb` and
+> `chap1_enemy_01.glb` are needed early — Epic 02 Task 02-00 swaps them in
+> right at the start of that epic, before any combat tasks, as a single
+> rough static-pose mesh (no animation clips needed yet), specifically so
+> the camera/scale tuning from Epic 01 gets validated against something real
+> instead of staying judged against a capsule and a box. `chap1_enemy_02.glb`
+> and `chap1_boss_01.glb` aren't needed until Epic 04 (when those enemies are
+> actually built) and `arena_chapter_01.glb` isn't needed until Epic 06. The
+> **animation clips** (`idle`, `walk`, `attack`, `death`, etc.) for every
+> model are an Epic 06 task regardless of when the base mesh was created — a
+> static early model is fine to play unanimated for several epics; don't
+> block on rigging early.
+
 ### Tower
 | File | Notes |
 |---|---|
-| `tower_default.glb` | The single v1 tower. Needs an `idle` animation loop and an `attack` animation (fires on every shot, can be brief — a small recoil/flash pose is enough). |
+| `tower_default.glb` | The single v1 tower. **Base mesh needed by Epic 02** (Task 02-00, static pose is fine). Needs an `idle` animation loop and an `attack` animation (fires on every shot, can be brief — a small recoil/flash pose is enough) wired in **Epic 06**. |
 
 > **Extend later by:** adding `tower_<id>.glb` + a matching `TowerDefinition`
 > `.tres` (see `components.md` Section 5). No code changes.
@@ -88,9 +101,9 @@ filenames below.
 ### Enemies (Chapter 1)
 | File | Notes |
 |---|---|
-| `chap1_enemy_01.glb` | Baseline ground enemy. Needs `walk`, `attack`, `death` animations. |
-| `chap1_enemy_02.glb` | Fast/small variant. Same animation set as `chap1_enemy_01` (can reuse the same animation clips retargeted, or have its own — either is fine, the `EnemyDefinition` resource just points at this file). |
-| `chap1_boss_01.glb` | Chapter boss. Needs `walk`, `attack`, a distinct heavier `attack_heavy` (the boss's one v1-simple special move), and `death`. Significantly larger scale per the table above. |
+| `chap1_enemy_01.glb` | Baseline ground enemy. **Base mesh needed by Epic 02** (Task 02-00). Needs `walk`, `attack`, `death` animations wired in **Epic 06**. |
+| `chap1_enemy_02.glb` | Fast/small variant. Needed by **Epic 04** (when this enemy type is actually built). Same animation set as `chap1_enemy_01` (can reuse the same animation clips retargeted, or have its own — either is fine, the `EnemyDefinition` resource just points at this file). |
+| `chap1_boss_01.glb` | Chapter boss. **Base mesh needed by Epic 04** (when the boss is built). Needs `walk`, `attack`, a distinct heavier `attack_heavy` (the boss's one v1-simple special move), and `death` — animations wired in **Epic 06** like every other model. Significantly larger scale per the table above. |
 
 > **Extend later by:** `chap2_enemy_01.glb`, `chap1_enemy_03.glb`, etc., plus
 > a matching `EnemyDefinition` `.tres`. The flyer-type hook

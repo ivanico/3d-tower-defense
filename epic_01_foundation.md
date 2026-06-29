@@ -326,8 +326,7 @@ below — full combat wiring is Epic 02.
 - [ ] Create `camera_rig.gd`:
   - `@export var camera_pitch_degrees: float = Constants.CAMERA_PITCH_DEGREES`
   - `@export var camera_distance: float = 10.0`
-  - `@export var camera_height: float = 10.0`  ← height == distance = 45° pitch
-  - `@export var camera_size: float = 14.0`  ← orthographic zoom
+  - `@export var camera_height: float = 9.0`
   - In `_ready()`: position the `Camera3D` child at
     `Vector3(0, camera_height, camera_distance)` relative to the rig origin,
     and rotate it to pitch down by `camera_pitch_degrees` (use
@@ -338,9 +337,9 @@ below — full combat wiring is Epic 02.
     local positional offset on the `Camera3D` and back to zero — stub the
     body for now if Tween wiring feels premature, but the method must exist
     (Epic 08 wires real usage).
-- [ ] Set `Camera3D.projection` to **Orthogonal** and `camera.size` to control
-      zoom — this makes tiles read as perfect squares and fills the screen
-      edge-to-edge, matching the Archero look.
+- [ ] Set `Camera3D.projection` to **Perspective** (the default) — explicitly
+      confirm it is NOT Orthogonal, since that would silently recreate the
+      spritesheet-render look we're avoiding.
 
 **Acceptance criteria**:
 - [ ] Placing `CameraRig.tscn` in a test scene with a 1×1×1 box at the origin
@@ -348,7 +347,7 @@ below — full combat wiring is Epic 02.
       sideways (yaw = 0), in the editor's Game view.
 - [ ] Changing `camera_pitch_degrees` in the Inspector and re-running visibly
       changes the angle.
-- [ ] `Camera3D.projection == Camera3D.PROJECTION_ORTHOGONAL`.
+- [ ] `Camera3D.projection == Camera3D.PROJECTION_PERSPECTIVE`.
 
 ---
 

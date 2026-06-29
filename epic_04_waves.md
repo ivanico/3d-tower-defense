@@ -7,6 +7,16 @@
 > `mechanics.md` Section 3 for the exact roster
 > (`chap1_enemy_01`, `chap1_enemy_02`, `chap1_boss_01`).
 > Completed epic delivers: a complete run, start to finish, win or lose.
+>
+> **On real models**: unlike `chap1_enemy_01`/`tower_default` (which got a
+> real Meshy model as early as Epic 02 Task 02-00, specifically to validate
+> camera/scale against something real), `chap1_enemy_02` and
+> `chap1_boss_01` stay as primitive placeholders through this epic — Epic
+> 04's job is proving wave-mix, scaling, and the boss mechanic work
+> correctly, not art. If you'd rather not look at primitives for these
+> either, it's fine to generate real rough models for them now using the
+> same swap-in approach as Epic 02 Task 02-00 — just don't let it block this
+> epic's actual goal.
 
 ---
 
@@ -16,7 +26,10 @@
 **Ref**: `mechanics.md` Section 3
 
 - [ ] Create `chap1_enemy_02.tres`: `enemy_id="chap1_enemy_02"`,
-      `model_path=""` (placeholder still — real model Epic 06),
+      `model_path=""` (primitive placeholder for this epic — see the note
+      above; full animated model is Epic 06, but nothing stops you from
+      swapping in a rough real model sooner the same way Epic 02 Task
+      02-00 did),
       `base_hp=60`, `base_speed=2.6` (faster than `chap1_enemy_01`'s 1.5),
       `base_damage=6` (lower), `attack_cooldown=0.8`,
       `armor_type=Constants.ArmorType.UNARMORED`, `xp_value=8`.
