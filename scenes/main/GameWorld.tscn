@@ -12,8 +12,10 @@ size = Vector2(40, 57)
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_t07um"]
 render_priority = 0
 shader = ExtResource("3_cpkm4")
-shader_parameter/color_a = Color(0.15, 0.55, 0.15, 1)
-shader_parameter/color_b = Color(0.28, 0.75, 0.28, 1)
+shader_parameter/color_1 = Color(0.6, 0.78, 0.24, 1)
+shader_parameter/color_2 = Color(0.66, 0.82, 0.28, 1)
+shader_parameter/color_3 = Color(0.7, 0.85, 0.34, 1)
+shader_parameter/color_4 = Color(0.56, 0.74, 0.22, 1)
 shader_parameter/tiles_x = 40.0
 shader_parameter/tiles_z = 40.0
 
@@ -42,6 +44,7 @@ shape = SubResource("Shape_ground")
 transform = Transform3D(0.707107, 0.5, -0.5, 0, 0.707107, 0.707107, 0.707107, -0.5, 0.5, 0, 5, 0)
 light_energy = 1.2
 shadow_enabled = true
+shadow_opacity = 0.8
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env_world")

@@ -2,17 +2,17 @@ class_name CameraRig
 extends Node3D
 
 @export var camera_pitch_degrees: float = Constants.CAMERA_PITCH_DEGREES
-@export var camera_distance: float = 10.0
-@export var camera_height: float = 10.0
-@export var camera_size: float = 14.0
+@export var camera_distance: float = 24.0
+@export var camera_height: float = 24.0
+@export var camera_fov: float = 30.0
 
 @onready var camera: Camera3D = $Camera3D
 
 func _ready() -> void:
 	camera.position = Vector3(0.0, camera_height, camera_distance)
 	camera.look_at(Vector3.ZERO, Vector3.UP)
-	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	camera.size = camera_size
+	camera.projection = Camera3D.PROJECTION_PERSPECTIVE
+	camera.fov = camera_fov
 
 func shake(duration: float, magnitude: float) -> void:
 	var tween := create_tween()

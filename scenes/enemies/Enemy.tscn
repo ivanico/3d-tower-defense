@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://bi7ljtbkxbhst"]
 
-[ext_resource type="PackedScene" uid="uid://dypg12jvnti25" path="res://assets/models/chap1_enemy_01.glb" id="2_7cewq"]
+[ext_resource type="PackedScene" uid="uid://bj5yigmuudrjr" path="res://assets/models/chap1_enemy_02.glb" id="2_7cewq"]
 [ext_resource type="Script" uid="uid://dnd51r7lah5gu" path="res://scripts/components/death_fx_component.gd" id="Script_death"]
 [ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/enemies/enemy.gd" id="Script_enemy"]
 [ext_resource type="Script" uid="uid://dkw8yaayu0gsd" path="res://scripts/components/hit_flash_component.gd" id="Script_flash"]
@@ -15,8 +15,8 @@ radius = 1.0
 [node name="Enemy" type="CharacterBody3D"]
 script = ExtResource("Script_enemy")
 
-[node name="chap1_enemy_01" parent="." instance=ExtResource("2_7cewq")]
-transform = Transform3D(0.5, 0, 0, 0, 0.469846, -0.17101, 0, 0.17101, 0.469846, 0, 0, 0)
+[node name="chap1_enemy_02" parent="." instance=ExtResource("2_7cewq")]
+transform = Transform3D(-0.5, -1.49502e-08, -4.10753e-08, 0, 0.469846, -0.17101, 4.37114e-08, -0.17101, -0.469846, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 0, 0)
@@ -37,5 +37,5 @@ script = ExtResource("Script_death")
 [node name="MeleeRangeArea" type="Area3D" parent="."]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MeleeRangeArea"]
-transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0, 0)
 shape = SubResource("Shape_melee")
