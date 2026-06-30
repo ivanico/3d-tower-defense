@@ -34,6 +34,9 @@ var damage_dealt: float = 0.0
 signal hp_changed(current: float, max_hp: float)
 signal xp_bar_updated(current: int, to_next: int, level: int)
 
+func _ready() -> void:
+	EventBus.xp_gained.connect(gain_xp)
+
 func start_run(tower_def) -> void:
 	reset()
 	if tower_def != null:

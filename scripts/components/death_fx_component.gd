@@ -7,4 +7,6 @@ func _ready() -> void:
 		health.died.connect(_on_died)
 
 func _on_died() -> void:
-	get_parent().queue_free() # Replaced with ObjectPool.release() in Epic 02
+	var tween := get_parent().create_tween()
+	tween.tween_property(get_parent(), "scale", Vector3(0.001, 0.001, 0.001), 0.25)
+	tween.tween_callback(func(): get_parent().queue_free())

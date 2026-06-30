@@ -3,8 +3,8 @@ extends Area3D
 
 @export var armor_type: int = Constants.ArmorType.UNARMORED
 
-func _ready() -> void:
-	area_entered.connect(_on_area_entered)
-
-func _on_area_entered(_area: Area3D) -> void:
-	pass # Full wiring in Epic 02
+func apply_hit(hit_damage: float, hit_damage_type: int) -> void:
+	var final_dmg := CombatUtils.calculate_damage(hit_damage, hit_damage_type, armor_type)
+	var health := get_parent().find_child("HealthComponent") as HealthComponent
+	if health:
+		health.damage(final_dmg)

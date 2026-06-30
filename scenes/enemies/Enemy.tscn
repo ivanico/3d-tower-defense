@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://bi7ljtbkxbhst"]
+[gd_scene load_steps=11 format=3 uid="uid://bi7ljtbkxbhst"]
 
-[ext_resource type="PackedScene" uid="uid://bj5yigmuudrjr" path="res://assets/models/chap1_enemy_02.glb" id="2_7cewq"]
+[ext_resource type="PackedScene" uid="uid://dypg12jvnti25" path="res://assets/models/chap1_enemy_01.glb" id="2_7cewq"]
 [ext_resource type="Script" uid="uid://dnd51r7lah5gu" path="res://scripts/components/death_fx_component.gd" id="Script_death"]
 [ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/enemies/enemy.gd" id="Script_enemy"]
 [ext_resource type="Script" uid="uid://dkw8yaayu0gsd" path="res://scripts/components/hit_flash_component.gd" id="Script_flash"]
 [ext_resource type="Script" uid="uid://c0goepcmwn7j3" path="res://scripts/components/health_component.gd" id="Script_health"]
+[ext_resource type="Script" uid="uid://cyvgbe4dhpwvq" path="res://scripts/components/hurtbox_component.gd" id="Script_hurtbox"]
 [ext_resource type="Script" uid="uid://bhl5x148uq5d1" path="res://scripts/components/move_to_target_component.gd" id="Script_mover"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_7cewq"]
@@ -12,11 +13,14 @@
 [sub_resource type="SphereShape3D" id="Shape_melee"]
 radius = 1.0
 
+[sub_resource type="SphereShape3D" id="Shape_hurtbox"]
+radius = 0.55
+
 [node name="Enemy" type="CharacterBody3D"]
 script = ExtResource("Script_enemy")
 
-[node name="chap1_enemy_02" parent="." instance=ExtResource("2_7cewq")]
-transform = Transform3D(-0.5, -1.49502e-08, -4.10753e-08, 0, 0.469846, -0.17101, 4.37114e-08, -0.17101, -0.469846, 0, 0, 0)
+[node name="chap1_enemy_01" parent="." instance=ExtResource("2_7cewq")]
+transform = Transform3D(-0.5, -7.5904e-09, 4.30473e-08, 0, 0.492404, 0.086824, -4.37114e-08, 0.086824, -0.492404, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 0, 0)
@@ -37,5 +41,13 @@ script = ExtResource("Script_death")
 [node name="MeleeRangeArea" type="Area3D" parent="."]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MeleeRangeArea"]
-transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0, 0)
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
 shape = SubResource("Shape_melee")
+debug_color = Color(0.906487, 0.277482, 0.320141, 0.42)
+
+[node name="HurtboxComponent" type="Area3D" parent="."]
+script = ExtResource("Script_hurtbox")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HurtboxComponent"]
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, 0, 0, 0)
+shape = SubResource("Shape_hurtbox")

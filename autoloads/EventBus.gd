@@ -31,4 +31,3 @@ signal run_ended(victory: bool)
 signal materials_earned(amount: int)
 signal tower_upgraded(tower_id: String, star: int)
 signal spell_ranked_up(spell_id: String, rank: int)
-

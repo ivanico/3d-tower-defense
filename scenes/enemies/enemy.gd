@@ -7,12 +7,21 @@ class_name Enemy
 @onready var mover: MoveToTargetComponent = $MoveToTargetComponent
 @onready var melee_area: Area3D = $MeleeRangeArea
 
+var _is_attacking: bool = false
+var _attack_cooldown: float = 1.0
+var _attack_timer: float = 0.0
+
 func _ready() -> void:
 	add_to_group("enemies")
 	_apply_definition()
 	melee_area.body_entered.connect(_on_melee_range_body_entered)
+	health.died.connect(_on_died)
 
 func reset() -> void:
+	add_to_group("enemies")
+	scale = Vector3.ONE
+	_is_attacking = false
+	_attack_timer = 0.0
 	_apply_definition()
 	health.reset()
 
@@ -23,10 +32,35 @@ func _apply_definition() -> void:
 	health.current_health = definition.base_hp
 	mover.speed = definition.base_speed
 	mover.hold_height = definition.hold_height
+	_attack_cooldown = definition.attack_cooldown
+	var hurtbox := find_child("HurtboxComponent") as HurtboxComponent
+	if hurtbox:
+		hurtbox.armor_type = definition.armor_type
 	var tower := get_tree().get_first_node_in_group("tower")
 	if tower:
 		mover.target_position = tower.global_position
 
+func _physics_process(delta: float) -> void:
+	if not _is_attacking:
+		return
+	_attack_timer -= delta
+	if _attack_timer <= 0.0:
+		_attack_tower()
+		_attack_timer = _attack_cooldown
+
+func _attack_tower() -> void:
+	var dmg := definition.base_damage if definition else 10.0
+	GameState.take_damage(dmg)
+
+func _on_died() -> void:
+	remove_from_group("enemies")
+	mover.speed = 0.0
+	_is_attacking = false
+	EventBus.enemy_died.emit(self, global_position)
+	if definition:
+		EventBus.xp_gained.emit(definition.xp_value)
+
 func _on_melee_range_body_entered(body: Node3D) -> void:
 	if body.is_in_group("tower"):
 		mover.speed = 0.0
+		_is_attacking = true

@@ -10,7 +10,7 @@ var _bob_time: float = 0.0
 
 func _physics_process(delta: float) -> void:
 	var body := get_parent() as CharacterBody3D
-	if body == null:
+	if body == null or speed == 0.0:
 		return
 
 	var origin := body.global_position
