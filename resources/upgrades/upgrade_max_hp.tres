@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="StatUpgradeDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/upgrades/stat_upgrade_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+upgrade_id = "upgrade_max_hp"
+upgrade_name = "Fortify"
+description = "Increases the tower's maximum and current HP."
+rarity = 0
+tags = Array[int]([1])
+hp_bonus = 200.0
+damage_multiplier = 1.0
+fire_rate_multiplier = 1.0
+is_stackable = true
+stack_max = 5

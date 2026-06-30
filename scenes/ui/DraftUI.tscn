@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/draft_ui.gd" id="1"]
+
+[node name="DraftUI" type="CanvasLayer"]
+script = ExtResource("1")
+layer = 10
+process_mode = 3
+
+[node name="DimBG" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.6)
+
+[node name="FullscreenContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="FullscreenContainer"]
+custom_minimum_size = Vector2(520, 0)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="FullscreenContainer/Panel"]
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="FullscreenContainer/Panel/VBoxContainer"]
+text = "Choose an Upgrade"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 22
+
+[node name="SubtitleLabel" type="Label" parent="FullscreenContainer/Panel/VBoxContainer"]
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+
+[node name="CardContainer" type="HBoxContainer" parent="FullscreenContainer/Panel/VBoxContainer"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 10

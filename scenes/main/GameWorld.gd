@@ -4,10 +4,14 @@ var _game_over_label: Label
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	$EnemyContainer.process_mode = Node.PROCESS_MODE_PAUSABLE
+	$ProjectileContainer.process_mode = Node.PROCESS_MODE_PAUSABLE
+	$Tower.process_mode = Node.PROCESS_MODE_PAUSABLE
 	WaveManager._enemy_container = $EnemyContainer
 	WaveManager.start_wave(1)
 	EventBus.wave_cleared.connect(_on_wave_cleared)
 	EventBus.tower_died.connect(_on_tower_died)
+	EventBus.phase_changed.connect(_on_phase_changed)
 	_setup_game_over_label()
 
 func _setup_game_over_label() -> void:
@@ -25,19 +29,28 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_tree().paused = false
 		GameState.reset()
 		get_tree().reload_current_scene()
+	elif GameState.phase == Constants.GamePhase.DRAFT and event.is_action_pressed("ui_accept"):
+		if not DraftManager._draft_cards.is_empty():
+			DraftManager.select_card(DraftManager._draft_cards[0])
 
 func _on_wave_cleared(wave_number: int) -> void:
-	print("[GameWorld] wave %d cleared" % wave_number)
 	GameState.waves_cleared += 1
 	GameState.wave_number += 1
 	if wave_number >= Constants.TOTAL_WAVES:
-		print("[GameWorld] BOSS TIME (stub)")
+		WaveManager.clear_all_enemies()
+		_game_over_label.text = "YOU WIN!\nPress Enter to restart"
+		_game_over_label.visible = true
+		get_tree().paused = true
 		return
-	await get_tree().create_timer(1.5).timeout
-	WaveManager.start_wave(GameState.wave_number)
+	DraftManager.open_draft("wave_clear")
+
+func _on_phase_changed(phase: int) -> void:
+	if phase == Constants.GamePhase.DRAFT:
+		get_tree().paused = true
+	elif phase == Constants.GamePhase.WAVE:
+		get_tree().paused = false
 
 func _on_tower_died() -> void:
-	print("[GameWorld] GAME OVER — pausing tree")
 	WaveManager.clear_all_enemies()
 	_game_over_label.visible = true
 	get_tree().paused = true

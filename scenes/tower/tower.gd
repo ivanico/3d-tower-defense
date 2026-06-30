@@ -9,7 +9,8 @@ class_name Tower
 const PROJECTILE_SCENE := preload("res://scenes/spells/Projectile.tscn")
 
 var _active_spells: Array[SpellDefinition] = []
-var _spell_timers: Dictionary = {}  # spell_id -> seconds remaining
+var _spell_timers: Dictionary = {}
+var _shot_count: int = 0
 
 func _ready() -> void:
 	add_to_group("tower")
@@ -19,12 +20,14 @@ func _ready() -> void:
 	health.current_health = definition.base_hp
 	GameState.start_run(definition)
 	_load_starting_spell()
-	print("[Tower] ready HP=%d spells=%d" % [int(definition.base_hp), _active_spells.size()])
 
 func _load_starting_spell() -> void:
 	var path := "res://resources/spells/spell_%s.tres" % definition.starting_spell_id
 	if ResourceLoader.exists(path):
 		_add_spell(load(path) as SpellDefinition)
+
+func add_spell(spell: SpellDefinition) -> void:
+	_add_spell(spell)
 
 func _add_spell(spell: SpellDefinition) -> void:
 	if spell == null:
@@ -44,12 +47,17 @@ func _try_fire(spell: SpellDefinition) -> void:
 	var target := targeting.get_target()
 	if target == null:
 		return
-	_spell_timers[spell.spell_id] = spell.cooldown
+	_spell_timers[spell.spell_id] = spell.cooldown * GameState.tower_fire_rate_multiplier * GameState.utility_cooldown_mult
 	if spell.spell_category == Constants.SpellCategory.PROJECTILE:
 		_fire_projectile(spell, target)
 
 func _fire_projectile(spell: SpellDefinition, target: Node3D) -> void:
 	var proj := ObjectPool.acquire(PROJECTILE_SCENE)
 	var aim_pos := target.global_position + Vector3(0, 0.6, 0)
-	proj.initialize(global_position + Vector3(0, 0.8, 0), aim_pos, spell)
-	print("[Tower] fired %s at %s" % [spell.spell_id, target.name])
+	var origin := global_position + Vector3(0, 0.8, 0)
+	proj.initialize(origin, aim_pos, spell)
+	_shot_count += 1
+	if GameState.offense_bonus_shot_active and _shot_count % Constants.OFFENSE_TIER2_BONUS_SHOT_N == 0:
+		var bonus := ObjectPool.acquire(PROJECTILE_SCENE)
+		var side := (aim_pos - origin).cross(Vector3.UP).normalized() * 0.6
+		bonus.initialize(origin, aim_pos + side, spell)

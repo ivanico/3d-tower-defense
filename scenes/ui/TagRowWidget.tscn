@@ -1,0 +1,28 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/tag_row_widget.gd" id="1"]
+
+[node name="TagRowWidget" type="HBoxContainer"]
+script = ExtResource("1")
+theme_override_constants/separation = 6
+
+[node name="OffensePanel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(70, 0)
+
+[node name="Label" type="Label" parent="OffensePanel"]
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 13
+
+[node name="ArmorPanel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(70, 0)
+
+[node name="Label" type="Label" parent="ArmorPanel"]
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 13
+
+[node name="UtilityPanel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(70, 0)
+
+[node name="Label" type="Label" parent="UtilityPanel"]
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 13

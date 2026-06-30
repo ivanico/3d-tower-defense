@@ -4,7 +4,24 @@ var all_spells: Array = []
 var all_stat_upgrades: Array = []
 
 func _ready() -> void:
-	pass # Resources loaded here in Epic 03 via DirAccess scan
+	all_spells        = _scan_dir("res://resources/spells/")
+	all_stat_upgrades = _scan_dir("res://resources/upgrades/")
+
+func _scan_dir(path: String) -> Array:
+	var result: Array = []
+	var dir := DirAccess.open(path)
+	if dir == null:
+		return result
+	dir.list_dir_begin()
+	var fname := dir.get_next()
+	while fname != "":
+		if fname.ends_with(".tres"):
+			var res = load(path + "/" + fname)
+			if res != null:
+				result.append(res)
+		fname = dir.get_next()
+	dir.list_dir_end()
+	return result
 
 func get_all_cards() -> Array:
 	return all_spells + all_stat_upgrades

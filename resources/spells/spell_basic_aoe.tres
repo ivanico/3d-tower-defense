@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SpellDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/spells/spell_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+spell_id = "basic_aoe"
+spell_name = "Burst"
+description = "A burst of magic energy that damages all nearby enemies."
+rarity = 1
+spell_category = 1
+damage_type = 1
+tags = Array[int]([0, 2])
+damage = 70.0
+cooldown = 2.5
+range = 7.0
+aoe_radius = 2.0
+pierce_count = 0

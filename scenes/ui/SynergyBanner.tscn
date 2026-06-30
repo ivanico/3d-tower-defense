@@ -1,0 +1,25 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/synergy_banner.gd" id="1"]
+
+[node name="SynergyBanner" type="CanvasLayer"]
+script = ExtResource("1")
+layer = 8
+process_mode = 3
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -210.0
+offset_top = 170.0
+offset_right = 210.0
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Label" type="Label" parent="Panel/MarginContainer"]
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16

@@ -15,3 +15,4 @@ extends Resource
 @export var aoe_radius: float = 0.0
 @export var pierce_count: int = 0
 @export var projectile_scene: PackedScene = null
+@export var passive_value: float = 0.0

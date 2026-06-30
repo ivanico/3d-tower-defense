@@ -34,8 +34,18 @@ var damage_dealt: float = 0.0
 signal hp_changed(current: float, max_hp: float)
 signal xp_bar_updated(current: int, to_next: int, level: int)
 
+var _regen_timer: Timer
+
 func _ready() -> void:
 	EventBus.xp_gained.connect(gain_xp)
+	_regen_timer = Timer.new()
+	_regen_timer.wait_time = Constants.ARMOR_TIER2_REGEN_INTERVAL
+	_regen_timer.timeout.connect(_on_regen_tick)
+	add_child(_regen_timer)
+
+func _on_regen_tick() -> void:
+	if armor_regen_active and tower_max_hp > 0.0:
+		heal(tower_max_hp * Constants.ARMOR_TIER2_REGEN_PERCENT)
 
 func start_run(tower_def) -> void:
 	reset()
@@ -83,8 +93,27 @@ func add_tag(tag: int) -> void:
 		_apply_synergy_bonus(tag, 2)
 		EventBus.synergy_threshold_reached.emit(tag, 2)
 
-func apply_card(_card: Resource) -> void:
-	pass  # Full implementation Epic 03
+func apply_card(card: Resource) -> void:
+	if card is SpellDefinition:
+		if card.spell_category == Constants.SpellCategory.PASSIVE:
+			armor_damage_reduction = clamp(armor_damage_reduction + card.passive_value, 0.0, 0.9)
+			for tag in card.tags:
+				add_tag(tag)
+		elif active_spells.size() < Constants.MAX_SPELL_SLOTS:
+			active_spells.append(card)
+			for tag in card.tags:
+				add_tag(tag)
+			var tower = get_tree().get_first_node_in_group("tower")
+			if tower:
+				tower.add_spell(card)
+	elif card is StatUpgradeDefinition:
+		tower_max_hp += card.hp_bonus
+		tower_hp = min(tower_hp + card.hp_bonus, tower_max_hp)
+		tower_damage_multiplier *= card.damage_multiplier
+		tower_fire_rate_multiplier *= card.fire_rate_multiplier
+		for tag in card.tags:
+			add_tag(tag)
+		hp_changed.emit(tower_hp, tower_max_hp)
 
 func end_run(victory: bool) -> void:
 	phase = Constants.GamePhase.VICTORY if victory else Constants.GamePhase.DEFEAT
@@ -92,6 +121,7 @@ func end_run(victory: bool) -> void:
 	EventBus.run_ended.emit(victory)
 
 func reset() -> void:
+	DraftManager.reset_run()
 	phase = Constants.GamePhase.WAVE
 	wave_number = 1
 	run_level = 1
@@ -110,6 +140,7 @@ func reset() -> void:
 	armor_damage_reduction = 0.0
 	armor_regen_active = false
 	utility_cooldown_mult = 1.0
+	_regen_timer.stop()
 	run_kills = 0
 	waves_cleared = 0
 	damage_dealt = 0.0
@@ -123,9 +154,10 @@ func _apply_synergy_bonus(tag: int, level: int) -> void:
 				offense_bonus_shot_active = true
 		Constants.SynergyTag.ARMOR:
 			if level == 1:
-				armor_damage_reduction = Constants.ARMOR_TIER1_DAMAGE_REDUCTION
+				armor_damage_reduction = maxf(armor_damage_reduction, Constants.ARMOR_TIER1_DAMAGE_REDUCTION)
 			elif level == 2:
 				armor_regen_active = true
+				_regen_timer.start()
 		Constants.SynergyTag.UTILITY:
 			if level == 1:
 				utility_cooldown_mult = Constants.UTILITY_TIER1_COOLDOWN_MULT
@@ -133,4 +165,3 @@ func _apply_synergy_bonus(tag: int, level: int) -> void:
 func _on_tower_died() -> void:
 	phase = Constants.GamePhase.DEFEAT
 	EventBus.tower_died.emit()
-

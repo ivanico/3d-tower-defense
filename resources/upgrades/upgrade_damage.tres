@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="StatUpgradeDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/upgrades/stat_upgrade_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+upgrade_id = "upgrade_damage"
+upgrade_name = "Sharpening"
+description = "Increases all damage dealt by the tower."
+rarity = 0
+tags = Array[int]([0])
+hp_bonus = 0.0
+damage_multiplier = 1.15
+fire_rate_multiplier = 1.0
+is_stackable = true
+stack_max = 4

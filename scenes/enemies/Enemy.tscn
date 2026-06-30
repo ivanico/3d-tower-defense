@@ -20,7 +20,7 @@ radius = 0.55
 script = ExtResource("Script_enemy")
 
 [node name="chap1_enemy_01" parent="." instance=ExtResource("2_vtlqb")]
-transform = Transform3D(-0.5, 7.5904e-09, -4.30473e-08, 0, 0.492404, 0.0868241, 4.37114e-08, 0.0868241, -0.492404, 0, 0, 0)
+transform = Transform3D(-0.5, 0, -4.37114e-08, 0, 0.5, 0, 4.37114e-08, 0, -0.5, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 0, 0)
