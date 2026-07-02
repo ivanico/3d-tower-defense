@@ -65,7 +65,6 @@ func gain_xp(amount: int) -> void:
 		run_level += 1
 		run_xp_to_next = int(run_xp_to_next * Constants.XP_LEVEL_SCALE_PER_LEVEL)
 		EventBus.level_up.emit(run_level)
-		DraftManager.open_draft("level_up")
 	xp_bar_updated.emit(run_xp, run_xp_to_next, run_level)
 
 func take_damage(amount: float) -> void:
@@ -121,7 +120,7 @@ func end_run(victory: bool) -> void:
 	EventBus.run_ended.emit(victory)
 
 func reset() -> void:
-	DraftManager.reset_run()
+	EventBus.run_reset.emit()
 	phase = Constants.GamePhase.WAVE
 	wave_number = 1
 	run_level = 1

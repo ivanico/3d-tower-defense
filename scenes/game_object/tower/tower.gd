@@ -6,7 +6,7 @@ class_name Tower
 @onready var health: HealthComponent = $HealthComponent
 @onready var targeting: TargetingComponent = $TargetingComponent
 
-const PROJECTILE_SCENE := preload("res://scenes/spells/Projectile.tscn")
+const PROJECTILE_SCENE := preload("res://scenes/game_object/projectile/projectile.tscn")
 
 var _active_spells: Array[SpellDefinition] = []
 var _spell_timers: Dictionary = {}

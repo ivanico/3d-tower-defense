@@ -79,11 +79,11 @@
 
 ## Task 02-01 — Projectile Scene & Script
 
-**File**: `res://scenes/spells/Projectile.tscn`
+**File**: `res://scenes/game_object/projectile/projectile.tscn`
 **Ref**: `components.md` Section 6, `mechanics.md` Section 1 (Verticality
 Rules), Section 5
 
-- [ ] Create `Projectile.tscn` with root `Area3D`.
+- [ ] Create `projectile.tscn` with root `Area3D`.
 - [ ] Add children:
   - `MeshInstance3D` — small `CapsuleMesh` or `SphereMesh` placeholder (the
 	real Meshy-sourced bolt model/primitive comes in via `assets.md`, but a
@@ -136,8 +136,8 @@ Rules), Section 5
 
 ## Task 02-02 — Hurtbox/Hitbox Damage Wiring
 
-**File**: `res://scripts/components/hurtbox_component.gd`,
-`res://scripts/components/hitbox_component.gd`
+**File**: `res://scenes/component/hurtbox_component.gd`,
+`res://scenes/component/hitbox_component.gd`
 **Ref**: `components.md` Section 4, `mechanics.md` Section 5
 
 - [ ] Complete `hitbox_component.gd`: exports `damage: float`,
@@ -163,10 +163,10 @@ Rules), Section 5
 
 ## Task 02-03 — AoEZone Scene & Script
 
-**File**: `res://scenes/spells/AoEZone.tscn`
+**File**: `res://scenes/game_object/aoe_zone/aoe_zone.tscn`
 **Ref**: `components.md` Section 6, `mechanics.md` Section 1, Section 5
 
-- [ ] Create `AoEZone.tscn` with root `Area3D`.
+- [ ] Create `aoe_zone.tscn` with root `Area3D`.
 - [ ] Add children:
   - `MeshInstance3D` — flattened `CylinderMesh` or `SphereMesh` (squashed),
 	semi-transparent orange placeholder material, radius set at runtime.
@@ -182,7 +182,7 @@ Rules), Section 5
 	  `damage`/`damage_type` properties directly and call
 	  `CombatUtils.calculate_damage()` itself against every overlapping
 	  `HurtboxComponent`. Pick one approach and keep it consistent with how
-	  `Projectile.tscn` does it (prefer reusing `HitboxComponent` so there is
+	  `projectile.tscn` does it (prefer reusing `HitboxComponent` so there is
 	  only one source of truth for "what counts as a hit").
 	- Scale the `CollisionShape3D` to `radius`.
   - `_ready()`: call `_apply_damage()` once, then start a 0.3-second one-shot
@@ -203,7 +203,7 @@ Rules), Section 5
 
 ## Task 02-04 — Tower Fires Spells (Real Implementation)
 
-**File**: `res://scenes/tower/Tower.tscn` / `tower.gd`
+**File**: `res://scenes/game_object/tower/tower.tscn` / `tower.gd`
 **Ref**: `mechanics.md` Section 2, Section 8
 
 - [ ] Replace the Epic 01 `_fire_spell()` stub:
@@ -218,7 +218,7 @@ Rules), Section 5
 - [ ] Implement `_fire_projectile(spell)`:
   - Call `TargetingComponent.get_target()`. If null, return.
   - Get a projectile from pool:
-	`ObjectPool.get(preload("res://scenes/spells/Projectile.tscn"))`.
+	`ObjectPool.get(preload("res://scenes/game_object/projectile/projectile.tscn"))`.
   - Add to `ProjectileContainer` if not already parented.
   - Call `proj.initialize(global_position, target.global_position, spell)`.
 - [ ] Implement `_fire_aoe(spell)`: same shape, targeting the chosen target's
@@ -241,7 +241,7 @@ Rules), Section 5
 
 ## Task 02-05 — TargetingComponent Real Implementation
 
-**File**: `res://scripts/components/targeting_component.gd`
+**File**: `res://scenes/component/targeting_component.gd`
 **Ref**: `components.md` Section 4
 
 - [ ] Complete the skeleton from Epic 01:
@@ -265,8 +265,8 @@ Rules), Section 5
 
 ## Task 02-06 — Enemy Takes Damage & Dies (Real Implementation)
 
-**File**: `res://scripts/components/health_component.gd`,
-`res://scripts/components/death_fx_component.gd`, `res://scenes/enemies/Enemy.tscn`
+**File**: `res://scenes/component/health_component.gd`,
+`res://scenes/component/death_fx_component.gd`, `res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`
 **Ref**: `mechanics.md` Section 3, Section 9
 
 - [ ] Confirm `HealthComponent.damage()` (built in Epic 01) correctly emits
@@ -300,7 +300,7 @@ Rules), Section 5
 
 ## Task 02-07 — XP & Level-Up Stub
 
-**File**: `res://autoloads/GameState.gd`
+**File**: `res://autoloads/game_state.gd`
 **Ref**: `mechanics.md` Section 7
 
 - [ ] Connect `EventBus.xp_gained` in `GameState._ready()`.
@@ -342,7 +342,7 @@ Rules), Section 5
 
 ## Task 02-09 — Object Pool for Enemies (Full Wiring)
 
-**File**: `res://autoloads/WaveManager.gd`, `res://scenes/enemies/Enemy.tscn`
+**File**: `res://scenes/manager/wave_manager.gd`, `res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`
 **Ref**: `mechanics.md` Section 9
 
 - [ ] Preload and pool the enemy scene in `GameWorld._ready()`:
@@ -370,8 +370,8 @@ Rules), Section 5
 
 ## Task 02-10 — Tower Takes Damage
 
-**File**: `res://scenes/enemies/Enemy.tscn`/`enemy.gd`,
-`res://scenes/tower/Tower.tscn`/`tower.gd`
+**File**: `res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`/`enemy.gd`,
+`res://scenes/game_object/tower/tower.tscn`/`tower.gd`
 **Ref**: `mechanics.md` Section 2
 
 - [ ] In `enemy.gd`, on `MeleeRangeArea` entering the tower: start ticking the
@@ -395,7 +395,7 @@ Rules), Section 5
 
 ## Task 02-11 — Game Over Stub
 
-**File**: `res://scenes/main/GameWorld.gd`
+**File**: `res://scenes/main/game_world.gd`
 
 - [ ] On `EventBus.tower_died`:
   - Call `WaveManager.clear_all_enemies()`.
@@ -414,7 +414,7 @@ Rules), Section 5
 
 ## Task 02-12 — Wave Clear & Next Wave Stub
 
-**File**: `res://scenes/main/GameWorld.gd`
+**File**: `res://scenes/main/game_world.gd`
 
 - [ ] On `_on_wave_cleared(wave_number)`:
   - If `wave_number >= Constants.TOTAL_WAVES`: stub boss trigger (print

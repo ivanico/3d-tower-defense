@@ -89,8 +89,8 @@
 
 ## Task 06-03 — Animation Wiring
 
-**File**: `res://scenes/tower/Tower.tscn`/`tower.gd`,
-`res://scenes/enemies/Enemy.tscn`/`enemy.gd`
+**File**: `res://scenes/game_object/tower/tower.tscn`/`tower.gd`,
+`res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`/`enemy.gd`
 
 - [ ] Tower: play `idle` in `_ready()`. On firing a spell, play `attack`,
       connect `animation_finished` to return to `idle`.
@@ -122,7 +122,7 @@
 
 ## Task 06-04 — Lighting & Shadow Tuning
 
-**File**: `res://scenes/main/GameWorld.tscn`
+**File**: `res://scenes/main/game_world.tscn`
 **Ref**: `assets.md` Section 1, `project.md` Tech Stack
 
 - [ ] Tune the `DirectionalLight3D` angle and the `WorldEnvironment`'s
@@ -153,7 +153,7 @@
 
 ## Task 06-05 — Arena Model Wiring
 
-**File**: `res://scenes/main/GameWorld.tscn`
+**File**: `res://scenes/main/game_world.tscn`
 
 - [ ] Replace the Epic 01 `PlaneMesh` placeholder ground with
       `arena_chapter_01.glb`, instanced as a child, with its own
@@ -204,8 +204,8 @@ Create a `GPUParticles3D` subscene for each VFX type:
 
 ## Task 06-07 — HUD/Draft Visual Polish
 
-**File**: `res://scenes/ui/HUD.tscn`, `res://scenes/ui/DraftCard.tscn`,
-`res://scenes/ui/DraftUI.tscn`
+**File**: `res://scenes/ui/HUD.tscn`, `res://scenes/ui/draft_card.tscn`,
+`res://scenes/ui/draft_ui.tscn`
 
 - [ ] Replace placeholder `ColorRect`/plain `ProgressBar` UI with the real
       assets from `assets.md` Section 4 (`ui_hp_bar_*`, `ui_xp_bar_*`,

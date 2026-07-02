@@ -1,3 +1,4 @@
+class_name DraftManager
 extends Node
 
 var _draft_trigger: String = ""
@@ -9,6 +10,14 @@ var _start_wave_after: bool = false
 const RARITY_WEIGHTS := {0: 60, 1: 30, 2: 10}
 
 var _pool_exhausted: bool = false
+
+func _ready() -> void:
+	add_to_group("draft_manager")
+	EventBus.level_up.connect(_on_level_up)
+	EventBus.run_reset.connect(reset_run)
+
+func _on_level_up(_new_level: int) -> void:
+	open_draft("level_up")
 
 func reset_run() -> void:
 	_draft_trigger = ""
@@ -27,7 +36,7 @@ func open_draft(trigger: String = "wave_clear") -> void:
 	if _pool_exhausted:
 		if _start_wave_after:
 			_start_wave_after = false
-			WaveManager.start_wave(GameState.wave_number)
+			EventBus.start_wave_requested.emit(GameState.wave_number)
 		return
 	_do_open_draft(trigger)
 
@@ -43,7 +52,7 @@ func _do_open_draft(trigger: String) -> void:
 			_do_open_draft(next)
 		elif _start_wave_after:
 			_start_wave_after = false
-			WaveManager.start_wave(GameState.wave_number)
+			EventBus.start_wave_requested.emit(GameState.wave_number)
 		return
 	GameState.phase = Constants.GamePhase.DRAFT
 	EventBus.phase_changed.emit(GameState.phase)
@@ -72,7 +81,7 @@ func select_card(card: Resource) -> void:
 		EventBus.phase_changed.emit(GameState.phase)
 		if _start_wave_after:
 			_start_wave_after = false
-			WaveManager.start_wave(GameState.wave_number)
+			EventBus.start_wave_requested.emit(GameState.wave_number)
 
 func _is_eligible(card: Resource) -> bool:
 	var cid := _card_id(card)

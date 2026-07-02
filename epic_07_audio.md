@@ -30,7 +30,7 @@
 
 ## Task 07-02 — AudioManager Full Implementation
 
-**File**: `res://autoloads/AudioManager.gd`
+**File**: `res://autoloads/audio_manager.gd`
 
 Replace the Epic 01 stub:
 
@@ -64,7 +64,7 @@ Replace the Epic 01 stub:
 
 ## Task 07-03 — Wire Combat & Wave SFX via EventBus
 
-**File**: `res://autoloads/AudioManager.gd`
+**File**: `res://autoloads/audio_manager.gd`
 
 - [ ] `EventBus.wave_started` → (no dedicated SFX in the v1 list — skip;
       do not invent one not listed in `assets.md`).
@@ -90,10 +90,10 @@ Replace the Epic 01 stub:
 
 ## Task 07-04 — Wire Projectile/AoE/Enemy SFX
 
-**File**: `res://scenes/spells/Projectile.tscn`/`projectile.gd`,
-`res://scenes/spells/AoEZone.tscn`/`aoe_zone.gd`,
-`res://scripts/components/hurtbox_component.gd`,
-`res://scripts/components/death_fx_component.gd`
+**File**: `res://scenes/game_object/projectile/projectile.tscn`/`projectile.gd`,
+`res://scenes/game_object/aoe_zone/aoe_zone.tscn`/`aoe_zone.gd`,
+`res://scenes/component/hurtbox_component.gd`,
+`res://scenes/component/death_fx_component.gd`
 
 - [ ] Projectile fire → `AudioManager.play_sfx("sfx_proj_bolt.wav",
       randf_range(0.9, 1.1))` (pitch variance to avoid repetitiveness).

@@ -83,7 +83,7 @@ every `SpellCategory` branch in `tower.gd`'s `_fire_spell()`.
 
 ## Task 03-03 — Confirm SpellRegistry Loads the V1 Set
 
-**File**: `res://autoloads/SpellRegistry.gd`
+**File**: `res://autoloads/spell_registry.gd`
 **Ref**: `components.md` Section 3
 
 - [ ] In `_ready()`, use `DirAccess` to scan `res://resources/spells/` and
@@ -103,7 +103,7 @@ every `SpellCategory` branch in `tower.gd`'s `_fire_spell()`.
 
 ## Task 03-04 — DraftManager Full Implementation
 
-**File**: `res://autoloads/DraftManager.gd`
+**File**: `res://scenes/manager/draft_manager.gd`
 **Ref**: `mechanics.md` Section 4
 
 - [ ] Add `_draft_trigger: String` var.
@@ -144,7 +144,7 @@ every `SpellCategory` branch in `tower.gd`'s `_fire_spell()`.
 
 ## Task 03-05 — GameState Apply Card (Real Implementation)
 
-**File**: `res://autoloads/GameState.gd`
+**File**: `res://autoloads/game_state.gd`
 **Ref**: `mechanics.md` Section 4
 
 - [ ] Implement `apply_card(card: Resource)`:
@@ -183,10 +183,10 @@ every `SpellCategory` branch in `tower.gd`'s `_fire_spell()`.
 
 ## Task 03-06 — DraftCard Scene & Script
 
-**File**: `res://scenes/ui/DraftCard.tscn`
+**File**: `res://scenes/ui/draft_card.tscn`
 **Ref**: `components.md` Section 7
 
-- [ ] Create `DraftCard.tscn` with root `PanelContainer`.
+- [ ] Create `draft_card.tscn` with root `PanelContainer`.
 - [ ] Add children: `RarityBorder` (`ColorRect` placeholder — real 9-slice
 	  art in Epic 06), `IconRect` (`TextureRect` placeholder), `NameLabel`,
 	  `DescriptionLabel`, `SelectButton` (or make the whole card tappable via
@@ -209,10 +209,10 @@ every `SpellCategory` branch in `tower.gd`'s `_fire_spell()`.
 
 ## Task 03-07 — DraftUI Scene & Script
 
-**File**: `res://scenes/ui/DraftUI.tscn`
+**File**: `res://scenes/ui/draft_ui.tscn`
 **Ref**: `components.md` Section 7
 
-- [ ] Create `DraftUI.tscn` with root `CanvasLayer`, `layer = 10`.
+- [ ] Create `draft_ui.tscn` with root `CanvasLayer`, `layer = 10`.
 - [ ] Add children: `DimBG` (`ColorRect`, semi-transparent), `Panel`
 	  (`VBoxContainer`, centered) containing `TriggerLabel`, `SubLabel`
 	  ("Choose an Upgrade"), `CardContainer` (`HBoxContainer`).
@@ -234,7 +234,7 @@ every `SpellCategory` branch in `tower.gd`'s `_fire_spell()`.
 
 ## Task 03-08 — Wire Draft Into Game Loop
 
-**File**: `res://scenes/main/GameWorld.gd`
+**File**: `res://scenes/main/game_world.gd`
 
 - [ ] In `_on_wave_cleared(wave_number)`: replace the Epic 02
 	  "start next wave after 1 second" stub with
@@ -255,7 +255,7 @@ every `SpellCategory` branch in `tower.gd`'s `_fire_spell()`.
 
 ## Task 03-09 — Synergy Tag System (V1 Implementation)
 
-**File**: `res://autoloads/GameState.gd`
+**File**: `res://autoloads/game_state.gd`
 **Ref**: `mechanics.md` Section 6, `project.md` Synergy Tags table,
 `components.md` Section 0 (Balance Editing Cheat Sheet) and Section 2's
 "Balance tuning constants" block
@@ -321,10 +321,10 @@ every `SpellCategory` branch in `tower.gd`'s `_fire_spell()`.
 
 ## Task 03-10 — SynergyBanner Scene & Script
 
-**File**: `res://scenes/ui/SynergyBanner.tscn`
+**File**: `res://scenes/ui/synergy_banner.tscn`
 **Ref**: `components.md` Section 7
 
-- [ ] Create `SynergyBanner.tscn`, root `CanvasLayer`, `layer = 20`.
+- [ ] Create `synergy_banner.tscn`, root `CanvasLayer`, `layer = 20`.
 - [ ] `BannerPanel` (hidden by default) with `TagIcon` (`TextureRect`
 	  placeholder) and `BannerLabel`.
 - [ ] `synergy_banner.gd`: on `EventBus.synergy_threshold_reached`, set label
@@ -339,10 +339,10 @@ every `SpellCategory` branch in `tower.gd`'s `_fire_spell()`.
 
 ## Task 03-11 — TagRowWidget Scene & Script
 
-**File**: `res://scenes/ui/TagRowWidget.tscn`
+**File**: `res://scenes/ui/tag_row_widget.tscn`
 **Ref**: `components.md` Section 7
 
-- [ ] Create `TagRowWidget.tscn`, root `HBoxContainer`, added to `HUD.tscn`.
+- [ ] Create `tag_row_widget.tscn`, root `HBoxContainer`, added to `HUD.tscn`.
 - [ ] `tag_row_widget.gd`: on `GameState.tag_count_changed`, find-or-create a
 	  small widget per tag (icon placeholder + "×N" label), update count.
 
@@ -354,13 +354,13 @@ every `SpellCategory` branch in `tower.gd`'s `_fire_spell()`.
 
 ## Task 03-12 — Enemy Freeze/Unfreeze for Draft Pauses
 
-**File**: `res://scenes/enemies/Enemy.tscn`/`enemy.gd`
+**File**: `res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`/`enemy.gd`
 
 - [ ] Implement `freeze()`/`unfreeze()` on `enemy.gd`: toggles whether
 	  `MoveToTargetComponent` and the attack `CooldownComponent` tick. Do not
 	  use `get_tree().paused` for this (that would also pause UI tweens and
 	  the draft animations themselves) — toggle per-enemy instead.
-- [ ] `GameWorld.gd`: on entering `DRAFT` phase, call `freeze()` on every
+- [ ] `game_world.gd`: on entering `DRAFT` phase, call `freeze()` on every
 	  node in group `"enemies"`; on leaving, call `unfreeze()`.
 
 **Acceptance criteria**:

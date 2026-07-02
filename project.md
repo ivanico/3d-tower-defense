@@ -283,10 +283,12 @@ Physics > 3D > Default Gravity: 9.8 (standard — ground entities snap to floor;
 3. GameState
 4. MetaManager
 5. SpellRegistry
-6. WaveManager
-7. DraftManager
-8. ObjectPool
-9. AudioManager
+6. ObjectPool
+7. AudioManager
+
+> `WaveManager` and `DraftManager` are **not** autoloads — they are run-scoped
+> manager Nodes under `game_world.tscn` (`scenes/manager/`). Singleton names are
+> unchanged; only the autoload *files* are now snake_case.
 
 ---
 
@@ -294,21 +296,24 @@ Physics > 3D > Default Gravity: 9.8 (standard — ground entities snap to floor;
 
 ```
 res://
-├── autoloads/
+├── autoloads/                 # true globals only (snake_case files; PascalCase singleton names)
 ├── scenes/
-│   ├── main/
-│   ├── tower/
-│   ├── enemies/
-│   ├── spells/
-│   ├── camera/
+│   ├── main/                  # game_world.tscn — hosts the manager Nodes
+│   ├── manager/               # run-scoped WaveManager / DraftManager nodes (NOT autoloads)
+│   ├── component/             # reusable component scenes (health, hurtbox, hitbox, mover, ...)
+│   ├── game_object/           # one folder per scene
+│   │   ├── tower/
+│   │   ├── projectile/
+│   │   ├── aoe_zone/
+│   │   ├── camera_rig/
+│   │   └── chap1/             # enemies grouped by chapter
+│   │       └── chap1_enemy_01/   # scene + shared enemy.gd + co-located .tres
 │   └── ui/
-├── scripts/
-│   ├── components/        # small reusable Node3D components (Health, Hitbox, Hurtbox, Mover, etc.)
-│   └── utils/
+├── scripts/                   # flat global helpers (combat_utils.gd, weighted_table.gd)
 ├── resources/
 │   ├── spells/
 │   ├── towers/
-│   ├── enemies/
+│   ├── enemies/               # base class enemy_definition.gd only; per-enemy .tres live in each enemy folder
 │   ├── waves/
 │   └── chapters/
 └── assets/

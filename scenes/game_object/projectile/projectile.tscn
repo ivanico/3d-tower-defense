@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://proj_basic_bolt"]
 
-[ext_resource type="Script" path="res://scenes/spells/projectile.gd" id="Script_proj"]
+[ext_resource type="Script" path="res://scenes/game_object/projectile/projectile.gd" id="Script_proj"]
 
 [sub_resource type="SphereMesh" id="Mesh_proj"]
 radius = 0.12

@@ -14,7 +14,7 @@ doing tower-defense-style combat correctly in actual 3D.
 Every hit in this game resolves through exactly one function:
 
 ```gdscript
-# scripts/utils/combat_utils.gd
+# scripts/combat_utils.gd
 static func calculate_damage(base_amount: float, damage_type: int, armor_type: int) -> float:
     var multiplier := DAMAGE_TABLE[damage_type][armor_type]
     return base_amount * multiplier
@@ -164,7 +164,7 @@ second mode — `mechanics.md` explicitly scopes v1 to closest-only.
 
 ```gdscript
 # get
-var proj: Node3D = ObjectPool.get(preload("res://scenes/spells/Projectile.tscn"))
+var proj: Node3D = ObjectPool.get(preload("res://scenes/game_object/projectile/projectile.tscn"))
 proj.global_position = start_pos
 proj.initialize(start_pos, target_pos, spell)
 

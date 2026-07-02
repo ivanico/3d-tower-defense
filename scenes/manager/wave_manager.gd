@@ -1,14 +1,18 @@
+class_name WaveManager
 extends Node
 
-const ENEMY_SCENE_PATH := "res://scenes/enemies/Enemy.tscn"
+const CHAP1_ENEMY_01_SCENE := preload("res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn")
 const ARENA_SPAWN_RADIUS := 5.5
 
 var _active_enemies: Array = []
 var _current_wave: int = 0
 var _enemy_container: Node3D = null
+var _enemy_table := WeightedTable.new()
 
 func _ready() -> void:
 	EventBus.enemy_died.connect(_on_enemy_died)
+	EventBus.start_wave_requested.connect(start_wave)
+	_enemy_table.add_item(CHAP1_ENEMY_01_SCENE, 10)
 
 func start_wave(wave_number: int) -> void:
 	_current_wave = wave_number
@@ -29,11 +33,10 @@ func clear_all_enemies() -> void:
 func _spawn_enemy() -> void:
 	if _enemy_container == null:
 		return
-	var scene := load(ENEMY_SCENE_PATH) as PackedScene
+	var scene := _enemy_table.pick_item() as PackedScene
 	if scene == null:
 		return
 	var enemy := scene.instantiate() as Enemy
-	enemy.definition = load("res://resources/enemies/chap1_enemy_01.tres")
 	_enemy_container.add_child(enemy)
 	enemy.global_position = _get_spawn_position()
 	_active_enemies.append(enemy)

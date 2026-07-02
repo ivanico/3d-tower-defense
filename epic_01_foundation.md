@@ -31,7 +31,7 @@ abandoned 2D version's lighting problems).
 - [ ] Set Physics > 3D > Default Gravity to `9.8` (standard).
 - [ ] Create the full folder structure exactly as listed in `components.md`
       Section 1.
-- [ ] Set the main scene to `res://scenes/main/GameWorld.tscn` (create it as
+- [ ] Set the main scene to `res://scenes/main/game_world.tscn` (create it as
       an empty `Node3D` scene for now).
 
 **Acceptance criteria**:
@@ -43,7 +43,7 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-02 — Constants Autoload
 
-**File**: `res://autoloads/Constants.gd`
+**File**: `res://autoloads/constants.gd`
 **Ref**: `components.md` Section 2
 
 - [ ] Create `Constants.gd` with `class_name Constants`.
@@ -60,7 +60,7 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-03 — EventBus Autoload
 
-**File**: `res://autoloads/EventBus.gd`
+**File**: `res://autoloads/event_bus.gd`
 **Ref**: `components.md` Section 3
 
 - [ ] Create `EventBus.gd` as a `Node` script.
@@ -77,7 +77,7 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-04 — GameState Autoload
 
-**File**: `res://autoloads/GameState.gd`
+**File**: `res://autoloads/game_state.gd`
 **Ref**: `components.md` Section 3
 
 - [ ] Create `GameState.gd`. Declare all variables and signals listed in
@@ -103,7 +103,7 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-05 — MetaManager Autoload (Stub)
 
-**File**: `res://autoloads/MetaManager.gd`
+**File**: `res://autoloads/meta_manager.gd`
 **Ref**: `components.md` Section 3
 
 - [ ] Create `MetaManager.gd`. Declare `owned_towers`, `tower_stars`,
@@ -124,7 +124,7 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-06 — SpellRegistry Autoload (Stub)
 
-**File**: `res://autoloads/SpellRegistry.gd`
+**File**: `res://autoloads/spell_registry.gd`
 **Ref**: `components.md` Section 3
 
 - [ ] Create `SpellRegistry.gd`. Declare `all_spells: Array`,
@@ -143,7 +143,12 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-07 — WaveManager Autoload (Stub)
 
-**File**: `res://autoloads/WaveManager.gd`
+> **Post-restructure note**: `WaveManager` is no longer an autoload — it's a
+> run-scoped manager Node under `game_world.tscn` (see `restructure.md` Phase 6,
+> `components.md` Section 3). Skip the "Add as Autoload" step below; instance
+> `wave_manager.tscn` as a `GameWorld` child instead.
+
+**File**: `res://scenes/manager/wave_manager.gd`
 **Ref**: `components.md` Section 3, `mechanics.md` Section 3
 
 - [ ] Create `WaveManager.gd`. Declare `_active_enemies: Array`,
@@ -174,7 +179,12 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-08 — DraftManager Autoload (Stub)
 
-**File**: `res://autoloads/DraftManager.gd`
+> **Post-restructure note**: `DraftManager` is no longer an autoload either —
+> same as `WaveManager` above, it's a run-scoped manager Node under
+> `game_world.tscn`. Skip "Add as Autoload"; instance `draft_manager.tscn` as a
+> `GameWorld` child instead.
+
+**File**: `res://scenes/manager/draft_manager.gd`
 
 - [ ] Create `DraftManager.gd`. Stub `open_draft()` (emits
       `EventBus.draft_opened`) and `select_card(card)` (emits
@@ -188,7 +198,7 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-09 — ObjectPool Autoload (Stub)
 
-**File**: `res://autoloads/ObjectPool.gd`
+**File**: `res://autoloads/object_pool.gd`
 **Ref**: `mechanics.md` Section 9
 
 - [ ] Create `ObjectPool.gd`. Declare `_pools: Dictionary`.
@@ -209,7 +219,7 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-10 — AudioManager Autoload (Stub)
 
-**File**: `res://autoloads/AudioManager.gd`
+**File**: `res://autoloads/audio_manager.gd`
 
 - [ ] Create `AudioManager.gd`. Declare `_sfx_pool: Array`,
       `_music_player: AudioStreamPlayer`. Create 8 pooled
@@ -224,7 +234,7 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-11 — CombatUtils Script
 
-**File**: `res://scripts/utils/combat_utils.gd`
+**File**: `res://scripts/combat_utils.gd`
 **Ref**: `mechanics.md` Section 5, `project.md` Damage Type vs Armor Table
 
 - [ ] Create `CombatUtils.gd` as a static-style class (`class_name
@@ -248,7 +258,7 @@ abandoned 2D version's lighting problems).
 
 ## Task 01-12 — Core Component Scripts (Skeletons)
 
-**Files**: `res://scripts/components/*.gd`
+**Files**: `res://scenes/component/*.gd`
 **Ref**: `components.md` Section 4, `mechanics.md` Section 8
 
 Create every component listed in `components.md` Section 4 as its own file.
@@ -318,10 +328,10 @@ below — full combat wiring is Epic 02.
 
 ## Task 01-14 — CameraRig Scene & Script
 
-**File**: `res://scenes/camera/CameraRig.tscn`
+**File**: `res://scenes/game_object/camera_rig/camera_rig.tscn`
 **Ref**: `mechanics.md` Section 1, `assets.md` Section 1
 
-- [ ] Create `CameraRig.tscn` with root `Node3D`.
+- [ ] Create `camera_rig.tscn` with root `Node3D`.
 - [ ] Add a `Camera3D` child.
 - [ ] Create `camera_rig.gd`:
   - `@export var camera_pitch_degrees: float = Constants.CAMERA_PITCH_DEGREES`
@@ -342,7 +352,7 @@ below — full combat wiring is Epic 02.
       spritesheet-render look we're avoiding.
 
 **Acceptance criteria**:
-- [ ] Placing `CameraRig.tscn` in a test scene with a 1×1×1 box at the origin
+- [ ] Placing `camera_rig.tscn` in a test scene with a 1×1×1 box at the origin
       shows the box from a steep downward angle, camera not rotated/tilted
       sideways (yaw = 0), in the editor's Game view.
 - [ ] Changing `camera_pitch_degrees` in the Inspector and re-running visibly
@@ -353,10 +363,10 @@ below — full combat wiring is Epic 02.
 
 ## Task 01-15 — Generic Enemy Scene (Placeholder Mesh)
 
-**File**: `res://scenes/enemies/Enemy.tscn`
+**File**: `res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`
 **Ref**: `components.md` Section 6, `mechanics.md` Section 3
 
-- [ ] Create `Enemy.tscn` with root `CharacterBody3D`, group `"enemies"`.
+- [ ] Create `chap1_enemy_01.tscn` with root `CharacterBody3D`, group `"enemies"`.
 - [ ] Add children:
   - `MeshInstance3D` with a `CapsuleMesh` (height 1.2, radius 0.3) and a
     plain red `StandardMaterial3D` — this is the 3D placeholder, explicitly
@@ -381,7 +391,7 @@ below — full combat wiring is Epic 02.
     stop movement (set `MoveToTargetComponent` speed to 0 or pause it).
 
 **Acceptance criteria**:
-- [ ] Dropping one `Enemy.tscn` instance into a test scene with a flat ground
+- [ ] Dropping one `chap1_enemy_01.tscn` instance into a test scene with a flat ground
       plane and a `DirectionalLight3D` shows a red capsule that casts a
       visible shadow on the ground.
 - [ ] Setting `target_position` to a point across the ground makes the
@@ -391,11 +401,11 @@ below — full combat wiring is Epic 02.
 
 ## Task 01-16 — Arena Placeholder Scene
 
-**File**: `res://scenes/main/GameWorld.tscn` (arena geometry directly in this
+**File**: `res://scenes/main/game_world.tscn` (arena geometry directly in this
 scene for now — a dedicated `Arena.tscn` comes when real models arrive in
 Epic 06)
 
-- [ ] In `GameWorld.tscn`, add a ground `MeshInstance3D` using a `PlaneMesh`
+- [ ] In `game_world.tscn`, add a ground `MeshInstance3D` using a `PlaneMesh`
       (size roughly 12×12, per `assets.md` Section 1 scale table) with a
       plain green `StandardMaterial3D`, plus a matching `StaticBody3D` +
       `CollisionShape3D` (`BoxShape3D`, thin) so enemies can stand on it.
@@ -421,10 +431,10 @@ Epic 06)
 
 ## Task 01-17 — Tower Placeholder Scene
 
-**File**: `res://scenes/tower/Tower.tscn`
+**File**: `res://scenes/game_object/tower/tower.tscn`
 **Ref**: `components.md` Section 6, `mechanics.md` Section 2
 
-- [ ] Create `Tower.tscn` with root `CharacterBody3D`, group `"tower"`.
+- [ ] Create `tower.tscn` with root `CharacterBody3D`, group `"tower"`.
 - [ ] Add children:
   - `MeshInstance3D` with a `BoxMesh` (size roughly 1×1.6×1, per the scale
     table in `assets.md`) and a plain blue `StandardMaterial3D`.
@@ -441,28 +451,28 @@ Epic 06)
   - Stub `_fire_spell()` — prints only, real wiring is Epic 02.
 
 **Acceptance criteria**:
-- [ ] Placing `Tower.tscn` at the arena center alongside the ground plane and
+- [ ] Placing `tower.tscn` at the arena center alongside the ground plane and
       camera rig shows a blue box, lit and shadowed correctly, viewed through
       the fixed camera angle.
-- [ ] `Tower.tscn` is in group `"tower"` (verify via
+- [ ] `tower.tscn` is in group `"tower"` (verify via
       `get_tree().get_nodes_in_group("tower")` returning it).
 
 ---
 
 ## Task 01-18 — GameWorld Wiring
 
-**File**: `res://scenes/main/GameWorld.tscn` + `GameWorld.gd`
+**File**: `res://scenes/main/game_world.tscn` + `game_world.gd`
 **Ref**: `components.md` Section 6
 
-- [ ] Add children to `GameWorld.tscn`:
+- [ ] Add children to `game_world.tscn`:
   - `CameraRig` (instance of Task 01-14's scene), positioned to frame the
     arena.
-  - `TowerNode` (instance of `Tower.tscn`), at `Vector3.ZERO`, with
+  - `TowerNode` (instance of `tower.tscn`), at `Vector3.ZERO`, with
     `definition` set to `tower_default.tres`.
   - `EnemyContainer` (`Node3D`).
   - `HUD` (`CanvasLayer`) — empty `Label` children for now: `WaveLabel`,
     `HPLabel`.
-- [ ] Create `GameWorld.gd`:
+- [ ] Create `game_world.gd`:
   - `_ready()`:
     - Give `WaveManager` a reference to `EnemyContainer`.
     - Call `WaveManager.start_wave(1)`.
@@ -472,7 +482,7 @@ Epic 06)
   - `_on_tower_died()`: print "GAME OVER" for now.
   - `_process(delta)`: update `HPLabel`/`WaveLabel` text from `GameState`.
 - [ ] For each spawned enemy in `WaveManager._spawn_enemy()` (implement this
-      now, called from `start_wave`): instance `Enemy.tscn`, assign
+      now, called from `start_wave`): instance `chap1_enemy_01.tscn`, assign
       `chap1_enemy_01.tres` as its `definition`, set position to
       `_get_spawn_position()`, add to `EnemyContainer`.
 

@@ -35,7 +35,7 @@ scripts grew to 300+ lines.
 ## Anatomy of a component
 
 ```gdscript
-# res://scripts/components/example_component.gd
+# res://scenes/component/example_component.gd
 class_name ExampleComponent
 extends Node  # or Node3D / Area3D if it needs a transform or shape
 
@@ -72,7 +72,7 @@ Rules of thumb:
 ## The data-driven Resource pattern
 
 New content should be data, not code. This project has exactly one generic
-scene per object category — `Tower.tscn`, `Enemy.tscn` — and content variety
+scene per object category — `tower.tscn`, `chap1_enemy_01.tscn` — and content variety
 comes entirely from which `Resource` (`TowerDefinition`, `EnemyDefinition`,
 `SpellDefinition`, etc.) is assigned to that scene instance at spawn time.
 
@@ -94,7 +94,7 @@ extends Resource
 ```
 
 ```gdscript
-# scenes/enemies/enemy.gd — stays thin
+# scenes/game_object/chap1/chap1_enemy_01/enemy.gd — stays thin
 extends CharacterBody3D
 class_name Enemy
 

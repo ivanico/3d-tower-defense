@@ -11,21 +11,19 @@ config_version=5
 [application]
 
 config/name="TowersLastStand3D"
-run/main_scene="res://scenes/main/GameWorld.tscn"
+run/main_scene="res://scenes/main/game_world.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
-Constants="*res://autoloads/Constants.gd"
-EventBus="*res://autoloads/EventBus.gd"
-GameState="*res://autoloads/GameState.gd"
-MetaManager="*res://autoloads/MetaManager.gd"
-SpellRegistry="*res://autoloads/SpellRegistry.gd"
-WaveManager="*res://autoloads/WaveManager.gd"
-DraftManager="*res://autoloads/DraftManager.gd"
-ObjectPool="*res://autoloads/ObjectPool.gd"
-AudioManager="*res://autoloads/AudioManager.gd"
+Constants="*res://autoloads/constants.gd"
+EventBus="*res://autoloads/event_bus.gd"
+GameState="*res://autoloads/game_state.gd"
+MetaManager="*res://autoloads/meta_manager.gd"
+SpellRegistry="*res://autoloads/spell_registry.gd"
+ObjectPool="*res://autoloads/object_pool.gd"
+AudioManager="*res://autoloads/audio_manager.gd"
 
 [display]
 

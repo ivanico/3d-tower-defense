@@ -1,13 +1,15 @@
-[gd_scene load_steps=14 format=3 uid="uid://gojcy8ojc28y"]
+[gd_scene load_steps=16 format=3 uid="uid://gojcy8ojc28y"]
 
-[ext_resource type="PackedScene" uid="uid://dy0co36gcwh34" path="res://scenes/camera/CameraRig.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://dy0co36gcwh34" path="res://scenes/game_object/camera_rig/camera_rig.tscn" id="1"]
 [ext_resource type="Shader" uid="uid://dqimpf6txxhdt" path="res://scenes/main/ground_checker.gdshader" id="3_cpkm4"]
-[ext_resource type="Script" uid="uid://yejoif6ma0ec" path="res://scenes/main/GameWorld.gd" id="4"]
-[ext_resource type="PackedScene" uid="uid://cwvht84pug1qp" path="res://scenes/tower/Tower.tscn" id="5"]
+[ext_resource type="Script" uid="uid://yejoif6ma0ec" path="res://scenes/main/game_world.gd" id="4"]
+[ext_resource type="PackedScene" uid="uid://cwvht84pug1qp" path="res://scenes/game_object/tower/tower.tscn" id="5"]
 [ext_resource type="Resource" path="res://resources/towers/tower_default.tres" id="6"]
-[ext_resource type="PackedScene" path="res://scenes/ui/DraftUI.tscn" id="7"]
-[ext_resource type="PackedScene" path="res://scenes/ui/SynergyBanner.tscn" id="8"]
-[ext_resource type="PackedScene" path="res://scenes/ui/TagRowWidget.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/ui/draft_ui.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/synergy_banner.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tag_row_widget.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/manager/wave_manager.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://scenes/manager/draft_manager.tscn" id="11"]
 [ext_resource type="Script" uid="uid://cntomb20lojxx" path="res://scenes/main/hud.gd" id="Script_hud"]
 
 [sub_resource type="PlaneMesh" id="Mesh_ground"]
@@ -59,6 +61,10 @@ definition = ExtResource("6")
 [node name="EnemyContainer" type="Node3D" parent="."]
 
 [node name="ProjectileContainer" type="Node3D" parent="."]
+
+[node name="WaveManager" parent="." instance=ExtResource("10")]
+
+[node name="DraftManager" parent="." instance=ExtResource("11")]
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("Script_hud")

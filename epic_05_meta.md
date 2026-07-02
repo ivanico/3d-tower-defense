@@ -15,7 +15,7 @@
 
 ## Task 05-01 — SaveData Resource
 
-**File**: `res://scripts/utils/save_data.gd`
+**File**: `res://scripts/save_data.gd`
 **Ref**: `mechanics.md` Section 11
 
 - [ ] Create `SaveData.gd` extending `Resource`, `class_name SaveData`.
@@ -33,7 +33,7 @@
 
 ## Task 05-02 — MetaManager Full Implementation
 
-**File**: `res://autoloads/MetaManager.gd`
+**File**: `res://autoloads/meta_manager.gd`
 **Ref**: `components.md` Section 3
 
 - [ ] Replace the Epic 01 stub:
@@ -71,8 +71,8 @@
 
 ## Task 05-03 — Tower Stars Apply to Stats
 
-**File**: `res://scenes/tower/Tower.tscn`/`tower.gd`,
-`res://autoloads/GameState.gd`
+**File**: `res://scenes/game_object/tower/tower.tscn`/`tower.gd`,
+`res://autoloads/game_state.gd`
 **Ref**: `mechanics.md` Section 11
 
 - [ ] In `GameState.start_run(tower_def)`, after applying base stats, apply a
@@ -95,7 +95,7 @@
 
 ## Task 05-04 — Spell Ranks Apply to Stats
 
-**File**: `res://autoloads/SpellRegistry.gd` or `res://autoloads/GameState.gd`
+**File**: `res://autoloads/spell_registry.gd` or `res://autoloads/game_state.gd`
 **Ref**: `mechanics.md` Section 11
 
 - [ ] When a spell is added to the tower's active list (Epic 03's
@@ -175,13 +175,13 @@
       (a `HBoxContainer`/`GridContainer` of node buttons, not a single
       hardcoded button) even though only one node exists at v1.
 - [ ] On tapping the chapter node (with energy available): load
-      `GameWorld.tscn`, passing/setting which `ChapterDefinition` and which
+      `game_world.tscn`, passing/setting which `ChapterDefinition` and which
       `TowerDefinition` (from garage selection) to use for the run.
 
 **Acceptance criteria**:
 - [ ] WorldMap correctly blocks a run start at 0 energy and allows it
       otherwise, decrementing energy by exactly 1 per run start.
-- [ ] Starting a run correctly loads `GameWorld.tscn` configured for
+- [ ] Starting a run correctly loads `game_world.tscn` configured for
       `chapter_01` and the selected tower.
 
 ---
@@ -212,7 +212,7 @@
 
 ## Task 05-09 — Daily Energy Regen (Background)
 
-**File**: `res://autoloads/MetaManager.gd`
+**File**: `res://autoloads/meta_manager.gd`
 **Ref**: `mechanics.md` Section 11
 
 - [ ] On `load()` (app start), compute elapsed time since

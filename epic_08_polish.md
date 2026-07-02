@@ -53,7 +53,7 @@
 
 ## Task 08-02 — Synergy Banner Polish
 
-**File**: `res://scenes/ui/SynergyBanner.tscn`/`synergy_banner.gd`
+**File**: `res://scenes/ui/synergy_banner.tscn`/`synergy_banner.gd`
 
 Banner is functional from Epic 03; this is UI-only polish (`CanvasLayer`,
 not affected by the 3D rebuild) — same approach as the original design:
@@ -74,7 +74,7 @@ not affected by the 3D rebuild) — same approach as the original design:
 
 ## Task 08-03 — Enemy HP Bar Polish (3D)
 
-**File**: `res://scenes/enemies/Enemy.tscn`
+**File**: `res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`
 
 - [ ] Replace Epic 02's simple HP bar approach with a clean billboarded
       version: a small `Node3D` positioned above the enemy's head (height
@@ -101,7 +101,7 @@ not affected by the 3D rebuild) — same approach as the original design:
 
 ## Task 08-04 — Targeting Indicator (3D)
 
-**File**: `res://scenes/tower/Tower.tscn`/`tower.gd`
+**File**: `res://scenes/game_object/tower/tower.tscn`/`tower.gd`
 
 - [ ] Add a faint 3D line from the tower to its current target, using a
       `MeshInstance3D` with an `ImmediateMesh`/thin cylinder, or Godot 4's
@@ -123,7 +123,7 @@ not affected by the 3D rebuild) — same approach as the original design:
 
 ## Task 08-05 — Camera Shake on Boss Hit
 
-**File**: `res://scenes/camera/CameraRig.tscn`/`camera_rig.gd`
+**File**: `res://scenes/game_object/camera_rig/camera_rig.tscn`/`camera_rig.gd`
 
 - [ ] Implement the real body of `shake(duration, magnitude)` (stubbed in
       Epic 01 Task 01-14): tween the `Camera3D` child's local position offset
@@ -157,7 +157,7 @@ not affected by the 3D rebuild) — same approach as the original design:
       slider wiring matches the original design's behavior (Resume unpauses;
       Restart reloads the current chapter without spending energy again;
       Map returns to WorldMap).
-- [ ] `GameWorld.gd`: handle Android back button / Escape (`ui_cancel`
+- [ ] `game_world.gd`: handle Android back button / Escape (`ui_cancel`
       action) to toggle pause.
 
 **Acceptance criteria**:

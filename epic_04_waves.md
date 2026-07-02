@@ -33,7 +33,7 @@
 	  `base_hp=60`, `base_speed=2.6` (faster than `chap1_enemy_01`'s 1.5),
 	  `base_damage=6` (lower), `attack_cooldown=0.8`,
 	  `armor_type=Constants.ArmorType.UNARMORED`, `xp_value=8`.
-- [ ] In `Enemy.tscn`'s placeholder mesh setup, make this variant visually
+- [ ] In `chap1_enemy_01.tscn`'s placeholder mesh setup, make this variant visually
 	  distinct even as a primitive (smaller capsule scale + a different
 	  placeholder color) so it's visually testable before real models exist.
 
@@ -47,7 +47,7 @@
 ## Task 04-02 — Boss Enemy Definition & Heavy Attack
 
 **File**: `res://resources/enemies/chap1_boss_01.tres`,
-`res://scripts/components/` (new component)
+`res://scenes/component/` (new component)
 **Ref**: `mechanics.md` Section 3
 
 - [ ] Create `chap1_boss_01.tres`: `enemy_id="chap1_boss_01"`,
@@ -116,7 +116,7 @@
 
 ## Task 04-04 — Wave Scaling Applied
 
-**File**: `res://autoloads/WaveManager.gd`
+**File**: `res://scenes/manager/wave_manager.gd`
 **Ref**: `mechanics.md` Section 3, `components.md` Section 2
 
 - [ ] When spawning an enemy for wave N, apply
@@ -142,7 +142,7 @@
 
 ## Task 04-05 — Boss Wave Trigger
 
-**File**: `res://scenes/main/GameWorld.gd`, `res://autoloads/WaveManager.gd`
+**File**: `res://scenes/main/game_world.gd`, `res://scenes/manager/wave_manager.gd`
 
 - [ ] Replace the Epic 02 "BOSS TIME" print stub: when
 	  `wave_number >= chapter.wave_count`, instead of a regular wave, spawn
@@ -182,7 +182,7 @@
 
 ## Task 04-07 — Wire Victory Into Game Loop
 
-**File**: `res://scenes/main/GameWorld.gd`
+**File**: `res://scenes/main/game_world.gd`
 
 - [ ] On `EventBus.boss_died`: pause `WaveManager`, instance
 	  `VictoryScreen.tscn`, call `GameState.end_run(true)`.
@@ -209,7 +209,7 @@
 	  twice).
 - [ ] `TitleLabel` ("Defeat"), wave reached stat, `RetryButton`,
 	  `MapButton` (stub navigation).
-- [ ] Replace the Epic 02 plain-`Label` game-over stub in `GameWorld.gd` with
+- [ ] Replace the Epic 02 plain-`Label` game-over stub in `game_world.gd` with
 	  instancing this scene.
 
 **Acceptance criteria**:
@@ -221,7 +221,7 @@
 
 ## Task 04-09 — Wave Fallback Timer
 
-**File**: `res://autoloads/WaveManager.gd`
+**File**: `res://scenes/manager/wave_manager.gd`
 **Ref**: `mechanics.md` Section 3, `project.md` Waves description
 
 - [ ] Add a per-wave fallback `Timer` set to `Constants.WAVE_DURATION_MAX`

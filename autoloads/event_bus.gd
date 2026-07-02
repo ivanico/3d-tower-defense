@@ -12,6 +12,7 @@ signal xp_gained(amount: int)
 signal level_up(new_level: int)
 
 # Wave
+signal start_wave_requested(wave_number: int)
 signal wave_started(wave_number: int)
 signal wave_cleared(wave_number: int)
 signal phase_changed(phase: int)
@@ -27,6 +28,7 @@ signal card_selected(card: Resource)
 signal synergy_threshold_reached(tag: int, level: int)
 
 # Meta
+signal run_reset
 signal run_ended(victory: bool)
 signal materials_earned(amount: int)
 signal tower_upgraded(tower_id: String, star: int)

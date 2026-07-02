@@ -38,7 +38,7 @@ into `Constants.gd` or the relevant `Definition` resource.
 | The cost curve for stars/ranks (materials needed) | `TOWER_STAR_COSTS` / `SPELL_RANK_COSTS` arrays (see `epic_05_meta.md` Task 05-05/05-06) | Yes |
 | The damage-type vs armor-type multiplier table | The table in `project.md` "Damage Type vs Armor Table" — `CombatUtils.calculate_damage()` just looks this up | Yes |
 | Boss heavy-attack frequency/strength | `Constants.BOSS_HEAVY_ATTACK_EVERY_N` / `_DAMAGE_MULT` / `_TELEGRAPH_SEC` | Yes |
-| Camera angle/distance | `CameraRig.tscn`'s exported `camera_pitch_degrees` / `camera_distance` / `camera_height` (Inspector, no script edit) | Yes |
+| Camera angle/distance | `camera_rig.tscn`'s exported `camera_pitch_degrees` / `camera_distance` / `camera_height` (Inspector, no script edit) | Yes |
 
 **The one place code-literacy still helps**: `GameState._apply_synergy_bonus()`
 contains the `match` statement that *decides which constant applies at which
@@ -54,54 +54,58 @@ strength never does.
 
 ```
 res://
-├── autoloads/
-│   ├── Constants.gd
-│   ├── EventBus.gd
-│   ├── GameState.gd
-│   ├── MetaManager.gd
-│   ├── SpellRegistry.gd
-│   ├── WaveManager.gd
-│   ├── DraftManager.gd
-│   ├── ObjectPool.gd
-│   └── AudioManager.gd
+├── autoloads/                      # true globals (snake_case files; PascalCase singletons)
+│   ├── constants.gd
+│   ├── event_bus.gd
+│   ├── game_state.gd
+│   ├── meta_manager.gd
+│   ├── spell_registry.gd
+│   ├── object_pool.gd
+│   └── audio_manager.gd
 ├── scenes/
 │   ├── main/
-│   │   ├── GameWorld.tscn          # root scene during a run
+│   │   ├── game_world.tscn          # root scene during a run
 │   │   ├── WorldMap.tscn
 │   │   ├── TowerGarage.tscn
 │   │   ├── SpellCodex.tscn
 │   │   ├── DefeatScreen.tscn
 │   │   └── VictoryScreen.tscn
-│   ├── camera/
-│   │   └── CameraRig.tscn          # fixed-angle Camera3D rig
-│   ├── tower/
-│   │   └── Tower.tscn              # single generic tower scene, driven by TowerDefinition
-│   ├── enemies/
-│   │   └── Enemy.tscn              # single generic enemy scene, driven by EnemyDefinition
-│   ├── spells/
-│   │   ├── Projectile.tscn         # generic straight-line projectile
-│   │   ├── ArcProjectile.tscn      # generic arcing projectile (siege/AoE delivery)
-│   │   └── AoEZone.tscn            # generic ground-targeted AoE burst
+│   ├── manager/                    # run-scoped manager Nodes (NOT autoloads)
+│   │   ├── wave_manager.tscn / .gd
+│   │   └── draft_manager.tscn / .gd
+│   ├── component/                  # reusable component scenes (node + unchanged script)
+│   │   ├── health_component.tscn / .gd
+│   │   ├── hurtbox_component.tscn / .gd
+│   │   ├── hitbox_component.tscn / .gd
+│   │   ├── move_to_target_component.tscn / .gd
+│   │   ├── targeting_component.tscn / .gd
+│   │   ├── cooldown_component.tscn / .gd
+│   │   ├── hit_flash_component.tscn / .gd
+│   │   └── death_fx_component.tscn / .gd
+│   ├── game_object/                # one folder per scene
+│   │   ├── tower/
+│   │   │   └── tower.tscn          # single tower scene, driven by TowerDefinition
+│   │   ├── projectile/
+│   │   │   └── projectile.tscn     # generic straight-line projectile
+│   │   ├── aoe_zone/
+│   │   │   └── aoe_zone.tscn       # generic ground-targeted AoE burst
+│   │   ├── camera_rig/
+│   │   │   └── camera_rig.tscn     # fixed-angle Camera3D rig
+│   │   └── chap1/                  # enemies grouped by chapter
+│   │       └── chap1_enemy_01/     # one scene + folder per enemy type
+│   │           ├── chap1_enemy_01.tscn
+│   │           ├── enemy.gd        # shared enemy script (class_name Enemy)
+│   │           └── chap1_enemy_01.tres   # co-located EnemyDefinition
 │   └── ui/
 │       ├── HUD.tscn
-│       ├── DraftUI.tscn
-│       ├── DraftCard.tscn
-│       ├── SynergyBanner.tscn
-│       ├── TagRowWidget.tscn
+│       ├── draft_ui.tscn
+│       ├── draft_card.tscn
+│       ├── synergy_banner.tscn
+│       ├── tag_row_widget.tscn
 │       └── DamageNumber3D.tscn
-├── scripts/
-│   ├── components/
-│   │   ├── health_component.gd
-│   │   ├── hurtbox_component.gd
-│   │   ├── hitbox_component.gd
-│   │   ├── move_to_target_component.gd
-│   │   ├── targeting_component.gd
-│   │   ├── cooldown_component.gd
-│   │   ├── hit_flash_component.gd
-│   │   └── death_fx_component.gd
-│   └── utils/
-│       ├── combat_utils.gd
-│       └── weighted_table.gd
+├── scripts/                        # flat global helpers
+│   ├── combat_utils.gd
+│   └── weighted_table.gd
 ├── resources/
 │   ├── spells/
 │   │   ├── spell_definition.gd     # base Resource class
@@ -116,11 +120,8 @@ res://
 │   ├── towers/
 │   │   ├── tower_definition.gd
 │   │   └── tower_default.tres
-│   ├── enemies/
-│   │   ├── enemy_definition.gd
-│   │   ├── chap1_enemy_01.tres
-│   │   ├── chap1_enemy_02.tres
-│   │   └── chap1_boss_01.tres
+│   ├── enemies/                    # base class only; per-enemy .tres live in each enemy folder
+│   │   └── enemy_definition.gd
 │   └── chapters/
 │       ├── chapter_definition.gd
 │       └── chapter_01.tres
@@ -132,19 +133,22 @@ res://
     └── fonts/
 ```
 
-> **Extend later by:** dropping a new `.tres` into `resources/enemies/` or
-> `resources/spells/` and a new `.glb` into `assets/models/`. The generic
-> `Tower.tscn` / `Enemy.tscn` scenes read whichever `Definition` resource is
-> assigned to them at spawn time — there is deliberately no
-> `EnemyGrunt.tscn`/`TowerIronclad.tscn`-per-type scene file anymore. That
-> per-type-scene pattern from the old project is exactly what made adding
-> content require new code; this version doesn't repeat it.
+> **Extend later by:** for a new **enemy type**, copy an enemy folder under
+> `scenes/game_object/chap<N>/` (scene + co-located `.tres`), retune the `.tres`,
+> and register the scene with `WaveManager`'s `WeightedTable` — reusing the
+> shared `enemy.gd` (`class_name Enemy`) rather than copying it (a duplicate
+> `class_name` would clash). For a **spell** that only differs in numbers, drop a
+> `.tres` into `resources/spells/` and reuse the generic `projectile`/`aoe_zone`
+> scenes; a spell needing *unique behavior* graduates to its own `game_object/`
+> folder. Models: drop a `.glb` into `assets/models/` and point the `.tres`
+> `model_path` at it. The `tower` stays a single generic scene driven by
+> `TowerDefinition`; **enemies are scene-per-type** (one folder each).
 
 ---
 
 ## 2. Constants & Enums
 
-**File**: `res://autoloads/Constants.gd`
+**File**: `res://autoloads/constants.gd`
 **Type**: Autoload (Node script, `class_name Constants`)
 
 ```gdscript
@@ -230,7 +234,7 @@ Signals (grouped):
 - Meta: `run_ended(victory)`, `materials_earned(amount)`,
   `tower_upgraded(tower_id, star)`, `spell_ranked_up(spell_id, rank)`.
 
-**Location**: `res://autoloads/EventBus.gd` · **Autoload order**: 2
+**Location**: `res://autoloads/event_bus.gd` · **Autoload order**: 2
 
 ---
 
@@ -257,7 +261,7 @@ to one of these, it belongs in a new method or a new autoload, not bolted on):
   duplicate this `match`.
 - `end_run(victory)`, `reset()`.
 
-**Location**: `res://autoloads/GameState.gd` · **Autoload order**: 3
+**Location**: `res://autoloads/game_state.gd` · **Autoload order**: 3
 
 ---
 
@@ -266,7 +270,7 @@ to one of these, it belongs in a new method or a new autoload, not bolted on):
 star levels, spell ranks, materials, energy, premium currency, selected tower.
 `save()`/`load()` read/write a `SaveData` resource to `user://savegame.tres`.
 
-**Location**: `res://autoloads/MetaManager.gd` · **Autoload order**: 4
+**Location**: `res://autoloads/meta_manager.gd` · **Autoload order**: 4
 
 ---
 
@@ -277,18 +281,20 @@ star levels, spell ranks, materials, energy, premium currency, selected tower.
 `.tres` files are picked up automatically). Exposes `get_all_cards()`,
 `get_spells_by_tag(tag)`.
 
-**Location**: `res://autoloads/SpellRegistry.gd` · **Autoload order**: 5
+**Location**: `res://autoloads/spell_registry.gd` · **Autoload order**: 5
 
 ---
 
-### `WaveManager.gd`
-**What it does**: Reads the active `ChapterDefinition`'s wave list, spawns
-enemies (pulled from `ObjectPool`) at arena-edge points, tracks
-`_active_enemies`, emits `wave_started`/`wave_cleared`. Does **not** contain
-any enemy-type-specific logic — it only ever spawns whatever
-`EnemyDefinition` the current wave's data says to spawn.
+### `WaveManager.gd` (run-scoped manager Node — NOT an autoload)
+**What it does**: Spawns enemies each wave by picking an enemy **scene** from a
+`WeightedTable` and `instantiate()`-ing it (fresh instance, `queue_free()`d on
+death — enemies are **not** pooled) at arena-edge points, tracks
+`_active_enemies`, emits `wave_started`/`wave_cleared`, and listens to
+`EventBus.start_wave_requested`. Does **not** contain any enemy-type-specific
+logic.
 
-**Location**: `res://autoloads/WaveManager.gd` · **Autoload order**: 6
+**Location**: `res://scenes/manager/wave_manager.gd` — a child Node of
+`game_world.tscn` (`class_name WaveManager`), **not** a `project.godot` autoload.
 
 ---
 
@@ -297,17 +303,20 @@ any enemy-type-specific logic — it only ever spawns whatever
 for already-maxed stackables), opens/closes the draft UI flow via
 `EventBus`, applies the selected card via `GameState.apply_card()`.
 
-**Location**: `res://autoloads/DraftManager.gd` · **Autoload order**: 7
+**Location**: `res://scenes/manager/draft_manager.gd` — a child Node of
+`game_world.tscn` (`class_name DraftManager`), **not** a `project.godot` autoload.
+It reacts to `EventBus.level_up` (open a level-up draft) and `EventBus.run_reset`
+(clear state), and requests the next wave via `EventBus.start_wave_requested`.
 
 ---
 
 ### `ObjectPool.gd`
 **What it does**: Generic pool keyed by `PackedScene.resource_path`.
-`get(scene)`, `release(node)`, `preload_pool(scene, count)`. Works for
-enemies, projectiles, AoE zones, and damage numbers — the same generic pool,
-no per-type pool code.
+`acquire(scene)`, `release(node)`, `preload_pool(scene, count)`. Used for
+projectiles and other reusable objects — the same generic pool, no per-type
+pool code. **Enemies are not pooled** — they `queue_free()` on death.
 
-**Location**: `res://autoloads/ObjectPool.gd` · **Autoload order**: 8
+**Location**: `res://autoloads/object_pool.gd` · **Autoload order**: 6
 
 ---
 
@@ -316,11 +325,11 @@ no per-type pool code.
 `EventBus` for what to play (see `epic_07_audio.md` for the full signal wiring
 list). No gameplay logic lives here — purely reactive to events.
 
-**Location**: `res://autoloads/AudioManager.gd` · **Autoload order**: 9
+**Location**: `res://autoloads/audio_manager.gd` · **Autoload order**: 7
 
 ---
 
-## 4. Components (`res://scripts/components/`)
+## 4. Components (`res://scenes/component/`)
 
 This is the section that most directly replaces the old monolithic
 `TowerBase.gd` / `EnemyBase.gd`. Each component below is a small script
@@ -340,7 +349,7 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
   pattern as the survival-game reference's `check_death()`). `heal(amount)`
   adds and clamps at max, emits `health_changed`. `reset()` restores to max —
   required for pooled objects.
-- **Used by**: Tower, every enemy variant (via the generic `Enemy.tscn`).
+- **Used by**: Tower, every enemy variant (via the generic `chap1_enemy_01.tscn`).
 
 ### `hurtbox_component.gd`
 - **What it does**: `class_name HurtboxComponent extends Area3D`. Exports
@@ -356,7 +365,7 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
   (projectile, AoE zone) right before it enters the scene tree. Pure data +
   the `Area3D` shape; no behavior beyond carrying these two values for the
   hurtbox to read.
-- **Used by**: `Projectile.tscn`, `ArcProjectile.tscn`, `AoEZone.tscn`.
+- **Used by**: `projectile.tscn`, `Arcprojectile.tscn`, `aoe_zone.tscn`.
 
 ### `move_to_target_component.gd`
 - **What it does**: `class_name MoveToTargetComponent extends Node`. Exports
@@ -399,10 +408,10 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
 
 ### `death_fx_component.gd`
 - **What it does**: `class_name DeathFXComponent extends Node`. Listens to
-  sibling `HealthComponent.died`. Plays the owner's death animation (via
-  `AnimationPlayer`) and/or a particle burst, then on completion calls
-  `ObjectPool.release(owner)` — never `queue_free()` directly once pooling is
-  live (Epic 02+).
+  sibling `HealthComponent.died`, plays a death effect (currently a shrink
+  tween), then on completion `queue_free()`s the owner. Enemies are **not**
+  pooled — they are freed on death (a death `AnimationPlayer` can replace the
+  tween later; the `queue_free()` timing stays).
 - **Used by**: every enemy.
 
 > **Extend later by:** adding a new component file for any genuinely new
@@ -422,7 +431,7 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
 `starting_spell_id` (the base-attack spell, fired even with zero drafted
 spells), `passive_script` (optional `Script` resource implementing the
 tower's unique passive hook — see `tower_default.tres` for the v1 instance).
-**One `.tres` per tower.** `Tower.tscn` is generic and reads whichever
+**One `.tres` per tower.** `tower.tscn` is generic and reads whichever
 `TowerDefinition` is assigned.
 
 ### `enemy_definition.gd`
@@ -430,14 +439,14 @@ tower's unique passive hook — see `tower_default.tres` for the v1 instance).
 `enemy_id` (e.g. `"chap1_enemy_01"`), `model_path`, `base_hp`, `base_speed`,
 `base_damage`, `attack_cooldown`, `armor_type`, `xp_value`,
 `is_boss: bool = false`, `hold_height: float = 0.0` (flyer hook, 0 for all v1
-enemies). **One `.tres` per enemy type.** `Enemy.tscn` is generic.
+enemies). **One `.tres` per enemy type.** `chap1_enemy_01.tscn` is generic.
 
 ### `spell_definition.gd`
 **What it does**: `class_name SpellDefinition extends Resource`. Fields:
 `spell_id`, `spell_name`, `description`, `icon`, `rarity`, `spell_category`,
 `damage_type`, `tags: Array[SynergyTag]`, `damage`, `cooldown`, `range`,
 `aoe_radius` (if applicable), `projectile_scene` (which generic projectile
-scene to use — `Projectile.tscn` or `ArcProjectile.tscn`).
+scene to use — `projectile.tscn` or `Arcprojectile.tscn`).
 
 ### `stat_upgrade_definition.gd`
 **What it does**: `class_name StatUpgradeDefinition extends Resource`. Fields:
@@ -451,13 +460,13 @@ scene to use — `Projectile.tscn` or `ArcProjectile.tscn`).
 `boss: EnemyDefinition`, `arena_model_path`.
 
 > **Extend later by:** every one of these is "add a new `.tres`." None of them
-> require touching `Tower.tscn`, `Enemy.tscn`, or any autoload code.
+> require touching `tower.tscn`, `chap1_enemy_01.tscn`, or any autoload code.
 
 ---
 
 ## 6. Key Scenes
 
-### `Tower.tscn`
+### `tower.tscn`
 - **Root**: `CharacterBody3D` (static in practice, but `CharacterBody3D` keeps
   the door open for knockback/forced movement later without a node-type
   change), group `"tower"`.
@@ -470,12 +479,12 @@ scene to use — `Projectile.tscn` or `ArcProjectile.tscn`).
   assigned `TowerDefinition`'s base stats to `GameState`; on
   `_physics_process()`, ticks each spell's `CooldownComponent` and fires when
   ready by delegating to a small `_fire_spell(spell_def)` that switches on
-  `spell_category` to pick `Projectile.tscn`/`ArcProjectile.tscn`/AoE/passive
+  `spell_category` to pick `projectile.tscn`/`Arcprojectile.tscn`/AoE/passive
   — and nothing else. All the "how do I take damage," "how do I find a
   target," "how do I flash white" logic lives in the components above, not in
   `tower.gd`.
 
-### `Enemy.tscn`
+### `chap1_enemy_01.tscn`
 - **Root**: `CharacterBody3D`, group `"enemies"`.
 - **Children**: `MeshInstance3D`, `CollisionShape3D`, `AnimationPlayer`,
   `HealthComponent`, `HurtboxComponent`, `MoveToTargetComponent`,
@@ -488,13 +497,13 @@ scene to use — `Projectile.tscn` or `ArcProjectile.tscn`).
   script — movement, health, damage-taking, flashing, and dying are all
   delegated.
 
-### `Projectile.tscn` / `ArcProjectile.tscn` / `AoEZone.tscn`
-- Generic, reused by every spell of that category. `ArcProjectile.tscn`
+### `projectile.tscn` / `Arcprojectile.tscn` / `aoe_zone.tscn`
+- Generic, reused by every spell of that category. `Arcprojectile.tscn`
   computes a parabolic `Y` path from spawn point to target point (see
   `mechanics.md` Verticality Rules) instead of a straight line — this is the
-  only meaningful difference from `Projectile.tscn`.
+  only meaningful difference from `projectile.tscn`.
 
-### `CameraRig.tscn`
+### `camera_rig.tscn`
 - `Node3D` root holding the fixed-pitch `Camera3D` child, plus the
   screen-shake helper method (`shake(duration, magnitude)` — tweens a small
   local offset and back). No follow logic needed at v1 since the tower never
@@ -524,8 +533,8 @@ addition:
 
 | Group | Members | Used by | Why |
 |---|---|---|---|
-| `"tower"` | `Tower.tscn` instance | `Enemy.tscn` (melee target), `TargetingComponent` | Enemies and systems find the tower without a hardcoded scene path |
-| `"enemies"` | every spawned `Enemy.tscn` instance | `TargetingComponent`, `HitboxComponent` collision checks | Targeting/hit systems query this group instead of holding arrays of references that can go stale |
+| `"tower"` | `tower.tscn` instance | `chap1_enemy_01.tscn` (melee target), `TargetingComponent` | Enemies and systems find the tower without a hardcoded scene path |
+| `"enemies"` | every spawned `chap1_enemy_01.tscn` instance | `TargetingComponent`, `HitboxComponent` collision checks | Targeting/hit systems query this group instead of holding arrays of references that can go stale |
 
 ---
 

@@ -12,7 +12,7 @@ covers the concrete Godot patterns for that.
 ## The camera rig — fixed, never orbits
 
 ```gdscript
-# scenes/camera/camera_rig.gd
+# scenes/game_object/camera_rig/camera_rig.gd
 extends Node3D
 class_name CameraRig
 

@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-const DRAFT_CARD_SCENE := preload("res://scenes/ui/DraftCard.tscn")
+const DRAFT_CARD_SCENE := preload("res://scenes/ui/draft_card.tscn")
 
 @onready var dim_bg: ColorRect         = $DimBG
 @onready var panel: PanelContainer     = $FullscreenContainer/Panel
@@ -13,11 +13,15 @@ func _ready() -> void:
 	EventBus.draft_opened.connect(_on_draft_opened)
 	EventBus.draft_closed.connect(_on_draft_closed)
 
+func _draft_manager() -> DraftManager:
+	return get_tree().get_first_node_in_group("draft_manager") as DraftManager
+
 func _on_draft_opened() -> void:
-	subtitle_label.text = "Wave Cleared!" if DraftManager._draft_trigger == "wave_clear" else "Level Up!"
+	var dm := _draft_manager()
+	subtitle_label.text = "Wave Cleared!" if dm._draft_trigger == "wave_clear" else "Level Up!"
 	for child in card_container.get_children():
 		child.queue_free()
-	for card_data in DraftManager._draft_cards:
+	for card_data in dm._draft_cards:
 		var card_node: DraftCard = DRAFT_CARD_SCENE.instantiate()
 		card_container.add_child(card_node)
 		card_node.setup(card_data)
@@ -27,7 +31,7 @@ func _on_draft_opened() -> void:
 	tween.tween_property(dim_bg, "modulate:a", 1.0, 0.2)
 
 func _on_card_selected(card_data: Resource) -> void:
-	DraftManager.select_card(card_data)
+	_draft_manager().select_card(card_data)
 
 func _on_draft_closed() -> void:
 	var tween := create_tween()
