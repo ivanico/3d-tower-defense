@@ -30,6 +30,7 @@ var utility_cooldown_mult: float = 1.0
 var run_kills: int = 0
 var waves_cleared: int = 0
 var damage_dealt: float = 0.0
+var run_start_time: float = 0.0
 
 signal hp_changed(current: float, max_hp: float)
 signal xp_bar_updated(current: int, to_next: int, level: int)
@@ -38,10 +39,17 @@ var _regen_timer: Timer
 
 func _ready() -> void:
 	EventBus.xp_gained.connect(gain_xp)
+	EventBus.enemy_died.connect(_on_enemy_died)
 	_regen_timer = Timer.new()
 	_regen_timer.wait_time = Constants.ARMOR_TIER2_REGEN_INTERVAL
 	_regen_timer.timeout.connect(_on_regen_tick)
 	add_child(_regen_timer)
+
+func _on_enemy_died(_enemy: Node, _position: Vector3) -> void:
+	run_kills += 1
+
+func get_run_time_sec() -> float:
+	return Time.get_ticks_msec() / 1000.0 - run_start_time
 
 func _on_regen_tick() -> void:
 	if armor_regen_active and tower_max_hp > 0.0:
@@ -55,6 +63,7 @@ func start_run(tower_def) -> void:
 		tower_damage_multiplier = 1.0
 		tower_fire_rate_multiplier = 1.0
 		tower_range = tower_def.base_range
+	run_start_time = Time.get_ticks_msec() / 1000.0
 	phase = Constants.GamePhase.WAVE
 	EventBus.phase_changed.emit(phase)
 
@@ -143,6 +152,7 @@ func reset() -> void:
 	run_kills = 0
 	waves_cleared = 0
 	damage_dealt = 0.0
+	run_start_time = 0.0
 
 func _apply_synergy_bonus(tag: int, level: int) -> void:
 	match tag:
@@ -162,5 +172,5 @@ func _apply_synergy_bonus(tag: int, level: int) -> void:
 				utility_cooldown_mult = Constants.UTILITY_TIER1_COOLDOWN_MULT
 
 func _on_tower_died() -> void:
-	phase = Constants.GamePhase.DEFEAT
+	end_run(false)
 	EventBus.tower_died.emit()

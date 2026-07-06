@@ -8,6 +8,15 @@
 > Completed epic delivers: a game ready for internal testing on a real
 > Android device, running at a stable frame rate with real shadows.
 
+> **Deferred from Epic 04**: `WaveManager`'s fallback timer
+> (`Constants.WAVE_DURATION_MAX`) silently force-clears a stalled wave with
+> no player-facing indication it's about to happen — confirmed during Epic
+> 04 testing that this reads as confusing (wave clears with enemies still
+> on-screen, no XP for them, no warning beforehand). Add some visual cue —
+> a small countdown timer/HUD element, or a warning flash in the last few
+> seconds — so the fallback feels intentional rather than like a bug. Small
+> addition, pairs naturally with this epic's other HUD/UI polish tasks.
+
 ---
 
 ## Task 08-01 — Floating Damage Numbers (3D)

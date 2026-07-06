@@ -20,6 +20,10 @@ func spend_energy() -> bool:
 func restore_energy(amount: int) -> void:
 	energy = min(energy + amount, Constants.MAX_ENERGY)
 
+func award_materials(amount: int) -> void:
+	materials += amount
+	EventBus.materials_earned.emit(amount)
+
 func save_data() -> void:
 	pass
 

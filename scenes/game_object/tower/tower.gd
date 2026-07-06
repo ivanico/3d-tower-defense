@@ -7,6 +7,7 @@ class_name Tower
 @onready var targeting: TargetingComponent = $TargetingComponent
 
 const PROJECTILE_SCENE := preload("res://scenes/game_object/projectile/projectile.tscn")
+const AOE_ZONE_SCENE := preload("res://scenes/game_object/aoe_zone/aoe_zone.tscn")
 
 var _active_spells: Array[SpellDefinition] = []
 var _spell_timers: Dictionary = {}
@@ -50,6 +51,12 @@ func _try_fire(spell: SpellDefinition) -> void:
 	_spell_timers[spell.spell_id] = spell.cooldown * GameState.tower_fire_rate_multiplier * GameState.utility_cooldown_mult
 	if spell.spell_category == Constants.SpellCategory.PROJECTILE:
 		_fire_projectile(spell, target)
+	elif spell.spell_category == Constants.SpellCategory.AOE_BURST:
+		_fire_aoe(spell, target)
+
+func _fire_aoe(spell: SpellDefinition, target: Node3D) -> void:
+	var zone := ObjectPool.acquire(AOE_ZONE_SCENE)
+	zone.initialize(target.global_position, spell.aoe_radius, spell)
 
 func _fire_projectile(spell: SpellDefinition, target: Node3D) -> void:
 	var proj := ObjectPool.acquire(PROJECTILE_SCENE)

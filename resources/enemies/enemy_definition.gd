@@ -3,6 +3,7 @@ extends Resource
 
 @export var enemy_id: String = ""
 @export var model_path: String = ""
+@export var scene: PackedScene = null
 @export var base_hp: float = 100.0
 @export var base_speed: float = 1.5
 @export var base_damage: float = 10.0

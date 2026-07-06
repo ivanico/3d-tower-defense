@@ -7,6 +7,8 @@ const DRAFT_CARD_SCENE := preload("res://scenes/ui/draft_card.tscn")
 @onready var card_container: HBoxContainer = $FullscreenContainer/Panel/VBoxContainer/CardContainer
 @onready var subtitle_label: Label     = $FullscreenContainer/Panel/VBoxContainer/SubtitleLabel
 
+var _close_tween: Tween = null
+
 func _ready() -> void:
 	dim_bg.modulate = Color(1, 1, 1, 0)
 	panel.visible = false
@@ -17,6 +19,9 @@ func _draft_manager() -> DraftManager:
 	return get_tree().get_first_node_in_group("draft_manager") as DraftManager
 
 func _on_draft_opened() -> void:
+	if _close_tween:
+		_close_tween.kill()
+		_close_tween = null
 	var dm := _draft_manager()
 	subtitle_label.text = "Wave Cleared!" if dm._draft_trigger == "wave_clear" else "Level Up!"
 	for child in card_container.get_children():
@@ -34,9 +39,10 @@ func _on_card_selected(card_data: Resource) -> void:
 	_draft_manager().select_card(card_data)
 
 func _on_draft_closed() -> void:
-	var tween := create_tween()
-	tween.tween_property(dim_bg, "modulate:a", 0.0, 0.2)
-	tween.finished.connect(func():
+	_close_tween = create_tween()
+	_close_tween.tween_property(dim_bg, "modulate:a", 0.0, 0.2)
+	_close_tween.finished.connect(func():
+		_close_tween = null
 		panel.visible = false
 		for child in card_container.get_children():
 			child.queue_free()

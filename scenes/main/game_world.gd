@@ -1,6 +1,7 @@
 extends Node3D
 
-var _game_over_label: Label
+const VICTORY_SCREEN_SCENE := preload("res://scenes/ui/victory_screen.tscn")
+const DEFEAT_SCREEN_SCENE := preload("res://scenes/ui/defeat_screen.tscn")
 
 @onready var wave_manager: WaveManager = $WaveManager
 @onready var draft_manager: DraftManager = $DraftManager
@@ -15,17 +16,7 @@ func _ready() -> void:
 	EventBus.wave_cleared.connect(_on_wave_cleared)
 	EventBus.tower_died.connect(_on_tower_died)
 	EventBus.phase_changed.connect(_on_phase_changed)
-	_setup_game_over_label()
-
-func _setup_game_over_label() -> void:
-	_game_over_label = Label.new()
-	_game_over_label.text = "GAME OVER\nPress Enter to restart"
-	_game_over_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_game_over_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_game_over_label.add_theme_font_size_override("font_size", 48)
-	_game_over_label.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_game_over_label.visible = false
-	$HUD.add_child(_game_over_label)
+	EventBus.boss_died.connect(_on_boss_died)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if get_tree().paused and event.is_action_pressed("ui_accept"):
@@ -39,13 +30,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func _on_wave_cleared(wave_number: int) -> void:
 	GameState.waves_cleared += 1
 	GameState.wave_number += 1
-	if wave_number >= Constants.TOTAL_WAVES:
-		wave_manager.clear_all_enemies()
-		_game_over_label.text = "YOU WIN!\nPress Enter to restart"
-		_game_over_label.visible = true
-		get_tree().paused = true
-		return
 	draft_manager.open_draft("wave_clear")
+
+func _on_boss_died() -> void:
+	GameState.waves_cleared += 1
+	wave_manager.stop_wave()
+	GameState.end_run(true)
+	add_child(VICTORY_SCREEN_SCENE.instantiate())
+	get_tree().paused = true
 
 func _on_phase_changed(phase: int) -> void:
 	if phase == Constants.GamePhase.DRAFT:
@@ -55,5 +47,5 @@ func _on_phase_changed(phase: int) -> void:
 
 func _on_tower_died() -> void:
 	wave_manager.clear_all_enemies()
-	_game_over_label.visible = true
+	add_child(DEFEAT_SCREEN_SCENE.instantiate())
 	get_tree().paused = true

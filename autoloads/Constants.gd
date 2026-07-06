@@ -10,7 +10,7 @@ enum SynergyTag     { OFFENSE, ARMOR, UTILITY }
 enum MaterialType   { STANDARD }
 
 const TOTAL_WAVES:              int   = 12
-const WAVE_DURATION_MAX:        float = 30.0
+const WAVE_DURATION_MAX:        float = 60.0
 const DRAFT_CARDS_SHOWN:        int   = 3
 const ENEMY_HP_SCALE:           float = 1.12
 const ENEMY_DMG_SCALE:          float = 1.08
@@ -45,3 +45,13 @@ const UTILITY_TIER1_COOLDOWN_MULT:  float = 0.90
 const BOSS_HEAVY_ATTACK_EVERY_N:         int   = 4
 const BOSS_HEAVY_ATTACK_DAMAGE_MULT:     float = 2.5
 const BOSS_HEAVY_ATTACK_TELEGRAPH_SEC:   float = 0.5
+
+# Wave composition (Epic 04)
+const WAVE_ENEMY_COUNT_BASE:             int   = 3
+const WAVE_ENEMY_COUNT_MAX:              int   = 20
+const WAVE_FAST_ENEMY_MIN_WAVE:          int   = 5
+const WAVE_BASIC_ENEMY_WEIGHT:           int   = 70
+const WAVE_FAST_ENEMY_WEIGHT:            int   = 30
+
+# Victory rewards (Epic 04) — stub flat amount, real formula is Epic 05
+const VICTORY_MATERIALS_REWARD:          int   = 100

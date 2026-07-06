@@ -50,13 +50,21 @@ func _do_open_draft(trigger: String) -> void:
 			if next == "wave_clear":
 				_start_wave_after = true
 			_do_open_draft(next)
-		elif _start_wave_after:
+			return
+		_close_draft()
+		if _start_wave_after:
 			_start_wave_after = false
 			EventBus.start_wave_requested.emit(GameState.wave_number)
 		return
 	GameState.phase = Constants.GamePhase.DRAFT
 	EventBus.phase_changed.emit(GameState.phase)
 	EventBus.draft_opened.emit()
+
+func _close_draft() -> void:
+	if GameState.phase == Constants.GamePhase.DRAFT:
+		GameState.phase = Constants.GamePhase.WAVE
+		EventBus.draft_closed.emit()
+		EventBus.phase_changed.emit(GameState.phase)
 
 func get_draft_cards() -> Array:
 	var pool := SpellRegistry.get_all_cards()

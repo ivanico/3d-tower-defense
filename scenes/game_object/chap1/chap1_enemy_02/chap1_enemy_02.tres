@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/enemies/enemy_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap1/chap1_enemy_02/chap1_enemy_02.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "chap1_enemy_02"
+model_path = ""
+scene = ExtResource("2")
+base_hp = 60.0
+base_speed = 2.6
+base_damage = 6.0
+attack_cooldown = 0.8
+armor_type = 0
+xp_value = 8
+is_boss = false
+hold_height = 0.0

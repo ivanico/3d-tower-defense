@@ -10,6 +10,7 @@ class_name Enemy
 var _is_attacking: bool = false
 var _attack_cooldown: float = 1.0
 var _attack_timer: float = 0.0
+var _damage_scale: float = 1.0
 
 func _ready() -> void:
 	add_to_group("enemies")
@@ -22,8 +23,14 @@ func reset() -> void:
 	scale = Vector3.ONE
 	_is_attacking = false
 	_attack_timer = 0.0
+	_damage_scale = 1.0
 	_apply_definition()
 	health.reset()
+
+func apply_wave_scale(hp_scale: float, dmg_scale: float) -> void:
+	health.max_health *= hp_scale
+	health.current_health = health.max_health
+	_damage_scale = dmg_scale
 
 func _apply_definition() -> void:
 	if definition == null:
@@ -49,8 +56,12 @@ func _physics_process(delta: float) -> void:
 		_attack_timer = _attack_cooldown
 
 func _attack_tower() -> void:
-	var dmg := definition.base_damage if definition else 10.0
-	GameState.take_damage(dmg)
+	var dmg := (definition.base_damage if definition else 10.0) * _damage_scale
+	var heavy := find_child("BossHeavyAttackComponent") as BossHeavyAttackComponent
+	if heavy:
+		heavy.perform_attack(dmg)
+	else:
+		GameState.take_damage(dmg)
 
 func _on_died() -> void:
 	remove_from_group("enemies")
