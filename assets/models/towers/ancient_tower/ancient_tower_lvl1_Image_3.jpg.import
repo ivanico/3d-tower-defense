@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dlhsdgq2h3jx5"
-path.s3tc="res://.godot/imported/tower_default_Image_3.jpg-59cf12aece2cd9945d3d38180763cec5.s3tc.ctex"
+path.s3tc="res://.godot/imported/ancient_tower_lvl1_Image_3.jpg-03026ff9cf4c849e3673c1c69f423625.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -14,8 +14,8 @@ generator_parameters={
 
 [deps]
 
-source_file="res://assets/models/tower_default_Image_3.jpg"
-dest_files=["res://.godot/imported/tower_default_Image_3.jpg-59cf12aece2cd9945d3d38180763cec5.s3tc.ctex"]
+source_file="res://assets/models/towers/ancient_tower/ancient_tower_lvl1_Image_3.jpg"
+dest_files=["res://.godot/imported/ancient_tower_lvl1_Image_3.jpg-03026ff9cf4c849e3673c1c69f423625.s3tc.ctex"]
 
 [params]
 

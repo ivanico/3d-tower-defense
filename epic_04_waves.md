@@ -8,7 +8,7 @@
 > (`chap1_enemy_01`, `chap1_enemy_02`, `chap1_boss_01`).
 > Completed epic delivers: a complete run, start to finish, win or lose.
 >
-> **On real models**: unlike `chap1_enemy_01`/`tower_default` (which got a
+> **On real models**: unlike `chap1_enemy_01`/`ancient_tower_lvl1` (which got a
 > real Meshy model as early as Epic 02 Task 02-00, specifically to validate
 > camera/scale against something real), `chap1_enemy_02` and
 > `chap1_boss_01` stay as primitive placeholders through this epic — Epic
@@ -20,12 +20,19 @@
 
 ---
 
-## Task 04-01 — Second Enemy Definition
+## Task 04-01 — Second Enemy: New Folder (Copy-a-Folder Pattern)
 
-**File**: `res://resources/enemies/chap1_enemy_02.tres`
-**Ref**: `mechanics.md` Section 3
+**File**: `res://scenes/game_object/chap1/chap1_enemy_02/` (new folder:
+`chap1_enemy_02.tscn` + co-located `chap1_enemy_02.tres`; reuses the shared
+`enemy.gd` from `chap1_enemy_01/` — do not duplicate the script)
+**Ref**: `mechanics.md` Section 3, `restructure.md` Section 8
 
-- [ ] Create `chap1_enemy_02.tres`: `enemy_id="chap1_enemy_02"`,
+- [ ] Copy `scenes/game_object/chap1/chap1_enemy_01/` →
+	  `scenes/game_object/chap1/chap1_enemy_02/`; rename the scene and `.tres`
+	  to `chap1_enemy_02.tscn` / `chap1_enemy_02.tres`. The new scene's root
+	  keeps using the shared `enemy.gd` (same file — a duplicate
+	  `class_name Enemy` would clash).
+- [ ] Retune `chap1_enemy_02.tres`: `enemy_id="chap1_enemy_02"`,
 	  `model_path=""` (primitive placeholder for this epic — see the note
 	  above; full animated model is Epic 06, but nothing stops you from
 	  swapping in a rough real model sooner the same way Epic 02 Task
@@ -33,47 +40,57 @@
 	  `base_hp=60`, `base_speed=2.6` (faster than `chap1_enemy_01`'s 1.5),
 	  `base_damage=6` (lower), `attack_cooldown=0.8`,
 	  `armor_type=Constants.ArmorType.UNARMORED`, `xp_value=8`.
-- [ ] In `chap1_enemy_01.tscn`'s placeholder mesh setup, make this variant visually
+- [ ] In `chap1_enemy_02.tscn`'s placeholder mesh, make this variant visually
 	  distinct even as a primitive (smaller capsule scale + a different
 	  placeholder color) so it's visually testable before real models exist.
 
 **Acceptance criteria**:
-- [ ] `chap1_enemy_02.tres` loads correctly with the stats above.
+- [ ] `chap1_enemy_02.tscn` loads, its co-located `chap1_enemy_02.tres`
+	  exposes the stats above, and the scene uses the shared `enemy.gd` (not a
+	  duplicate script).
 - [ ] A spawned `chap1_enemy_02` enemy is visibly smaller/faster than a
 	  `chap1_enemy_01` enemy in a side-by-side test.
 
 ---
 
-## Task 04-02 — Boss Enemy Definition & Heavy Attack
+## Task 04-02 — Boss: New Folder + Heavy Attack Component
 
-**File**: `res://resources/enemies/chap1_boss_01.tres`,
-`res://scenes/component/` (new component)
-**Ref**: `mechanics.md` Section 3
+**File**: `res://scenes/game_object/chap1/chap1_boss_01/` (new folder:
+`chap1_boss_01.tscn` + co-located `chap1_boss_01.tres`; reuses the shared
+`enemy.gd`), plus `res://scenes/component/boss_heavy_attack_component.tscn` /
+`.gd` (new component scene)
+**Ref**: `mechanics.md` Section 3, `restructure.md` Section 8
 
-- [ ] Create `chap1_boss_01.tres`: `enemy_id="chap1_boss_01"`,
+- [ ] Copy `scenes/game_object/chap1/chap1_enemy_01/` →
+	  `scenes/game_object/chap1/chap1_boss_01/`; rename to
+	  `chap1_boss_01.tscn` / `chap1_boss_01.tres`, reusing the shared
+	  `enemy.gd`.
+- [ ] Retune `chap1_boss_01.tres`: `enemy_id="chap1_boss_01"`,
 	  `model_path=""`, `base_hp=2500`, `base_speed=1.0`, `base_damage=40`,
 	  `attack_cooldown=1.5`, `armor_type=Constants.ArmorType.HEAVY`,
 	  `xp_value=200`, `is_boss=true`.
-- [ ] Add a `boss_heavy_attack_component.gd` (new, small, single-purpose —
-	  do **not** bolt this onto `enemy.gd` directly, per the component rule
-	  in `mechanics.md` Section 8): every `Constants.BOSS_HEAVY_ATTACK_EVERY_N`
-	  regular attacks, deals `Constants.BOSS_HEAVY_ATTACK_DAMAGE_MULT` times
-	  the boss's normal hit and triggers a telegraph (brief scale-pulse or
-	  color-flash on the boss mesh, `Constants.BOSS_HEAVY_ATTACK_TELEGRAPH_SEC`
-	  before the hit lands, giving the player a visual tell). Read all three
-	  values from `Constants.gd` (already defined there per `components.md`
-	  Section 2) — do not re-type the numbers in this component's code. This
-	  is the one **[V1-SIMPLE]** boss mechanic per `mechanics.md` Section 3 —
-	  no HP-phase-gated mechanic changes at v1.
-- [ ] Attach this component only to the boss's enemy scene variant (or
-	  conditionally add it at runtime when `definition.is_boss == true` —
-	  either is fine, but it must not run for regular enemies).
+- [ ] Add a `boss_heavy_attack_component.tscn`/`.gd` under
+	  `res://scenes/component/` (new, small, single-purpose — do **not** bolt
+	  this onto `enemy.gd` directly, per the component rule in `mechanics.md`
+	  Section 8): every `Constants.BOSS_HEAVY_ATTACK_EVERY_N` regular attacks,
+	  deals `Constants.BOSS_HEAVY_ATTACK_DAMAGE_MULT` times the boss's normal
+	  hit and triggers a telegraph (brief scale-pulse or color-flash on the
+	  boss mesh, `Constants.BOSS_HEAVY_ATTACK_TELEGRAPH_SEC` before the hit
+	  lands, giving the player a visual tell). Read all three values from
+	  `Constants.gd` (already defined there per `components.md` Section 2) —
+	  do not re-type the numbers in this component's code. This is the one
+	  **[V1-SIMPLE]** boss mechanic per `mechanics.md` Section 3 — no
+	  HP-phase-gated mechanic changes at v1.
+- [ ] Attach `boss_heavy_attack_component.tscn` directly inside
+	  `chap1_boss_01.tscn` (the boss scene simply has the component — no
+	  runtime `if is_boss` add); regular enemy scenes never get it.
 - [ ] Scale the boss's placeholder mesh up significantly (per the scale table
 	  in `assets.md` Section 1) so it's visually obvious as a boss even
 	  before real models exist.
 
 **Acceptance criteria**:
-- [ ] `chap1_boss_01.tres` loads with the stats above.
+- [ ] `chap1_boss_01.tscn` loads, its co-located `chap1_boss_01.tres` exposes
+	  the stats above, and it uses the shared `enemy.gd`.
 - [ ] The boss's placeholder capsule is dramatically larger on screen than a
 	  regular enemy's.
 - [ ] Every `Constants.BOSS_HEAVY_ATTACK_EVERY_N`th boss attack deals
@@ -88,15 +105,27 @@
 
 ## Task 04-03 — ChapterDefinition & Wave Config
 
-**File**: `res://resources/chapters/chapter_01.tres`
-**Ref**: `components.md` Section 5
+**File**: `res://resources/chapters/chapter_01.tres`, plus a new
+`scene: PackedScene` field on `res://resources/enemies/enemy_definition.gd`
+**Ref**: `components.md` Section 5, `restructure.md` Section 4
 
+`ChapterDefinition` already exists (built during the restructure) with
+`enemy_pool: Array[EnemyDefinition]` and `boss: EnemyDefinition` — typed
+arrays/fields of the definition, not of scenes. So wave spawning needs a way
+to go from an `EnemyDefinition` to that enemy's own scene. This is
+`restructure.md` Section 4's "option B": add a `scene` field to
+`EnemyDefinition` rather than retyping `enemy_pool`/`boss` to `PackedScene`.
+
+- [ ] Add `@export var scene: PackedScene = null` to `enemy_definition.gd`.
+	  Set it (in each enemy's co-located `.tres`) to that enemy's own
+	  `chap1_enemy_01.tscn` / `chap1_enemy_02.tscn` / `chap1_boss_01.tscn`
+	  inside its `game_object/chap1/<id>/` folder.
 - [ ] Populate `chapter_01.tres`: `chapter_id="chapter_01"`,
 	  `chapter_name="The Plains"` (or your own naming — not load-bearing),
 	  `wave_count=Constants.TOTAL_WAVES` (12), `enemy_pool=
 	  [chap1_enemy_01.tres, chap1_enemy_02.tres]`, `boss=chap1_boss_01.tres`,
 	  `arena_model_path=""` (placeholder arena from Epic 01 still in use).
-- [ ] Implement a simple per-wave enemy count/mix rule in `WaveManager.gd`:
+- [ ] Implement a simple per-wave enemy count/mix rule in `wave_manager.gd`:
 	  `_get_wave_composition(wave_number) -> Array[EnemyDefinition]` — v1
 	  rule: wave count scales `3 + wave_number` enemies total (cap at a
 	  reasonable number, e.g. 20, to protect performance — see
@@ -104,10 +133,14 @@
 	  `chap1_enemy_01`/`02` roughly 70/30 by wave 5+ (before wave 5, spawn
 	  only `chap1_enemy_01` so the player learns the baseline first). This is
 	  a simple, tunable rule, not a complex difficulty curve — refine by
-	  playtesting.
+	  playtesting. Spawning calls `definition.scene.instantiate()` — the
+	  hardcoded `CHAP1_ENEMY_01_SCENE` preload constant from Epic 02 is
+	  replaced by this generic per-definition scene lookup.
 
 **Acceptance criteria**:
-- [ ] `chapter_01.tres` loads correctly and exposes its enemy pool/boss.
+- [ ] `chapter_01.tres` loads correctly and exposes its enemy pool/boss, and
+	  each `EnemyDefinition` in the pool resolves to the correct scene via its
+	  new `scene` field.
 - [ ] `WaveManager._get_wave_composition(1)` returns only `chap1_enemy_01`
 	  entries. `_get_wave_composition(8)` returns a mix including some
 	  `chap1_enemy_02`.
@@ -161,9 +194,9 @@
 
 ## Task 04-06 — VictoryScreen Scene
 
-**File**: `res://scenes/main/VictoryScreen.tscn`
+**File**: `res://scenes/ui/victory_screen.tscn`
 
-- [ ] Create `VictoryScreen.tscn`, root `CanvasLayer`. Children: `BG`
+- [ ] Create `victory_screen.tscn`, root `CanvasLayer`. Children: `BG`
 	  (`ColorRect` placeholder), `TitleLabel` ("Victory!"), `StatsPanel`
 	  (waves cleared, kills, time — pull from `GameState` run stats),
 	  `ContinueButton` ("Return to Map" — stub navigation for now, real
@@ -185,7 +218,7 @@
 **File**: `res://scenes/main/game_world.gd`
 
 - [ ] On `EventBus.boss_died`: pause `WaveManager`, instance
-	  `VictoryScreen.tscn`, call `GameState.end_run(true)`.
+	  `victory_screen.tscn`, call `GameState.end_run(true)`.
 - [ ] On `EventBus.run_ended(victory)`: if `victory == false` (defeat path,
 	  already partially built in Epic 02's `_on_tower_died`), make sure the
 	  same `end_run()` bookkeeping (run stats finalized) happens on both
@@ -201,9 +234,9 @@
 
 ## Task 04-08 — DefeatScreen Scene (Full, Replacing Epic 02 Stub)
 
-**File**: `res://scenes/main/DefeatScreen.tscn`
+**File**: `res://scenes/ui/defeat_screen.tscn`
 
-- [ ] Create `DefeatScreen.tscn` matching the shape of `VictoryScreen.tscn`
+- [ ] Create `defeat_screen.tscn` matching the shape of `victory_screen.tscn`
 	  (same component reuse where sensible — e.g. a shared `StatsPanel`
 	  sub-scene used by both, rather than duplicating the stat-display logic
 	  twice).

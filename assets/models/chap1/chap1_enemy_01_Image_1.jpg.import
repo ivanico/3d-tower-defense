@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0mls0221cd3k"
-path.s3tc="res://.godot/imported/chap1_enemy_02_Baked_MetallicRoughness.png-c490716dd12e69ae34e8ede859502392.s3tc.ctex"
+uid="uid://3acwaxubnyta"
+path.s3tc="res://.godot/imported/chap1_enemy_01_Image_1.jpg-f9e93442b99e8b6ae6a88f51ebc8f704.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "dd105e874572bf71c1da2202aa623ae1"
+"md5": "36d174f1b68722dc9009a433914ac390"
 }
 
 [deps]
 
-source_file="res://assets/models/chap1_enemy_02_Baked_MetallicRoughness.png"
-dest_files=["res://.godot/imported/chap1_enemy_02_Baked_MetallicRoughness.png-c490716dd12e69ae34e8ede859502392.s3tc.ctex"]
+source_file="res://assets/models/chap1/chap1_enemy_01_Image_1.jpg"
+dest_files=["res://.godot/imported/chap1_enemy_01_Image_1.jpg-f9e93442b99e8b6ae6a88f51ebc8f704.s3tc.ctex"]
 
 [params]
 

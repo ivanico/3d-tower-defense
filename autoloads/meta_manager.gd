@@ -6,7 +6,7 @@ var spell_ranks: Dictionary = {}
 var materials: int = 0
 var energy: int = Constants.MAX_ENERGY
 var premium_currency: int = 0
-var selected_tower_id: String = "default"
+var selected_tower_id: String = "ancient_tower"
 
 func _ready() -> void:
 	load_data()

@@ -111,11 +111,13 @@ res://
 │   ├── enemies/enemy_definition.gd    # base class ONLY; the .tres instances move into each enemy folder
 │   ├── spells/  (spell_definition.gd + spell_*.tres)
 │   ├── upgrades/(stat_upgrade_definition.gd + upgrade_*.tres)
-│   ├── towers/  (tower_definition.gd + tower_default.tres)
+│   ├── towers/  (tower_definition.gd + tower_ancient_tower.tres)
 │   └── chapters/(chapter_definition.gd + chapter_01.tres)
 │
 └── assets/
-    ├── models/                        # .glb stay here (NOT bundled per folder — see §3)
+    ├── models/                        # .glb stay here (NOT bundled per game_object
+    │                                   # folder — see §3), organized instead as
+    │                                   # towers/<tower_id>/ and chap<N>/ (assets.md §2)
     ├── materials/  audio/  ui/  fonts/
 ```
 
@@ -128,10 +130,15 @@ res://
 ## 3. What stays put (deliberate deviations from the reference)
 
 - **Models stay in `assets/models/`**, referenced by `model_path` in each
-  enemy's `.tres` — NOT bundled into the enemy folder. This is a 3D project; the
-  swap-a-`.glb`-without-touching-code policy (`project.md`/`assets.md`) and your
-  manual-mesh-drop workflow both depend on models staying centralized. (The
-  reference bundled `.png`s only because it was 2D sprites.)
+  enemy's `.tres` — NOT bundled into the enemy/tower scene folder. This is a
+  3D project; the swap-a-`.glb`-without-touching-code policy (`project.md`/
+  `assets.md`) and your manual-mesh-drop workflow both depend on models
+  staying centralized (as opposed to co-located next to each scene, which is
+  where `.tres` data files live). "Centralized" still means organized:
+  `assets/models/towers/<tower_id>/` per tower line, `assets/models/chap<N>/`
+  per chapter — mirrors `game_object/`'s folder-per-category grouping without
+  going all the way to folder-per-scene. (The reference bundled `.png`s
+  directly in each scene folder only because it was 2D sprites.)
 - **Spells & tower are NOT folder-per-type yet.** There's one tower
   (`tower/` folder) and the 3 v1 spells share the generic `projectile`/
   `arc_projectile`/`aoe_zone` scenes + `.tres` data — same as the reference kept
@@ -295,19 +302,24 @@ First pass, mechanical: grep `project.md`, `components.md`, `mechanics.md`,
       enemy's `.tres` — now located in its `game_object/<id>/` folder. Fix the path.
 
 **`epic_04`–`epic_08`**
-- [ ] `epic_04`: rewrite Task 04-01/04-02 to the folder pattern — `chap1_enemy_02`
-      and `chap1_boss_01` each get a `game_object/<id>/` folder (scene + script +
-      `.tres`), created by copying the `chap1_enemy_01` folder and retuning; the
-      boss scene includes `boss_heavy_attack_component` directly. Task 04-03's
-      `ChapterDefinition` now lists enemy **scenes** in its pool.
-- [ ] `epic_06`: `File:` refs to `scenes/tower/`, `scenes/enemies/` → new
-      `game_object/` paths. `model_path`/`assets/models/` refs unchanged. The
-      model-swap task now updates `model_path` inside each enemy folder's `.tres`.
-- [ ] `epic_05`/`epic_07`/`epic_08`: swap any `scenes/*` or `scripts/components/*`
-      `File:` headers; fix stale WaveManager/DraftManager "autoload" mentions.
-      Refs to the seven remaining autoloads are unchanged.
-- [ ] Sanity: no doc still contains `scenes/enemies/`, `scenes/tower/`,
-      `scenes/spells/`, `scenes/camera/`, or `scripts/components/`.
+- [x] `epic_04`: rewrote Task 04-01/04-02 to the folder pattern — `chap1_enemy_02`
+      and `chap1_boss_01` each get a `game_object/chap1/<id>/` folder (scene +
+      shared `enemy.gd` + co-located `.tres`), created by copying the
+      `chap1_enemy_01` folder and retuning; the boss scene includes
+      `boss_heavy_attack_component` directly. Task 04-03 now adds a `scene:
+      PackedScene` field to `EnemyDefinition` (option B from §4, since
+      `ChapterDefinition.enemy_pool`/`boss` were already built as
+      `EnemyDefinition`, not `PackedScene`) so `WaveManager` can resolve a
+      definition to its scene.
+- [x] `epic_06`/`epic_05`/`epic_07`: fixed stale `res://scenes/main/` refs for
+      `VictoryScreen`/`DefeatScreen`/`WorldMap`/`TowerGarage`/`SpellCodex` →
+      `res://scenes/ui/victory_screen.tscn` etc. (snake_case, moved out of
+      `scenes/main/`, which now only holds `game_world.tscn`). `model_path`/
+      `assets/models/` refs unchanged. The model-swap task still updates
+      `model_path` inside each enemy folder's `.tres`.
+- [x] Sanity: no doc still contains `scenes/enemies/`, `scenes/tower/`,
+      `scenes/spells/`, `scenes/camera/`, `scripts/components/`, or
+      `res://scenes/main/` refs to anything other than `game_world`.
 
 ---
 
@@ -352,6 +364,9 @@ file needs to know it exists — runtime lookups use the `"enemies"` group.
 - **Runtime discovery via groups** (`"tower"`, `"enemies"`), not stored paths.
 - **Cross-system events via `EventBus`**, not manager-to-manager calls.
 - **Models stay in `assets/models/`**, referenced by `model_path` in each enemy's
-  `.tres` — never bundled into the folder.
-- **IDs are authored strings in `.tres`** (`enemy_id`, …); keep the id string,
-  the `.tres` filename, and the folder name in agreement.
+  `.tres` — never bundled into the scene folder — but organized by
+  `towers/<tower_id>/` and `chap<N>/` (assets.md §2), not dumped flat.
+- **IDs are authored strings in `.tres`** (`enemy_id`, `tower_id`, …); keep
+  the id string, the `.tres` filename, and the folder name in agreement
+  (e.g. `tower_id="ancient_tower"` ↔ `tower_ancient_tower.tres` ↔
+  `assets/models/towers/ancient_tower/`).

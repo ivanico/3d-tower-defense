@@ -41,7 +41,7 @@
     state, `ResourceSaver.save()` to `user://savegame.tres`.
   - `load()`: if the file exists, `load()` it and apply fields to
     `MetaManager`'s in-memory state; if not, initialize defaults (1 owned
-    tower — `"default"` — energy 5, materials 0).
+    tower — `"ancient_tower"` — energy 5, materials 0).
   - `restore_energy(amount)`: on `load()`, also compute offline energy
     regen from `last_energy_timestamp` vs current time (one energy per
     fixed regen interval — pick a value, e.g. 20 minutes per energy, tune
@@ -87,7 +87,7 @@
       level; do not build a passive-enhancement system this epic).
 
 **Acceptance criteria**:
-- [ ] Manually setting `tower_stars["default"] = 3` and starting a run shows
+- [ ] Manually setting `tower_stars["ancient_tower"] = 3` and starting a run shows
       a tower with measurably higher base HP/damage than star 1, matching
       the formula exactly (verify the math, not just "it went up").
 
@@ -118,9 +118,9 @@
 
 ## Task 05-05 — Tower Garage Scene
 
-**File**: `res://scenes/main/TowerGarage.tscn`
+**File**: `res://scenes/ui/tower_garage.tscn`
 
-- [ ] Create `TowerGarage.tscn`: a grid/list of owned towers (v1: just the
+- [ ] Create `tower_garage.tscn`: a grid/list of owned towers (v1: just the
       one), each showing current star level, star rating (filled/empty star
       icons — placeholders fine), and an "Upgrade" button showing the
       material cost for the next star.
@@ -146,9 +146,9 @@
 
 ## Task 05-06 — Spell Codex Scene
 
-**File**: `res://scenes/main/SpellCodex.tscn`
+**File**: `res://scenes/ui/spell_codex.tscn`
 
-- [ ] Create `SpellCodex.tscn`: a list of all spells from
+- [ ] Create `spell_codex.tscn`: a list of all spells from
       `SpellRegistry.all_spells` (v1: 3 entries), each showing current rank
       and the next rank's cost.
 - [ ] Define `SPELL_RANK_COSTS` similarly to tower star costs.
@@ -164,13 +164,13 @@
 
 ## Task 05-07 — World Map Scene
 
-**File**: `res://scenes/main/WorldMap.tscn`
+**File**: `res://scenes/ui/world_map.tscn`
 
-- [ ] Create `WorldMap.tscn`: v1 shows one chapter node (`chapter_01`),
+- [ ] Create `world_map.tscn`: v1 shows one chapter node (`chapter_01`),
       tappable to start a run (spends 1 energy via
       `MetaManager.spend_energy()` — if it returns `false`, show an
       "Out of energy" message instead of starting). Include buttons/nav to
-      `TowerGarage` and `SpellCodex`.
+      `tower_garage.tscn` and `spell_codex.tscn`.
 - [ ] Build the chapter-node-grid layout to accommodate more chapters later
       (a `HBoxContainer`/`GridContainer` of node buttons, not a single
       hardcoded button) even though only one node exists at v1.
@@ -188,12 +188,12 @@
 
 ## Task 05-08 — Wire Victory/Defeat Back to World Map
 
-**File**: `res://scenes/main/VictoryScreen.gd`,
-`res://scenes/main/DefeatScreen.gd`
+**File**: `res://scenes/ui/victory_screen.gd`,
+`res://scenes/ui/defeat_screen.gd`
 
 - [ ] Replace Epic 04's stub navigation: both screens' "Return to Map"/"Map"
       buttons now call `get_tree().change_scene_to_file(
-      "res://scenes/main/WorldMap.tscn")`.
+      "res://scenes/ui/world_map.tscn")`.
 - [ ] On Victory: call `MetaManager.award_materials(amount)` with a real
       formula now (e.g. base amount + bonus for boss kill — a simple tunable
       formula, not the original design's full Chapter/Universal material

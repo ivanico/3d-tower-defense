@@ -29,7 +29,7 @@ into `Constants.gd` or the relevant `Definition` resource.
 | One spell's damage, cooldown, range, AoE radius | That spell's `.tres` in `resources/spells/` | Yes |
 | One stat upgrade's HP/damage/fire-rate bonus, stack limit | That upgrade's `.tres` in `resources/upgrades/` | Yes |
 | One enemy's HP, speed, damage, attack cooldown, XP value | That enemy's `.tres` in `resources/enemies/` | Yes |
-| The tower's base HP/damage/fire-rate/range | `tower_default.tres` (or the relevant tower's `.tres`) | Yes |
+| The tower's base HP/damage/fire-rate/range | `tower_ancient_tower.tres` (or the relevant tower's `.tres`) | Yes |
 | How fast enemies get tougher wave-to-wave | `Constants.ENEMY_HP_SCALE` / `ENEMY_DMG_SCALE` | Yes |
 | How much XP per kill, how much XP to level up, how fast that curve grows | `Constants.XP_PER_KILL_BASE` / `XP_PER_LEVEL_BASE` / `XP_LEVEL_SCALE_PER_LEVEL` | Yes |
 | A synergy tag's bonus magnitude (e.g. `[Offense]×3` damage %) | The matching constant in `Constants.gd`'s "Balance tuning constants" block (Section 2) | Yes |
@@ -119,14 +119,14 @@ res://
 │   │   └── upgrade_max_hp.tres
 │   ├── towers/
 │   │   ├── tower_definition.gd
-│   │   └── tower_default.tres
+│   │   └── tower_ancient_tower.tres
 │   ├── enemies/                    # base class only; per-enemy .tres live in each enemy folder
 │   │   └── enemy_definition.gd
 │   └── chapters/
 │       ├── chapter_definition.gd
 │       └── chapter_01.tres
 └── assets/
-    ├── models/                     # .glb from Meshy, organized per assets.md
+    ├── models/                     # .glb from Meshy: towers/<tower_id>/, chap<N>/ — see assets.md
     ├── materials/
     ├── audio/
     ├── ui/
@@ -140,7 +140,8 @@ res://
 > `class_name` would clash). For a **spell** that only differs in numbers, drop a
 > `.tres` into `resources/spells/` and reuse the generic `projectile`/`aoe_zone`
 > scenes; a spell needing *unique behavior* graduates to its own `game_object/`
-> folder. Models: drop a `.glb` into `assets/models/` and point the `.tres`
+> folder. Models: drop a `.glb` into `assets/models/chap<N>/` (enemies/arenas)
+> or `assets/models/towers/<tower_id>/` (towers) and point the `.tres`
 > `model_path` at it. The `tower` stays a single generic scene driven by
 > `TowerDefinition`; **enemies are scene-per-type** (one folder each).
 
@@ -430,7 +431,7 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
 `base_hp`, `base_damage`, `base_fire_rate`, `base_range`, `base_armor`,
 `starting_spell_id` (the base-attack spell, fired even with zero drafted
 spells), `passive_script` (optional `Script` resource implementing the
-tower's unique passive hook — see `tower_default.tres` for the v1 instance).
+tower's unique passive hook — see `tower_ancient_tower.tres` for the v1 instance).
 **One `.tres` per tower.** `tower.tscn` is generic and reads whichever
 `TowerDefinition` is assigned.
 

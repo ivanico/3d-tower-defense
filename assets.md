@@ -74,10 +74,36 @@ next to the camera rig (Epic 01 acceptance criteria covers this check).
 ## 2. Required 3D Models (v1)
 
 All models exported as `.glb` (geometry + material + skeleton + animations
-embedded in one file), placed in `res://assets/models/` with the exact
-filenames below.
+embedded in one file), placed under `res://assets/models/`, organized
+**chapter-based for enemies/arenas and tower-line-based for towers** (mirrors
+`scenes/game_object/`'s folder-per-category pattern — see the tree below).
 
-> **When each model actually gets made**: `tower_default.glb` and
+```
+res://assets/models/
+├── towers/
+│   └── ancient_tower/              # one folder per tower LINE (not per instance)
+│       └── ancient_tower_lvl1.glb  # star-level 1 model; lvl2..lvl5 land here later
+└── chap1/                          # every asset for chapter 1, flat inside this folder
+    ├── chap1_enemy_01.glb
+    ├── chap1_enemy_02.glb
+    ├── chap1_boss_01.glb            # added in Epic 04
+    └── arena_chapter_01.glb         # added in Epic 06
+```
+
+> **Why tower assets are folder-per-line, not folder-per-instance**: `Ancient
+> Tower` (the v1 tower, `tower_id="ancient_tower"`) is a **line** of 5 star
+> levels sharing one identity, each level eventually getting its own upgraded
+> model (`ancient_tower_lvl1.glb` … `ancient_tower_lvl5.glb`) — the same
+> `TowerDefinition` resource, `tower_ancient_tower.tres`, just needs its
+> `model_path` (or a future per-level model list) to pick the right file for
+> the tower's current star level. v1 ships with only `lvl1` since the model
+> only actually needs to change when the star-up UI/mechanic (Epic 05) is
+> built — nothing stops the model from being static at `lvl1` until then.
+> A future second tower (e.g. `forest_tower`) gets its own sibling folder,
+> `assets/models/towers/forest_tower/`, with its own `_lvl1..lvl5` set — same
+> pattern, no code changes to the folder convention itself.
+
+> **When each model actually gets made**: `ancient_tower_lvl1.glb` and
 > `chap1_enemy_01.glb` are needed early — Epic 02 Task 02-00 swaps them in
 > right at the start of that epic, before any combat tasks, as a single
 > rough static-pose mesh (no animation clips needed yet), specifically so
@@ -93,29 +119,33 @@ filenames below.
 ### Tower
 | File | Notes |
 |---|---|
-| `tower_default.glb` | The single v1 tower. **Base mesh needed by Epic 02** (Task 02-00, static pose is fine). Needs an `idle` animation loop and an `attack` animation (fires on every shot, can be brief — a small recoil/flash pose is enough) wired in **Epic 06**. |
+| `towers/ancient_tower/ancient_tower_lvl1.glb` | The v1 tower's star-level-1 model (only level that exists at v1). **Base mesh needed by Epic 02** (Task 02-00, static pose is fine). Needs an `idle` animation loop and an `attack` animation (fires on every shot, can be brief — a small recoil/flash pose is enough) wired in **Epic 06**. |
 
-> **Extend later by:** adding `tower_<id>.glb` + a matching `TowerDefinition`
-> `.tres` (see `components.md` Section 5). No code changes.
+> **Extend later by:** adding `towers/<tower_id>/<tower_id>_lvl<N>.glb` files
+> + a matching `TowerDefinition` `.tres` (see `components.md` Section 5). No
+> code changes to add a new tower line; wiring per-star-level model swaps is
+> a small Epic 05 (Tower Garage) task, not a v1 requirement.
 
 ### Enemies (Chapter 1)
 | File | Notes |
 |---|---|
-| `chap1_enemy_01.glb` | Baseline ground enemy. **Base mesh needed by Epic 02** (Task 02-00). Needs `walk`, `attack`, `death` animations wired in **Epic 06**. |
-| `chap1_enemy_02.glb` | Fast/small variant. Needed by **Epic 04** (when this enemy type is actually built). Same animation set as `chap1_enemy_01` (can reuse the same animation clips retargeted, or have its own — either is fine, the `EnemyDefinition` resource just points at this file). |
-| `chap1_boss_01.glb` | Chapter boss. **Base mesh needed by Epic 04** (when the boss is built). Needs `walk`, `attack`, a distinct heavier `attack_heavy` (the boss's one v1-simple special move), and `death` — animations wired in **Epic 06** like every other model. Significantly larger scale per the table above. |
+| `chap1/chap1_enemy_01.glb` | Baseline ground enemy. **Base mesh needed by Epic 02** (Task 02-00). Needs `walk`, `attack`, `death` animations wired in **Epic 06**. |
+| `chap1/chap1_enemy_02.glb` | Fast/small variant. Needed by **Epic 04** (when this enemy type is actually built). Same animation set as `chap1_enemy_01` (can reuse the same animation clips retargeted, or have its own — either is fine, the `EnemyDefinition` resource just points at this file). |
+| `chap1/chap1_boss_01.glb` | Chapter boss. **Base mesh needed by Epic 04** (when the boss is built). Needs `walk`, `attack`, a distinct heavier `attack_heavy` (the boss's one v1-simple special move), and `death` — animations wired in **Epic 06** like every other model. Significantly larger scale per the table above. |
 
-> **Extend later by:** `chap2_enemy_01.glb`, `chap1_enemy_03.glb`, etc., plus
-> a matching `EnemyDefinition` `.tres`. The flyer-type hook
-> (`hold_height` field) exists in the data already — when a flying enemy is
-> actually added, it just needs a model + that one field set.
+> **Extend later by:** `chap2/chap2_enemy_01.glb`, `chap1/chap1_enemy_03.glb`,
+> etc. (new chapter → new sibling folder under `assets/models/`), plus a
+> matching `EnemyDefinition` `.tres`. The flyer-type hook (`hold_height`
+> field) exists in the data already — when a flying enemy is actually added,
+> it just needs a model + that one field set.
 
 ### Arena
 | File | Notes |
 |---|---|
-| `arena_chapter_01.glb` | Ground plane + simple border/fence geometry. Flat, walkable, sized per the scale table above. Visual theme (grass/stone/whatever) is your call — not specified here since it's a creative choice, not a technical requirement. |
+| `chap1/arena_chapter_01.glb` | Ground plane + simple border/fence geometry. Flat, walkable, sized per the scale table above. Visual theme (grass/stone/whatever) is your call — not specified here since it's a creative choice, not a technical requirement. |
 
-> **Extend later by:** `arena_chapter_02.glb`, etc.
+> **Extend later by:** `chap2/arena_chapter_02.glb`, etc. — grouped with the
+> rest of that chapter's assets.
 
 ---
 

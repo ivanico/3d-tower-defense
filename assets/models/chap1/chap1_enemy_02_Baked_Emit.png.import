@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1pw0s4yo0one"
-path.s3tc="res://.godot/imported/tower_default_Image_1.jpg-53d8a53650cf5d8d54724faa92cd55da.s3tc.ctex"
+uid="uid://d0bm2ikoa253i"
+path.s3tc="res://.godot/imported/chap1_enemy_02_Baked_Emit.png-77b79766548b75a0f8b72fdc773de8f6.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "93ba69194089f8768b1acd6b85b2a757"
+"md5": "b377cc6fa60078abd8816c9741f9e8e4"
 }
 
 [deps]
 
-source_file="res://assets/models/tower_default_Image_1.jpg"
-dest_files=["res://.godot/imported/tower_default_Image_1.jpg-53d8a53650cf5d8d54724faa92cd55da.s3tc.ctex"]
+source_file="res://assets/models/chap1/chap1_enemy_02_Baked_Emit.png"
+dest_files=["res://.godot/imported/chap1_enemy_02_Baked_Emit.png-77b79766548b75a0f8b72fdc773de8f6.s3tc.ctex"]
 
 [params]
 

@@ -240,7 +240,7 @@ defined now so the "tower has personality" hook exists from day one.
 
 | Tower | Base Attack | Passive |
 |-------|-------------|---------|
-| Default Tower | Single targeted Normal bolt | Every 5th shot fires in a small burst (3-way spread) instead of one bolt |
+| Ancient Tower (`tower_id="ancient_tower"`) | Single targeted Normal bolt | Every 5th shot fires in a small burst (3-way spread) instead of one bolt |
 
 > **Extend later by:** adding a new `TowerDefinition` resource + a new `.glb`
 > model + (optionally) a passive override script. See `components.md` Section
@@ -317,7 +317,9 @@ res://
 │   ├── waves/
 │   └── chapters/
 └── assets/
-    ├── models/             # .glb files from Meshy
+    ├── models/             # .glb files from Meshy, organized per assets.md:
+    │   ├── towers/<tower_id>/<tower_id>_lvl<N>.glb   # one folder per tower LINE
+    │   └── chap<N>/        # every enemy/boss/arena model for that chapter
     ├── materials/
     ├── audio/
     ├── ui/

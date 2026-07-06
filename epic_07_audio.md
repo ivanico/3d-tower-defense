@@ -114,8 +114,8 @@ Replace the Epic 01 stub:
 
 ## Task 07-05 — UI SFX
 
-**File**: `res://scenes/main/WorldMap.gd`, `TowerGarage.gd`,
-`SpellCodex.gd`, `DraftCard.gd`
+**File**: `res://scenes/ui/world_map.gd`, `tower_garage.gd`,
+`spell_codex.gd`, `draft_card.gd`
 
 - [ ] Every `Button.pressed` across WorldMap/Garage/Codex →
       `AudioManager.play_sfx("sfx_ui_button.wav")`.

@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b5ebs6a4enadi"
-path.s3tc="res://.godot/imported/chap1_enemy_01_normal.png-9d53636293aec1c54feac7631d297f4a.s3tc.ctex"
+uid="uid://cql6vjmo5jo46"
+path.s3tc="res://.godot/imported/ancient_tower_lvl1_normal.png-a3bf5e1a71e498bef5ad6917f8908b2c.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "3a99db236804d2030f5f49af96aa7208"
+"md5": "e438b36da85b55fd7f376d9d3a31e83f"
 }
 
 [deps]
 
-source_file="res://assets/models/chap1_enemy_01_normal.png"
-dest_files=["res://.godot/imported/chap1_enemy_01_normal.png-9d53636293aec1c54feac7631d297f4a.s3tc.ctex"]
+source_file="res://assets/models/towers/ancient_tower/ancient_tower_lvl1_normal.png"
+dest_files=["res://.godot/imported/ancient_tower_lvl1_normal.png-a3bf5e1a71e498bef5ad6917f8908b2c.s3tc.ctex"]
 
 [params]
 
@@ -28,7 +28,7 @@ compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=1
-roughness/src_normal="res://assets/models/chap1_enemy_01_normal.png"
+roughness/src_normal="res://assets/models/towers/ancient_tower/ancient_tower_lvl1_normal.png"
 process/fix_alpha_border=true
 process/premult_alpha=false
 process/normal_map_invert_y=false

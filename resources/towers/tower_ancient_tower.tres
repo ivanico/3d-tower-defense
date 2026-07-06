@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1")
-tower_id = "default"
-tower_name = "Default Tower"
+tower_id = "ancient_tower"
+tower_name = "Ancient Tower"
 model_path = ""
 base_hp = 1000.0
 base_damage = 20.0

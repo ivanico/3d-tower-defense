@@ -1,7 +1,7 @@
 [gd_scene load_steps=16 format=4 uid="uid://bi7ljtbkxbhst"]
 
-[ext_resource type="PackedScene" uid="uid://uh1d8u0fgkf8" path="res://assets/models/chap1_enemy_01.glb" id="2_vtlqb"]
-[ext_resource type="Texture2D" uid="uid://6axgplbvb8ks" path="res://assets/models/chap1_enemy_01_texture.png" id="3_24b6r"]
+[ext_resource type="PackedScene" uid="uid://uh1d8u0fgkf8" path="res://assets/models/chap1/chap1_enemy_01.glb" id="2_vtlqb"]
+[ext_resource type="Texture2D" uid="uid://6axgplbvb8ks" path="res://assets/models/chap1/chap1_enemy_01_texture.png" id="3_24b6r"]
 [ext_resource type="PackedScene" uid="uid://cxjfi50df3rsr" path="res://scenes/component/death_fx_component.tscn" id="Comp_death"]
 [ext_resource type="PackedScene" path="res://scenes/component/hit_flash_component.tscn" id="Comp_flash"]
 [ext_resource type="PackedScene" path="res://scenes/component/health_component.tscn" id="Comp_health"]

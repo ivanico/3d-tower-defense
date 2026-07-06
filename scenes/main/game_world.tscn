@@ -4,7 +4,7 @@
 [ext_resource type="Shader" uid="uid://dqimpf6txxhdt" path="res://scenes/main/ground_checker.gdshader" id="3_cpkm4"]
 [ext_resource type="Script" uid="uid://yejoif6ma0ec" path="res://scenes/main/game_world.gd" id="4"]
 [ext_resource type="PackedScene" uid="uid://cwvht84pug1qp" path="res://scenes/game_object/tower/tower.tscn" id="5"]
-[ext_resource type="Resource" path="res://resources/towers/tower_default.tres" id="6"]
+[ext_resource type="Resource" path="res://resources/towers/tower_ancient_tower.tres" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/ui/draft_ui.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/ui/synergy_banner.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/tag_row_widget.tscn" id="9"]
