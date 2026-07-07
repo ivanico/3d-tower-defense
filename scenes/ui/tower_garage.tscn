@@ -1,0 +1,49 @@
+[gd_scene load_steps=2 format=3 uid="uid://tiggx5dhb7uj"]
+
+[ext_resource type="Script" uid="uid://bn6xf3kg1jeno" path="res://scenes/ui/tower_garage.gd" id="1"]
+
+[node name="TowerGarage" type="CanvasLayer"]
+layer = 20
+script = ExtResource("1")
+
+[node name="BG" type="ColorRect" parent="."]
+offset_right = 1080.0
+offset_bottom = 1920.0
+color = Color(0.08, 0.08, 0.1, 1)
+
+[node name="TitleLabel" type="Label" parent="."]
+offset_left = 140.0
+offset_top = 120.0
+offset_right = 940.0
+offset_bottom = 220.0
+theme_override_font_sizes/font_size = 56
+text = "Tower Garage"
+horizontal_alignment = 1
+
+[node name="MaterialsLabel" type="Label" parent="."]
+offset_left = 140.0
+offset_top = 220.0
+offset_right = 940.0
+offset_bottom = 280.0
+theme_override_font_sizes/font_size = 28
+text = "Materials: 0"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+offset_left = 60.0
+offset_top = 320.0
+offset_right = 1020.0
+offset_bottom = 1800.0
+
+[node name="TowerList" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 24
+
+[node name="BackButton" type="Button" parent="."]
+offset_left = 340.0
+offset_top = 1820.0
+offset_right = 740.0
+offset_bottom = 1890.0
+theme_override_font_sizes/font_size = 28
+text = "Back to Map"

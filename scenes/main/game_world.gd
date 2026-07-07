@@ -11,6 +11,8 @@ func _ready() -> void:
 	$EnemyContainer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	$ProjectileContainer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	$Tower.process_mode = Node.PROCESS_MODE_PAUSABLE
+	if GameState.pending_chapter_def != null:
+		wave_manager.chapter = GameState.pending_chapter_def
 	wave_manager._enemy_container = $EnemyContainer
 	wave_manager.start_wave(1)
 	EventBus.wave_cleared.connect(_on_wave_cleared)

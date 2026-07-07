@@ -8,7 +8,7 @@ var _radius: float = 1.0
 
 func initialize(pos: Vector3, radius: float, spell: SpellDefinition) -> void:
 	global_position = pos
-	damage = spell.damage * GameState.tower_damage_multiplier * GameState.offense_damage_mult
+	damage = spell.damage * GameState.tower_damage_multiplier * GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(spell.spell_id)
 	damage_type = spell.damage_type
 	_radius = radius
 	mesh_instance.scale = Vector3(radius, 1.0, radius)

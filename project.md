@@ -331,3 +331,35 @@ Full asset list: see `assets.md`.
 Full mechanic descriptions: see `mechanics.md`.
 Full build plan: see `epic_01_foundation.md` through `epic_08_polish.md`.
 Godot/GDScript implementation patterns for Claude Code: see `skills/`.
+
+---
+
+## Save Data — Temporary Local-Only Approach (Epic 05)
+
+The `SaveData` resource / `MetaManager.save()`/`load()` local-file approach
+built in Epic 05 (`user://savegame.tres`) is a **v1-only, temporary**
+solution. It is fine for now because v1 is purely offline single-player, but
+it is **not** how a shipped live-service mobile game persists progression,
+and it is **not safe once PVP or any other cross-player system exists** — a
+local save file is plaintext-editable by anyone with device file access, so
+a client-trusted save becomes a fairness problem the moment players compete
+against each other.
+
+**What Archero actually does, for reference:**
+- Local save for speed/offline play, but treated as a **cache, not the
+  source of truth**.
+- Cloud save via Google Play Games Services / Game Center, synced to a
+  backend server.
+- For anything that touches other players (Archero's Arena is asynchronous
+  ghost-battle PVP, and it has trading/events), **the server validates the
+  numbers, not the client**. The app tells the server "I won a run, here's
+  the replay/result," and the server decides how many materials/rank points
+  that's worth — it doesn't just trust whatever the local save file says.
+
+**Extend later by:** once PVP (or any other cross-player feature) is
+scoped, add a server-authority layer on top of the existing local
+`SaveData` — the client sends run-completion *events*, a backend
+(Firebase/PlayFab/Supabase/custom) computes and writes the authoritative
+rewards, and the local save becomes an offline cache reconciled against the
+server. This does not require redesigning `SaveData` itself, just adding
+the server as the source of truth above it.

@@ -53,5 +53,21 @@ const WAVE_FAST_ENEMY_MIN_WAVE:          int   = 5
 const WAVE_BASIC_ENEMY_WEIGHT:           int   = 70
 const WAVE_FAST_ENEMY_WEIGHT:            int   = 30
 
-# Victory rewards (Epic 04) — stub flat amount, real formula is Epic 05
-const VICTORY_MATERIALS_REWARD:          int   = 100
+# Run-end material rewards (Epic 05) — checkpoint tiers keyed by
+# GameState.waves_cleared (waves *fully* cleared, not just reached — dying
+# mid-wave, including mid-boss-fight, does not count that wave). Reward only
+# increases at each checkpoint; the top tier is only reachable by clearing
+# the boss wave (i.e. an actual victory), never by reaching it and dying.
+# TODO: this is tuned for the current 12-wave chapter (checkpoint every 3
+# waves). Once the chapter grows (planned: wave 10 mini-boss + wave 20 final
+# boss), update both arrays to match, e.g. checkpoints [5, 10, 15, 20].
+const MATERIAL_CHECKPOINT_WAVES:   Array[int] = [3, 6, 9, 12]
+const MATERIAL_CHECKPOINT_REWARDS: Array[int] = [50, 100, 150, 220]
+
+# Energy regen (Epic 05) — tunable
+const ENERGY_REGEN_INTERVAL_SEC:         float = 1200.0  # 20 min per energy point
+
+# Tower star / spell rank upgrade costs (Epic 05) — index by current level to
+# get the cost of upgrading to the next level; index 0 is unused (no level 0)
+const TOWER_STAR_COSTS:  Array[int] = [0, 100, 250, 500, 1000]
+const SPELL_RANK_COSTS:  Array[int] = [0, 80, 200, 400, 800]

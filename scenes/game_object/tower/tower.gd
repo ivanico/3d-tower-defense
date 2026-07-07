@@ -15,6 +15,8 @@ var _shot_count: int = 0
 
 func _ready() -> void:
 	add_to_group("tower")
+	if GameState.pending_tower_def != null:
+		definition = GameState.pending_tower_def
 	if definition == null:
 		return
 	health.max_health = definition.base_hp
@@ -35,6 +37,7 @@ func _add_spell(spell: SpellDefinition) -> void:
 		return
 	_active_spells.append(spell)
 	_spell_timers[spell.spell_id] = 0.0
+	GameState.register_spell_rank(spell.spell_id)
 
 func _physics_process(delta: float) -> void:
 	for spell in _active_spells:

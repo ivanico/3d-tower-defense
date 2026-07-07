@@ -24,7 +24,7 @@ text = "Victory!"
 offset_left = 140.0
 offset_top = 780.0
 offset_right = 940.0
-offset_bottom = 1050.0
+offset_bottom = 1090.0
 theme_override_constants/separation = 16
 
 [node name="WavesLabel" type="Label" parent="StatsPanel"]
@@ -41,6 +41,11 @@ text = "Kills: 0"
 theme_override_font_sizes/font_size = 32
 horizontal_alignment = 1
 text = "Time: 0:00"
+
+[node name="MaterialsLabel" type="Label" parent="StatsPanel"]
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+text = "Materials Earned: 0"
 
 [node name="ContinueButton" type="Button" parent="."]
 offset_left = 340.0

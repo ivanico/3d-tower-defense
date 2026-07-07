@@ -14,7 +14,7 @@ func _ready() -> void:
 
 func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition) -> void:
 	global_position = start_pos
-	damage = spell.damage * GameState.tower_damage_multiplier * GameState.offense_damage_mult
+	damage = spell.damage * GameState.tower_damage_multiplier * GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(spell.spell_id)
 	damage_type = spell.damage_type
 	pierce_count = spell.pierce_count
 	_direction = (target_pos - start_pos).normalized()

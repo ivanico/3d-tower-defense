@@ -1,5 +1,11 @@
 extends Node
 
+# Set by WorldMap before change_scene_to_file(game_world.tscn); read by
+# Tower/GameWorld _ready() as an override for their scene-baked defaults.
+# Left null when game_world.tscn is run standalone (e.g. F6 in the editor).
+var pending_tower_def: TowerDefinition = null
+var pending_chapter_def: ChapterDefinition = null
+
 # Run state
 var phase: int = Constants.GamePhase.WAVE
 var wave_number: int = 1
@@ -14,9 +20,11 @@ var tower_damage_multiplier: float = 1.0
 var tower_fire_rate_multiplier: float = 1.0
 var tower_range: float = 8.0
 var tower_regen_per_sec: float = 0.0
+var tower_star_level: int = 1  # hook for star 3/5 passive enhancements — [LATER]
 
 # Active spells drafted this run
 var active_spells: Array = []
+var spell_rank_multipliers: Dictionary = {}
 
 # Synergy tag counts and active bonuses
 var tag_counts: Dictionary = {}
@@ -58,9 +66,10 @@ func _on_regen_tick() -> void:
 func start_run(tower_def) -> void:
 	reset()
 	if tower_def != null:
-		tower_max_hp = tower_def.base_hp
+		tower_star_level = MetaManager.tower_stars.get(tower_def.tower_id, 1)
+		tower_max_hp = CombatUtils.calculate_star_scaled_value(tower_def.base_hp, tower_star_level)
 		tower_hp = tower_max_hp
-		tower_damage_multiplier = 1.0
+		tower_damage_multiplier = CombatUtils.calculate_star_scaled_value(1.0, tower_star_level)
 		tower_fire_rate_multiplier = 1.0
 		tower_range = tower_def.base_range
 	run_start_time = Time.get_ticks_msec() / 1000.0
@@ -104,7 +113,9 @@ func add_tag(tag: int) -> void:
 func apply_card(card: Resource) -> void:
 	if card is SpellDefinition:
 		if card.spell_category == Constants.SpellCategory.PASSIVE:
-			armor_damage_reduction = clamp(armor_damage_reduction + card.passive_value, 0.0, 0.9)
+			var rank: int = MetaManager.spell_ranks.get(card.spell_id, 1)
+			var scaled_value: float = CombatUtils.calculate_rank_scaled_value(card.passive_value, rank)
+			armor_damage_reduction = clamp(armor_damage_reduction + scaled_value, 0.0, 0.9)
 			for tag in card.tags:
 				add_tag(tag)
 		elif active_spells.size() < Constants.MAX_SPELL_SLOTS:
@@ -122,6 +133,13 @@ func apply_card(card: Resource) -> void:
 		for tag in card.tags:
 			add_tag(tag)
 		hp_changed.emit(tower_hp, tower_max_hp)
+
+func register_spell_rank(spell_id: String) -> void:
+	var rank: int = MetaManager.spell_ranks.get(spell_id, 1)
+	spell_rank_multipliers[spell_id] = CombatUtils.calculate_rank_scaled_value(1.0, rank)
+
+func get_spell_damage_multiplier(spell_id: String) -> float:
+	return spell_rank_multipliers.get(spell_id, 1.0)
 
 func end_run(victory: bool) -> void:
 	phase = Constants.GamePhase.VICTORY if victory else Constants.GamePhase.DEFEAT
@@ -141,7 +159,9 @@ func reset() -> void:
 	tower_fire_rate_multiplier = 1.0
 	tower_range = 8.0
 	tower_regen_per_sec = 0.0
+	tower_star_level = 1
 	active_spells = []
+	spell_rank_multipliers = {}
 	tag_counts = {}
 	offense_damage_mult = 1.0
 	offense_bonus_shot_active = false
