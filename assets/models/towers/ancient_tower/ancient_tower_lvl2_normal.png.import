@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://crgss8ju0mywc"
+path.s3tc="res://.godot/imported/ancient_tower_lvl2_normal.png-c7a0be33565f57a92eb6975f820d7306.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "94d951de9384db1f286c29a33bc8c8f3"
+}
+
+[deps]
+
+source_file="res://assets/models/towers/ancient_tower/ancient_tower_lvl2_normal.png"
+dest_files=["res://.godot/imported/ancient_tower_lvl2_normal.png-c7a0be33565f57a92eb6975f820d7306.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=1
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=1
+roughness/src_normal="res://assets/models/towers/ancient_tower/ancient_tower_lvl2_normal.png"
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0
