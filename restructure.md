@@ -115,10 +115,10 @@ res://
 │   └── chapters/(chapter_definition.gd + chapter_01.tres)
 │
 └── assets/
-    ├── models/                        # .glb stay here (NOT bundled per game_object
-    │                                   # folder — see §3), organized instead as
-    │                                   # towers/<tower_id>/ and chap<N>/ (assets.md §2)
-    ├── materials/  audio/  ui/  fonts/
+	├── models/                        # .glb stay here (NOT bundled per game_object
+	│                                   # folder — see §3), organized instead as
+	│                                   # towers/<tower_id>/ and chap<N>/ (assets.md §2)
+	├── materials/  audio/  ui/  fonts/
 ```
 
 > **Enemies now = folders under `game_object/`.** The generic `Enemy.tscn` is
@@ -156,53 +156,53 @@ This is the heart of the change. Do it carefully; it's where behavior could
 drift if wired wrong.
 
 - [ ] **One scene per enemy type.** For each existing enemy (`chap1_enemy_01`;
-      `chap1_enemy_02`/`chap1_boss_01` are Epic 04), create
-      `game_object/<id>/<id>.tscn`. The fastest correct way: take the current
-      generic `Enemy.tscn` node tree (root `CharacterBody3D` in group
-      `"enemies"` + its instanced component scenes) and save one copy per type.
-      Each copy is structurally identical; they differ only in tuning + which
-      `.tres`/model they use.
+	  `chap1_enemy_02`/`chap1_boss_01` are Epic 04), create
+	  `game_object/<id>/<id>.tscn`. The fastest correct way: take the current
+	  generic `Enemy.tscn` node tree (root `CharacterBody3D` in group
+	  `"enemies"` + its instanced component scenes) and save one copy per type.
+	  Each copy is structurally identical; they differ only in tuning + which
+	  `.tres`/model they use.
 - [ ] **Script.** Behavior is the same for all regular enemies, so they can
-      **share one `enemy.gd`** (each scene's root just attaches the same script),
-      OR get a thin per-folder script like the reference. Sharing avoids
-      duplicated logic; pick one and be consistent. The boss's scene gets the
-      extra `boss_heavy_attack_component` (as a component scene) attached
-      directly — no more runtime `if is_boss` add; the boss simply has it.
+	  **share one `enemy.gd`** (each scene's root just attaches the same script),
+	  OR get a thin per-folder script like the reference. Sharing avoids
+	  duplicated logic; pick one and be consistent. The boss's scene gets the
+	  extra `boss_heavy_attack_component` (as a component scene) attached
+	  directly — no more runtime `if is_boss` add; the boss simply has it.
 - [ ] **Stats via co-located `.tres`.** Move each `chap1_enemy_*.tres` into its
-      folder. The enemy scene exposes `@export var definition: EnemyDefinition`
-      set (in the `.tscn`) to its co-located `.tres`; `enemy.gd` applies it on
-      spawn exactly as today. Damage/scaling/xp math is untouched → mechanics
-      identical.
+	  folder. The enemy scene exposes `@export var definition: EnemyDefinition`
+	  set (in the `.tscn`) to its co-located `.tres`; `enemy.gd` applies it on
+	  spawn exactly as today. Damage/scaling/xp math is untouched → mechanics
+	  identical.
 - [ ] **Spawning picks scenes, not a shared scene + data.** Update the spawn
-      path so the wave system instances the *correct enemy scene*:
+	  path so the wave system instances the *correct enemy scene*:
   - `ChapterDefinition.enemy_pool` becomes an `Array[PackedScene]` of enemy
-    scenes (or: keep it `Array[EnemyDefinition]` and add a `scene: PackedScene`
-    field to `EnemyDefinition` pointing at that enemy's own scene — either works;
-    the scene-array is simpler and closer to the reference).
+	scenes (or: keep it `Array[EnemyDefinition]` and add a `scene: PackedScene`
+	field to `EnemyDefinition` pointing at that enemy's own scene — either works;
+	the scene-array is simpler and closer to the reference).
   - `WaveManager` (now a manager Node, §5) picks a scene from the weighted table
-    (`enemy_table.pick_item()`) and `scene.instantiate()`s it — a fresh instance
-    that is `queue_free()`d on death (see below) — instead of re-applying a
-    `.tres` to one shared scene. Keep the current **wave-batch cadence** (spawn
-    N per wave → clear → draft → next wave); only *which* scene each spawn
-    instantiates changes. Take the reference's `WeightedTable` + `instantiate()`
-    (no pooling) — but NOT its continuous per-timer stream; this game stays
-    wave-based.
+	(`enemy_table.pick_item()`) and `scene.instantiate()`s it — a fresh instance
+	that is `queue_free()`d on death (see below) — instead of re-applying a
+	`.tres` to one shared scene. Keep the current **wave-batch cadence** (spawn
+	N per wave → clear → draft → next wave); only *which* scene each spawn
+	instantiates changes. Take the reference's `WeightedTable` + `instantiate()`
+	(no pooling) — but NOT its continuous per-timer stream; this game stays
+	wave-based.
   - Register enemy scenes into the wave's weighted pool with
-    `weighted_table.gd`, the same helper the reference used — matching its
-    "manual `add_item(scene, weight)`" pattern, gated by wave (difficulty
-    gating is later epic work, not this restructure).
+	`weighted_table.gd`, the same helper the reference used — matching its
+	"manual `add_item(scene, weight)`" pattern, gated by wave (difficulty
+	gating is later epic work, not this restructure).
 - [ ] **Enemies are NOT pooled — they `queue_free()` on death**, using the
-      **existing `DeathFXComponent`** (relocated to `scenes/component/` in
-      Phase 4): on `HealthComponent.died` it runs its shrink tween, then
-      `get_parent().queue_free()` — kept exactly as today. Each wave spawns fresh
-      instances via `scene.instantiate()`. Do NOT convert enemies to
-      `ObjectPool`/`reset()` reuse. `ObjectPool` stays for projectiles and other
-      reusable objects (keyed by `PackedScene.resource_path`); it just isn't used
-      for enemies.
+	  **existing `DeathFXComponent`** (relocated to `scenes/component/` in
+	  Phase 4): on `HealthComponent.died` it runs its shrink tween, then
+	  `get_parent().queue_free()` — kept exactly as today. Each wave spawns fresh
+	  instances via `scene.instantiate()`. Do NOT convert enemies to
+	  `ObjectPool`/`reset()` reuse. `ObjectPool` stays for projectiles and other
+	  reusable objects (keyed by `PackedScene.resource_path`); it just isn't used
+	  for enemies.
 - [ ] **Verify (critical):** side-by-side, each enemy type spawns, moves, takes
-      damage, dies (and `queue_free()`s), and awards XP exactly as before. Wave
-      scaling still multiplies stats the same way. Enemies `queue_free()` on
-      death — they are not pooled.
+	  damage, dies (and `queue_free()`s), and awards XP exactly as before. Wave
+	  scaling still multiplies stats the same way. Enemies `queue_free()` on
+	  death — they are not pooled.
 
 ---
 
@@ -244,30 +244,30 @@ references. Autoload-file renames touch only `project.godot`'s autoload paths.
 > per phase.
 
 - [ ] **Phase 0 — Prep.** Branch. Confirm the game builds/plays on `main` as the
-      known-good baseline; note current behavior (waves reached, draft, boss,
-      win/lose) as the comparison target. Move `.uid`/`.import` sidecars with
-      their files or let Godot regenerate them.
+	  known-good baseline; note current behavior (waves reached, draft, boss,
+	  win/lose) as the comparison target. Move `.uid`/`.import` sidecars with
+	  their files or let Godot regenerate them.
 - [ ] **Phase 1 — Skeleton.** Create `scenes/game_object/`, `scenes/component/`,
-      `scenes/manager/`; flatten `scripts/utils/` into `scripts/`.
+	  `scenes/manager/`; flatten `scripts/utils/` into `scripts/`.
 - [ ] **Phase 2 — Move the singular scenes** (tower, projectile, arc_projectile,
-      aoe_zone, camera_rig) into their `game_object/<name>/` folders (snake_case,
-      node names unchanged). Fix all `preload`/`load`/`ExtResource` paths. Verify.
+	  aoe_zone, camera_rig) into their `game_object/<name>/` folders (snake_case,
+	  node names unchanged). Fix all `preload`/`load`/`ExtResource` paths. Verify.
 - [ ] **Phase 3 — Screens & UI → `scenes/ui/`** (snake_case); helpers → flat
-      `scripts/`. Fix `change_scene_to_file` and instancing paths. Verify.
+	  `scripts/`. Fix `change_scene_to_file` and instancing paths. Verify.
 - [ ] **Phase 4 — Componentize** (scripts → component scenes). Highest risk;
-      test each component's behavior explicitly. Separable — if it stalls, the
-      game still works after Phases 1–3. Verify.
+	  test each component's behavior explicitly. Separable — if it stalls, the
+	  game still works after Phases 1–3. Verify.
 - [ ] **Phase 5 — Enemy rearchitecture** (§4): generic enemy → per-type scenes,
-      co-located `.tres`, scene-picking spawn path, boss component attached to
-      the boss scene. This is the big one. Verify each enemy type thoroughly.
+	  co-located `.tres`, scene-picking spawn path, boss component attached to
+	  the boss scene. This is the big one. Verify each enemy type thoroughly.
 - [ ] **Phase 6 — Move `WaveManager`/`DraftManager`** into `scenes/manager/` as
-      `GameWorld` children; drop from autoloads; convert their call sites. Verify
-      spawning, draft triggers, boss wave, win/lose.
+	  `GameWorld` children; drop from autoloads; convert their call sites. Verify
+	  spawning, draft triggers, boss wave, win/lose.
 - [ ] **Phase 7 — (optional) snake_case the autoload files** (project.godot paths
-      only; singleton names unchanged → no code edits).
+	  only; singleton names unchanged → no code edits).
 - [ ] **Phase 8 — Sync the docs** (§7 below), against the real finished tree.
 - [ ] **Phase 9 — Full regression** vs. the Phase 0 baseline: same waves, draft,
-      boss, screens, numbers. Any difference = a restructure bug; fix it.
+	  boss, screens, numbers. Any difference = a restructure bug; fix it.
 
 ---
 
@@ -282,44 +282,44 @@ First pass, mechanical: grep `project.md`, `components.md`, `mechanics.md`,
 
 **`project.md`**
 - [ ] Autoloads list: remove WaveManager & DraftManager; note they're run-scoped
-      manager Nodes under `game_world.tscn`; renumber the rest.
+	  manager Nodes under `game_world.tscn`; renumber the rest.
 - [ ] Folder Structure block → new tree (per-enemy folders under `game_object/`,
-      `component/`, `manager/`, flat `scripts/`). Keep the models-stay note.
+	  `component/`, `manager/`, flat `scripts/`). Keep the models-stay note.
 - [ ] Update any "generic `Enemy.tscn`, one scene many `.tres`" wording → the
-      new "one scene+folder per enemy type, co-located `.tres`" description.
+	  new "one scene+folder per enemy type, co-located `.tres`" description.
 
 **`components.md`** (most edits here)
 - [ ] Section 1 tree → new tree.
 - [ ] Section 3: move WaveManager/DraftManager into a new "Managers
-      (`scenes/manager/`)" subsection; drop their autoload-order lines; renumber.
+	  (`scenes/manager/`)" subsection; drop their autoload-order lines; renumber.
 - [ ] Section 4 header → `Components (scenes/component/)`; note components are now
-      instanced component scenes.
+	  instanced component scenes.
 - [ ] Section 6 "Key Scenes": rewrite the `Enemy.tscn` entry from "single generic
-      scene" to "one scene per enemy type under `game_object/<id>/`, each with a
-      co-located `.tres`"; update the "Extend later by" note (adding an enemy =
-      copy a folder + its `.tres`, not just drop a `.tres`).
+	  scene" to "one scene per enemy type under `game_object/<id>/`, each with a
+	  co-located `.tres`"; update the "Extend later by" note (adding an enemy =
+	  copy a folder + its `.tres`, not just drop a `.tres`).
 - [ ] Section 0 cheat-sheet: the "one enemy's stats" row still points at that
-      enemy's `.tres` — now located in its `game_object/<id>/` folder. Fix the path.
+	  enemy's `.tres` — now located in its `game_object/<id>/` folder. Fix the path.
 
 **`epic_04`–`epic_08`**
 - [x] `epic_04`: rewrote Task 04-01/04-02 to the folder pattern — `chap1_enemy_02`
-      and `chap1_boss_01` each get a `game_object/chap1/<id>/` folder (scene +
-      shared `enemy.gd` + co-located `.tres`), created by copying the
-      `chap1_enemy_01` folder and retuning; the boss scene includes
-      `boss_heavy_attack_component` directly. Task 04-03 now adds a `scene:
-      PackedScene` field to `EnemyDefinition` (option B from §4, since
-      `ChapterDefinition.enemy_pool`/`boss` were already built as
-      `EnemyDefinition`, not `PackedScene`) so `WaveManager` can resolve a
-      definition to its scene.
+	  and `chap1_boss_01` each get a `game_object/chap1/<id>/` folder (scene +
+	  shared `enemy.gd` + co-located `.tres`), created by copying the
+	  `chap1_enemy_01` folder and retuning; the boss scene includes
+	  `boss_heavy_attack_component` directly. Task 04-03 now adds a `scene:
+	  PackedScene` field to `EnemyDefinition` (option B from §4, since
+	  `ChapterDefinition.enemy_pool`/`boss` were already built as
+	  `EnemyDefinition`, not `PackedScene`) so `WaveManager` can resolve a
+	  definition to its scene.
 - [x] `epic_06`/`epic_05`/`epic_07`: fixed stale `res://scenes/main/` refs for
-      `VictoryScreen`/`DefeatScreen`/`WorldMap`/`TowerGarage`/`SpellCodex` →
-      `res://scenes/ui/victory_screen.tscn` etc. (snake_case, moved out of
-      `scenes/main/`, which now only holds `game_world.tscn`). `model_path`/
-      `assets/models/` refs unchanged. The model-swap task still updates
-      `model_path` inside each enemy folder's `.tres`.
+	  `VictoryScreen`/`DefeatScreen`/`WorldMap`/`TowerGarage`/`SpellCodex` →
+	  `res://scenes/ui/victory_screen.tscn` etc. (snake_case, moved out of
+	  `scenes/main/`, which now only holds `game_world.tscn`). `model_path`/
+	  `assets/models/` refs unchanged. The model-swap task still updates
+	  `model_path` inside each enemy folder's `.tres`.
 - [x] Sanity: no doc still contains `scenes/enemies/`, `scenes/tower/`,
-      `scenes/spells/`, `scenes/camera/`, `scripts/components/`, or
-      `res://scenes/main/` refs to anything other than `game_world`.
+	  `scenes/spells/`, `scenes/camera/`, `scripts/components/`, or
+	  `res://scenes/main/` refs to anything other than `game_world`.
 
 ---
 
