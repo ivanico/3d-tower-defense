@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=4 uid="uid://bqi4gw0smvh6d"]
+[gd_scene load_steps=18 format=4 uid="uid://bqi4gw0smvh6d"]
 
 [ext_resource type="PackedScene" uid="uid://bj5yigmuudrjr" path="res://assets/models/chap1/chap1_enemy_02.glb" id="1_glb"]
 [ext_resource type="Texture2D" uid="uid://bc28iu5lsiakm" path="res://assets/models/chap1/chap1_enemy_02_texture.png" id="4_pq54a"]
@@ -47,6 +47,91 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_kwjfx")
 
+[sub_resource type="Animation" id="Animation_7desj"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("chap1_enemy_02:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("chap1_enemy_02:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, -3.14159, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("chap1_enemy_02:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.32, 0.32, 0.32)]
+}
+
+[sub_resource type="Animation" id="Animation_bhhtp"]
+resource_name = "attack"
+length = 0.8
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("chap1_enemy_02:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0.03, -0.05), Vector3(0, 0.08, -0.15), Vector3(0, 0.05, -0.1), Vector3(0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("chap1_enemy_02:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0.174533, -3.14159, 0), Vector3(0.523599, -4.71239, 0), Vector3(0.523599, -6.98132, 0), Vector3(0.174533, -8.72665, 0), Vector3(0, -9.42478, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("chap1_enemy_02:scale")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0.32, 0.32, 0.32), Vector3(0.352, 0.288, 0.352), Vector3(0.301, 0.352, 0.301), Vector3(0.301, 0.352, 0.301), Vector3(0.32, 0.32, 0.32)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_bhhtp"]
+_data = {
+&"RESET": SubResource("Animation_7desj"),
+&"attack": SubResource("Animation_bhhtp")
+}
+
 [sub_resource type="SphereShape3D" id="SphereShape3D_body"]
 
 [sub_resource type="SphereShape3D" id="Shape_melee"]
@@ -59,10 +144,15 @@ radius = 0.55
 script = ExtResource("Script_enemy")
 
 [node name="chap1_enemy_02" parent="." instance=ExtResource("1_glb")]
-transform = Transform3D(-0.32, 0, -2.79753e-08, 0, 0.32, 0, 2.79753e-08, 0, -0.32, 0, 0, 0)
+transform = Transform3D(-0.32, 0, -8.11258e-07, 0, 0.32, 0, 8.11258e-07, 0, -0.32, 0, 0, 0)
 
 [node name="Mesh1_0" parent="chap1_enemy_02" index="0"]
 mesh = SubResource("ArrayMesh_evjcp")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_bhhtp")
+}
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(0.48, 0, 0, 0, 0.48, 0, 0, 0, 0.48, 0, 0, 0)
