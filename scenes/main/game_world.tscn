@@ -10,7 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/tag_row_widget.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/manager/wave_manager.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://scenes/manager/draft_manager.tscn" id="11"]
-[ext_resource type="Resource" path="res://resources/chapters/chapter_01.tres" id="12"]
+[ext_resource type="Resource" uid="uid://c5el3moeg23y4" path="res://resources/chapters/chapter_01.tres" id="12"]
 [ext_resource type="Script" uid="uid://cntomb20lojxx" path="res://scenes/main/hud.gd" id="Script_hud"]
 
 [sub_resource type="PlaneMesh" id="Mesh_ground"]

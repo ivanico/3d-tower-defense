@@ -24,7 +24,7 @@ func start_wave(wave_number: int) -> void:
 	_active_enemies.clear()
 	_wave_timer.start(Constants.WAVE_DURATION_MAX)
 	if wave_number >= chapter.wave_count:
-		_spawn_enemy(chapter.boss)
+		_spawn_enemy(_pick_boss())
 		EventBus.boss_spawned.emit()
 		EventBus.wave_started.emit(wave_number)
 		return
@@ -32,15 +32,27 @@ func start_wave(wave_number: int) -> void:
 		_spawn_enemy(definition)
 	EventBus.wave_started.emit(wave_number)
 
+func _pick_boss() -> EnemyDefinition:
+	if chapter.boss_pool.is_empty():
+		return null
+	return chapter.boss_pool[randi() % chapter.boss_pool.size()]
+
 func _get_wave_composition(wave_number: int) -> Array[EnemyDefinition]:
 	var count: int = mini(Constants.WAVE_ENEMY_COUNT_BASE + wave_number, Constants.WAVE_ENEMY_COUNT_MAX)
-	var basic: EnemyDefinition = chapter.enemy_pool[0]
+	# Index 0 is the baseline enemy, index 1 is the fast/small variant (gated to
+	# later waves), indices 2+ are additional basic-tier variants available from
+	# wave 1 onward alongside index 0.
+	var basic_pool: Array[EnemyDefinition] = [chapter.enemy_pool[0]]
+	for i in range(2, chapter.enemy_pool.size()):
+		basic_pool.append(chapter.enemy_pool[i])
 	var fast: EnemyDefinition = chapter.enemy_pool[1] if chapter.enemy_pool.size() > 1 else null
 	var table := WeightedTable.new()
 	if fast == null or wave_number < Constants.WAVE_FAST_ENEMY_MIN_WAVE:
-		table.add_item(basic, 1)
+		for basic in basic_pool:
+			table.add_item(basic, 1)
 	else:
-		table.add_item(basic, Constants.WAVE_BASIC_ENEMY_WEIGHT)
+		for basic in basic_pool:
+			table.add_item(basic, Constants.WAVE_BASIC_ENEMY_WEIGHT)
 		table.add_item(fast, Constants.WAVE_FAST_ENEMY_WEIGHT)
 	var composition: Array[EnemyDefinition] = []
 	for i in count:

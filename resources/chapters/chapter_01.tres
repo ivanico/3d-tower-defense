@@ -1,15 +1,20 @@
-[gd_resource type="Resource" script_class="ChapterDefinition" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="ChapterDefinition" load_steps=10 format=3 uid="uid://c5el3moeg23y4"]
 
-[ext_resource type="Script" path="res://resources/chapters/chapter_definition.gd" id="1"]
-[ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tres" id="2"]
+[ext_resource type="Script" uid="uid://2lg8t0bqpiqy" path="res://resources/chapters/chapter_definition.gd" id="1"]
+[ext_resource type="Script" uid="uid://cyyhy46hf81wm" path="res://resources/enemies/enemy_definition.gd" id="1_ba2tk"]
+[ext_resource type="Resource" uid="uid://ctf25bxy33piq" path="res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tres" id="2"]
 [ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_enemy_02/chap1_enemy_02.tres" id="3"]
-[ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_boss_01/chap1_boss_01.tres" id="4"]
+[ext_resource type="Resource" uid="uid://bwgh5150o227u" path="res://scenes/game_object/chap1/chap1_boss_01/chap1_boss_01.tres" id="4"]
+[ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_enemy_03/chap1_enemy_03.tres" id="5"]
+[ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_enemy_04/chap1_enemy_04.tres" id="6"]
+[ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_enemy_05/chap1_enemy_05.tres" id="7"]
+[ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_boss_02/chap1_boss_02.tres" id="8"]
 
 [resource]
 script = ExtResource("1")
 chapter_id = "chapter_01"
 chapter_name = "The Plains"
 wave_count = 12
-enemy_pool = Array[EnemyDefinition]([ExtResource("2"), ExtResource("3")])
-boss = ExtResource("4")
+enemy_pool = Array[ExtResource("1_ba2tk")]([ExtResource("2"), ExtResource("3"), ExtResource("5"), ExtResource("6"), ExtResource("7")])
+boss_pool = Array[ExtResource("1_ba2tk")]([ExtResource("4"), ExtResource("8")])
 arena_model_path = ""
