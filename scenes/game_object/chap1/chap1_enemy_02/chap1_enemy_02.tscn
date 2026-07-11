@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=4 uid="uid://bqi4gw0smvh6d"]
+[gd_scene load_steps=19 format=4 uid="uid://bqi4gw0smvh6d"]
 
 [ext_resource type="PackedScene" uid="uid://bj5yigmuudrjr" path="res://assets/models/chap1/chap1_enemy_02.glb" id="1_glb"]
 [ext_resource type="Texture2D" uid="uid://bc28iu5lsiakm" path="res://assets/models/chap1/chap1_enemy_02_texture.png" id="4_pq54a"]
@@ -126,10 +126,14 @@ tracks/2/keys = {
 "values": [Vector3(0.32, 0.32, 0.32), Vector3(0.352, 0.288, 0.352), Vector3(0.301, 0.352, 0.301), Vector3(0.301, 0.352, 0.301), Vector3(0.32, 0.32, 0.32)]
 }
 
+[sub_resource type="Animation" id="Animation_hr4p3"]
+resource_name = "walk"
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_bhhtp"]
 _data = {
 &"RESET": SubResource("Animation_7desj"),
-&"attack": SubResource("Animation_bhhtp")
+&"attack": SubResource("Animation_bhhtp"),
+&"walk": SubResource("Animation_hr4p3")
 }
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_body"]
