@@ -1,10 +1,64 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=22 format=3 uid="uid://cer1blly3mgyn"]
 
 [ext_resource type="PackedScene" uid="uid://de37477qn57ve" path="res://assets/models/towers/ancient_tower/ancient_tower_lvl5.glb" id="2_model"]
+[ext_resource type="Shader" uid="uid://rti363f5hrmg" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl5/ancient_tower_lvl5.gdshader" id="3_ldftq"]
 [ext_resource type="PackedScene" path="res://scenes/component/hit_flash_component.tscn" id="Comp_flash"]
 [ext_resource type="PackedScene" path="res://scenes/component/health_component.tscn" id="Comp_health"]
 [ext_resource type="PackedScene" path="res://scenes/component/targeting_component.tscn" id="Comp_targeting"]
 [ext_resource type="Script" uid="uid://cjdt6pivkugg1" path="res://scenes/game_object/tower/tower.gd" id="Script_tower"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ldftq"]
+size = Vector2(0.07, 0.47)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sndun"]
+render_priority = 0
+shader = ExtResource("3_ldftq")
+shader_parameter/water_color = Color(0.282353, 0.427451, 0.0588235, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_rvipd"]
+size = Vector2(0.08, 0.11)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ldftq"]
+render_priority = 0
+shader = ExtResource("3_ldftq")
+shader_parameter/water_color = Color(0.266667, 0.462745, 0.0784314, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rvipd"]
+render_priority = 0
+shader = ExtResource("3_ldftq")
+shader_parameter/water_color = Color(0.258824, 0.419608, 0.129412, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_27403"]
+size = Vector2(0.07, 0.47)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pst5x"]
+render_priority = 0
+shader = ExtResource("3_ldftq")
+shader_parameter/water_color = Color(0.258824, 0.45098, 0.0588235, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_5xgqv"]
+size = Vector2(0.08, 0.15)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kpgpf"]
+render_priority = 0
+shader = ExtResource("3_ldftq")
+shader_parameter/water_color = Color(0.851, 1, 0.165, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_4ijv6"]
+size = Vector2(0.04, 0.47)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_27403"]
+render_priority = 0
+shader = ExtResource("3_ldftq")
+shader_parameter/water_color = Color(0.376471, 0.584314, 0.0784314, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_5n788"]
+size = Vector2(0.04, 0.47)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1dbs8"]
+render_priority = 0
+shader = ExtResource("3_ldftq")
+shader_parameter/water_color = Color(0.376471, 0.584314, 0.0784314, 1)
 
 [sub_resource type="BoxShape3D" id="Shape_body"]
 size = Vector3(1, 1.6, 1)
@@ -18,8 +72,44 @@ script = ExtResource("Script_tower")
 [node name="ancient_tower_lvl5" parent="." instance=ExtResource("2_model")]
 transform = Transform3D(0.906308, 0, -0.422618, 0, 1.3, 0, 0.422618, 0, 0.906308, 0, 1.3, 0)
 
+[node name="waterfall_l_top" type="MeshInstance3D" parent="ancient_tower_lvl5"]
+transform = Transform3D(0.998535, -0.00608262, -0.0537821, -0.0536405, 0.0214603, -0.998331, 0.00722656, 0.999751, 0.0211025, -0.311047, -0.0908365, -0.0142379)
+mesh = SubResource("PlaneMesh_ldftq")
+surface_material_override/0 = SubResource("ShaderMaterial_sndun")
+
+[node name="watterfall_l_middle" type="MeshInstance3D" parent="ancient_tower_lvl5"]
+transform = Transform3D(0.928122, -0.353306, -0.117322, 0.268655, 0.853816, -0.445897, 0.257709, 0.382327, 0.887362, -0.342985, -0.325435, 0.0396083)
+mesh = SubResource("PlaneMesh_rvipd")
+surface_material_override/0 = SubResource("ShaderMaterial_ldftq")
+
+[node name="waterfall_l_bottom" type="MeshInstance3D" parent="ancient_tower_lvl5"]
+transform = Transform3D(0.997267, -0.0497201, -0.0546521, -0.0536405, 0.0214603, -0.998331, 0.05081, 0.998533, 0.0187346, -0.363989, -0.582821, 0.108525)
+mesh = SubResource("PlaneMesh_ldftq")
+surface_material_override/0 = SubResource("ShaderMaterial_rvipd")
+
+[node name="waterfall_r_top" type="MeshInstance3D" parent="ancient_tower_lvl5"]
+transform = Transform3D(0.997661, -0.0682994, 0.00328087, 0.0044826, 0.0174511, -0.99984, 0.0682312, 0.997512, 0.0177163, 0.29563, -0.0888841, -0.0124727)
+mesh = SubResource("PlaneMesh_27403")
+surface_material_override/0 = SubResource("ShaderMaterial_pst5x")
+
+[node name="watterfall_r_middle" type="MeshInstance3D" parent="ancient_tower_lvl5"]
+transform = Transform3D(0.846221, 0.074042, 0.527662, 0.0471631, 0.976003, -0.212589, -0.53074, 0.204784, 0.822422, 0.325098, -0.326089, 0.0185084)
+mesh = SubResource("PlaneMesh_5xgqv")
+surface_material_override/0 = SubResource("ShaderMaterial_kpgpf")
+
+[node name="waterfall_r_bottom" type="MeshInstance3D" parent="ancient_tower_lvl5"]
+transform = Transform3D(0.997433, 0.055706, -0.0450121, -0.0470854, 0.0364803, -0.998226, -0.0539654, 0.997781, 0.0390095, 0.345761, -0.5778, 0.115796)
+mesh = SubResource("PlaneMesh_4ijv6")
+surface_material_override/0 = SubResource("ShaderMaterial_27403")
+
+[node name="waterfall_r_bottom2" type="MeshInstance3D" parent="ancient_tower_lvl5"]
+transform = Transform3D(0.510525, 0.859857, -0.00323316, -0.00352378, -0.0016679, -0.999994, -0.859857, 0.510533, 0.00217835, 0.386847, -0.5778, 0.0934611)
+mesh = SubResource("PlaneMesh_5n788")
+surface_material_override/0 = SubResource("ShaderMaterial_1dbs8")
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1.15, 0, 0, 0, 1.15, 0, 0, 0, 1.15, 0, 1, 0)
+visible = false
 shape = SubResource("Shape_body")
 
 [node name="HealthComponent" parent="." instance=ExtResource("Comp_health")]
@@ -29,6 +119,7 @@ shape = SubResource("Shape_body")
 [node name="HitFlashComponent" parent="." instance=ExtResource("Comp_flash")]
 
 [node name="AttackRangeArea" type="Area3D" parent="."]
+visible = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="AttackRangeArea"]
 shape = SubResource("Shape_range")

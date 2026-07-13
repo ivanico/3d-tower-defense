@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=8 format=3 uid="uid://c42r8u3uk0nx8"]
 
 [ext_resource type="PackedScene" uid="uid://ba7k17h7ew4n1" path="res://assets/models/towers/ancient_tower/ancient_tower_lvl3.glb" id="2_model"]
 [ext_resource type="PackedScene" path="res://scenes/component/hit_flash_component.tscn" id="Comp_flash"]
