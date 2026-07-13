@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/towers/tower_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+tower_id = "ancient_tower"
+tower_name = "Ancient Tower"
+model_path = "res://assets/models/towers/ancient_tower/ancient_tower_lvl3.glb"
+base_hp = 1000.0
+base_damage = 20.0
+base_fire_rate = 1.0
+base_range = 8.0
+base_armor = 0.0
+starting_spell_id = "basic_bolt"

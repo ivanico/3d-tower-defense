@@ -128,6 +128,43 @@ tracks/2/keys = {
 
 [sub_resource type="Animation" id="Animation_hr4p3"]
 resource_name = "walk"
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("chap1_enemy_02:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.25, 0.5, 0.75, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0, 0.05), Vector3(0, 0, 0), Vector3(0, 0, -0.1), Vector3(0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("chap1_enemy_02:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.25, 0.5, 0.75, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, -3.14159, 0), Vector3(-0.174533, -3.14159, 0), Vector3(0, -3.14159, 0), Vector3(0.20944, -3.14159, 0), Vector3(0, -3.14159, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("chap1_enemy_02:scale")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.25, 0.5, 0.75, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0.32, 0.32, 0.32), Vector3(0.37, 0.27, 0.37), Vector3(0.27, 0.37, 0.27), Vector3(0.37, 0.27, 0.37), Vector3(0.32, 0.32, 0.32)]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_bhhtp"]
 _data = {
@@ -157,6 +194,7 @@ mesh = SubResource("ArrayMesh_evjcp")
 libraries = {
 &"": SubResource("AnimationLibrary_bhhtp")
 }
+autoplay = "walk"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(0.48, 0, 0, 0, 0.48, 0, 0, 0, 0.48, 0, 0, 0)
