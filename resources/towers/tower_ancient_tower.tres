@@ -1,6 +1,11 @@
-[gd_resource type="Resource" script_class="TowerDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://resources/towers/tower_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl1/ancient_tower_lvl1.tscn" id="2_lvl1"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl2/ancient_tower_lvl2.tscn" id="3_lvl2"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl3/ancient_tower_lvl3.tscn" id="4_lvl3"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl4/ancient_tower_lvl4.tscn" id="5_lvl4"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl5/ancient_tower_lvl5.tscn" id="6_lvl5"]
 
 [resource]
 script = ExtResource("1")
@@ -13,3 +18,4 @@ base_fire_rate = 1.0
 base_range = 8.0
 base_armor = 0.0
 starting_spell_id = "basic_bolt"
+star_level_scenes = Array[PackedScene]([ExtResource("2_lvl1"), ExtResource("3_lvl2"), ExtResource("4_lvl3"), ExtResource("5_lvl4"), ExtResource("6_lvl5")])

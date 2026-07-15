@@ -94,7 +94,7 @@ extends Resource
 ```
 
 ```gdscript
-# scenes/game_object/chap1/chap1_enemy_01/enemy.gd — stays thin
+# scenes/game_object/enemy/enemy.gd — stays thin
 extends CharacterBody3D
 class_name Enemy
 

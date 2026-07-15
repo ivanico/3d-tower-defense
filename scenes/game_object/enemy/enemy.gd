@@ -6,6 +6,7 @@ class_name Enemy
 @onready var health: HealthComponent = $HealthComponent
 @onready var mover: MoveToTargetComponent = $MoveToTargetComponent
 @onready var melee_area: Area3D = $MeleeRangeArea
+@onready var anim: AnimationPlayer = find_child("AnimationPlayer", true, false)
 
 var _is_attacking: bool = false
 var _attack_cooldown: float = 1.0
@@ -53,15 +54,24 @@ func _physics_process(delta: float) -> void:
 	_attack_timer -= delta
 	if _attack_timer <= 0.0:
 		_attack_tower()
-		_attack_timer = _attack_cooldown
 
 func _attack_tower() -> void:
 	var dmg := (definition.base_damage if definition else 10.0) * _damage_scale
+	_attack_timer = _play_attack_anim()
 	var heavy := find_child("BossHeavyAttackComponent") as BossHeavyAttackComponent
 	if heavy:
-		heavy.perform_attack(dmg)
+		heavy.perform_attack(dmg, anim)
 	else:
 		GameState.take_damage(dmg)
+
+func _play_attack_anim() -> float:
+	if anim == null:
+		return _attack_cooldown
+	var clip := anim.get_animation("attack")
+	if clip == null:
+		return _attack_cooldown
+	anim.play("attack")
+	return clip.length * (1.0 + Constants.ENEMY_ATTACK_ANIM_PAUSE_RATIO)
 
 func _on_died() -> void:
 	remove_from_group("enemies")

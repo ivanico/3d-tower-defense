@@ -5,6 +5,7 @@ class_name Tower
 
 @onready var health: HealthComponent = $HealthComponent
 @onready var targeting: TargetingComponent = $TargetingComponent
+@onready var anim: AnimationPlayer = find_child("AnimationPlayer", true, false)
 
 const PROJECTILE_SCENE := preload("res://scenes/game_object/projectile/projectile.tscn")
 const AOE_ZONE_SCENE := preload("res://scenes/game_object/aoe_zone/aoe_zone.tscn")
@@ -23,6 +24,16 @@ func _ready() -> void:
 	health.current_health = definition.base_hp
 	GameState.start_run(definition)
 	_load_starting_spell()
+	_play_idle()
+
+func _play_idle() -> void:
+	if anim == null:
+		return
+	var clip := anim.get_animation("idle")
+	if clip == null:
+		return
+	clip.loop_mode = Animation.LOOP_LINEAR
+	anim.play("idle", -1, Constants.TOWER_IDLE_ANIM_SPEED_SCALE)
 
 func _load_starting_spell() -> void:
 	var path := "res://resources/spells/spell_%s.tres" % definition.starting_spell_id

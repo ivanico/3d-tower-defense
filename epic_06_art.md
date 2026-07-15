@@ -91,7 +91,7 @@
 
 ## Task 06-03 — Animation Wiring
 
-**File**: `res://scenes/game_object/tower/tower.tscn`/`tower.gd`,
+**File**: `res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl1/ancient_tower_lvl1.tscn`/`ancient_tower_lvl1.gd`,
 `res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`/`enemy.gd`
 
 - [ ] Tower: play `idle` in `_ready()`. On firing a spell, play `attack`,

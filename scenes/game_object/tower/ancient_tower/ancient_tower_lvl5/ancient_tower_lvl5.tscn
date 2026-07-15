@@ -21,7 +21,7 @@ size = Vector2(0.08, 0.11)
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ldftq"]
 render_priority = 0
 shader = ExtResource("3_ldftq")
-shader_parameter/water_color = Color(0.266667, 0.462745, 0.0784314, 1)
+shader_parameter/water_color = Color(0.74902, 0.854902, 0.176471, 1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rvipd"]
 render_priority = 0
@@ -78,7 +78,7 @@ mesh = SubResource("PlaneMesh_ldftq")
 surface_material_override/0 = SubResource("ShaderMaterial_sndun")
 
 [node name="watterfall_l_middle" type="MeshInstance3D" parent="ancient_tower_lvl5"]
-transform = Transform3D(0.928122, -0.353306, -0.117322, 0.268655, 0.853816, -0.445897, 0.257709, 0.382327, 0.887362, -0.342985, -0.325435, 0.0396083)
+transform = Transform3D(0.933467, -0.313638, -0.173983, 0.220596, 0.884543, -0.411003, 0.282802, 0.345277, 0.894878, -0.347458, -0.325435, 0.0336353)
 mesh = SubResource("PlaneMesh_rvipd")
 surface_material_override/0 = SubResource("ShaderMaterial_ldftq")
 

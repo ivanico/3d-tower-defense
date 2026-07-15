@@ -80,10 +80,11 @@ res://
 │   │   │   └── aoe_zone.tscn / .gd
 │   │   ├── camera_rig/
 │   │   │   └── camera_rig.tscn / .gd
+│   │   ├── enemy/                      # SHARED enemy script, chapter-agnostic
+│   │   │   └── enemy.gd                # class_name Enemy — reused by every enemy/boss scene in every chapter, not copied
 │   │   └── chap1/                      # enemies grouped by chapter (chap2/ later)
 │   │       ├── chap1_enemy_01/
-│   │       │   ├── chap1_enemy_01.tscn
-│   │       │   ├── enemy.gd            # SHARED enemy script (class_name Enemy) — reused, not copied
+│   │       │   ├── chap1_enemy_01.tscn # script = res://scenes/game_object/enemy/enemy.gd
 │   │       │   └── chap1_enemy_01.tres # its EnemyDefinition, co-located
 │   │       ├── chap1_enemy_02/         # created in Epic 04 (reuses enemy.gd)
 │   │       │   ├── chap1_enemy_02.tscn / .tres
@@ -350,7 +351,11 @@ file needs to know it exists — runtime lookups use the `"enemies"` group.
   `chap2/…` later). Each enemy type is its own folder, file-set named after the
   folder, with its `.tres` co-located — but the enemy **script is shared**
   (`enemy.gd`, `class_name Enemy`): reuse it, don't copy it (a duplicate
-  `class_name` clashes).
+  `class_name` clashes). Because it's chapter-agnostic (every chapter's
+  enemies and bosses reuse it), it lives in its own neutral
+  `game_object/enemy/` folder — same single-generic-script pattern as
+  `tower/tower.gd` or `projectile/projectile.gd` — NOT inside any specific
+  chapter's or enemy type's folder.
 - **Adding an enemy = copy a folder + retune its `.tres` + register the scene**
   with `wave_manager`'s `WeightedTable`, reusing the shared `enemy.gd`. No new
   gameplay code for a plain stat-variant enemy. **Enemies `queue_free()` on

@@ -11,3 +11,4 @@ extends Resource
 @export var base_armor: float = 0.0
 @export var starting_spell_id: String = ""
 @export var passive_script: Script = null
+@export var star_level_scenes: Array[PackedScene] = []

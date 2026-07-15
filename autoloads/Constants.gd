@@ -4,7 +4,7 @@ enum GamePhase      { WAVE, DRAFT, BOSS, DEFEAT, VICTORY }
 enum DamageType     { NORMAL, MAGIC, PIERCING }
 enum ArmorType      { UNARMORED, HEAVY }
 enum SpellCategory  { PROJECTILE, AOE_BURST, PASSIVE }
-enum TargetMode     { CLOSEST }
+enum TargetMode     { CLOSEST, RANDOM }
 enum CardRarity     { COMMON, RARE, EPIC }
 enum SynergyTag     { OFFENSE, ARMOR, UTILITY }
 enum MaterialType   { STANDARD }
@@ -45,6 +45,25 @@ const UTILITY_TIER1_COOLDOWN_MULT:  float = 0.90
 const BOSS_HEAVY_ATTACK_EVERY_N:         int   = 4
 const BOSS_HEAVY_ATTACK_DAMAGE_MULT:     float = 2.5
 const BOSS_HEAVY_ATTACK_TELEGRAPH_SEC:   float = 0.5
+
+# Animation pacing (Epic 06) — tune these two by eye, nothing else needs editing
+# The "attack" clip always plays at its real, unscaled, authored length — it
+# is never sped up or slowed down. This is the pause added AFTER the clip
+# finishes, before the enemy can attack again, expressed as a PERCENTAGE of
+# that enemy's own clip length (0.15 = pause is 15% of however long its
+# attack animation is) — same ratio for every enemy/boss, but the actual
+# pause in seconds comes out different per enemy since it scales with each
+# one's own attack speed. This keeps the pause feeling equally noticeable
+# whether an enemy attacks fast or slow, instead of a flat number of seconds
+# feeling huge on a fast attacker and tiny on a slow one. The enemy's real
+# attack interval is (attack clip's own length * (1 + this ratio)); an enemy
+# with no attack clip falls back to its attack_cooldown field (set per-type
+# in its .tres) unchanged. Raise this for a longer, more visible pause;
+# lower it for a snappier one.
+const ENEMY_ATTACK_ANIM_PAUSE_RATIO:     float = 0.15
+# Playback speed multiplier for the tower's looping "idle" animation.
+# 1.0 = clip's native authored speed; e.g. 1.0 / 3.0 plays it 3x slower.
+const TOWER_IDLE_ANIM_SPEED_SCALE:       float = 1.0 / 3.0
 
 # Wave composition (Epic 04)
 const WAVE_ENEMY_COUNT_BASE:             int   = 3

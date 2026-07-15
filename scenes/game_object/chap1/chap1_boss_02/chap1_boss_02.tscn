@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/component/boss_heavy_attack_component.tscn" id="Comp_heavy"]
 [ext_resource type="PackedScene" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
 [ext_resource type="PackedScene" path="res://scenes/component/move_to_target_component.tscn" id="Comp_mover"]
-[ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/game_object/chap1/chap1_enemy_01/enemy.gd" id="Script_enemy"]
+[ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/game_object/enemy/enemy.gd" id="Script_enemy"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_body"]
 

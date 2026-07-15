@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/component/health_component.tscn" id="Comp_health"]
 [ext_resource type="PackedScene" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
 [ext_resource type="PackedScene" path="res://scenes/component/move_to_target_component.tscn" id="Comp_mover"]
-[ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/game_object/chap1/chap1_enemy_01/enemy.gd" id="Script_enemy"]
+[ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/game_object/enemy/enemy.gd" id="Script_enemy"]
 
 [sub_resource type="Animation" id="Animation_yhsyl"]
 length = 0.001
@@ -14,7 +14,7 @@ tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/path = NodePath("chap1_enemy_04:position")
-tracks/0/interp = 1
+tracks/0/interp = 2
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0),
@@ -26,7 +26,7 @@ tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
 tracks/1/path = NodePath("chap1_enemy_04:rotation")
-tracks/1/interp = 1
+tracks/1/interp = 2
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0),

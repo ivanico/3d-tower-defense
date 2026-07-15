@@ -2,7 +2,7 @@ class_name TargetingComponent
 extends Node
 
 @export var range: float = 8.0
-@export var mode: int = Constants.TargetMode.CLOSEST
+@export var mode: int = Constants.TargetMode.RANDOM
 
 var _enemies_in_range: Array[Node3D] = []
 
@@ -24,6 +24,8 @@ func get_target() -> Node3D:
 	match mode:
 		Constants.TargetMode.CLOSEST:
 			return _closest_of(_enemies_in_range)
+		Constants.TargetMode.RANDOM:
+			return _random_of(_enemies_in_range)
 	return null
 
 func _closest_of(nodes: Array[Node3D]) -> Node3D:
@@ -38,3 +40,8 @@ func _closest_of(nodes: Array[Node3D]) -> Node3D:
 			closest_dist = dist
 			closest = node
 	return closest
+
+func _random_of(nodes: Array[Node3D]) -> Node3D:
+	if nodes.is_empty():
+		return null
+	return nodes[randi() % nodes.size()]

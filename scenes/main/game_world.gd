@@ -3,6 +3,8 @@ extends Node3D
 const VICTORY_SCREEN_SCENE := preload("res://scenes/ui/victory_screen.tscn")
 const DEFEAT_SCREEN_SCENE := preload("res://scenes/ui/defeat_screen.tscn")
 
+@export var default_tower_def: TowerDefinition
+
 @onready var wave_manager: WaveManager = $WaveManager
 @onready var draft_manager: DraftManager = $DraftManager
 
@@ -10,7 +12,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	$EnemyContainer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	$ProjectileContainer.process_mode = Node.PROCESS_MODE_PAUSABLE
-	$Tower.process_mode = Node.PROCESS_MODE_PAUSABLE
+	_spawn_tower()
 	if GameState.pending_chapter_def != null:
 		wave_manager.chapter = GameState.pending_chapter_def
 	wave_manager._enemy_container = $EnemyContainer
@@ -19,6 +21,16 @@ func _ready() -> void:
 	EventBus.tower_died.connect(_on_tower_died)
 	EventBus.phase_changed.connect(_on_phase_changed)
 	EventBus.boss_died.connect(_on_boss_died)
+
+func _spawn_tower() -> void:
+	var tower_def: TowerDefinition = GameState.pending_tower_def if GameState.pending_tower_def != null else default_tower_def
+	var star: int = MetaManager.tower_stars.get(tower_def.tower_id, 1)
+	var index: int = clampi(star - 1, 0, tower_def.star_level_scenes.size() - 1)
+	var tower: Node3D = tower_def.star_level_scenes[index].instantiate()
+	tower.name = "Tower"
+	tower.definition = tower_def
+	tower.process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_child(tower)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if get_tree().paused and event.is_action_pressed("ui_accept"):

@@ -3,14 +3,16 @@ extends Node
 
 var _attack_count: int = 0
 
-func perform_attack(base_damage: float) -> void:
+func perform_attack(base_damage: float, anim: AnimationPlayer = null) -> void:
 	_attack_count += 1
 	if _attack_count % Constants.BOSS_HEAVY_ATTACK_EVERY_N == 0:
-		_heavy_attack(base_damage)
+		_heavy_attack(base_damage, anim)
 	else:
 		GameState.take_damage(base_damage)
 
-func _heavy_attack(base_damage: float) -> void:
+func _heavy_attack(base_damage: float, anim: AnimationPlayer = null) -> void:
+	if anim:
+		anim.play("attack_heavy")
 	_telegraph()
 	await get_tree().create_timer(Constants.BOSS_HEAVY_ATTACK_TELEGRAPH_SEC).timeout
 	if not is_instance_valid(self):
