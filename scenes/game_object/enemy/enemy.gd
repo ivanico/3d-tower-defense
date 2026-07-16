@@ -39,6 +39,7 @@ func _apply_definition() -> void:
 	health.max_health = definition.base_hp
 	health.current_health = definition.base_hp
 	mover.speed = definition.base_speed
+	mover.is_flying = definition.is_flying
 	mover.hold_height = definition.hold_height
 	_attack_cooldown = definition.attack_cooldown
 	var hurtbox := find_child("HurtboxComponent") as HurtboxComponent

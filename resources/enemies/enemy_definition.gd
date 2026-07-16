@@ -11,4 +11,5 @@ extends Resource
 @export var armor_type: int = Constants.ArmorType.UNARMORED
 @export var xp_value: int = 10
 @export var is_boss: bool = false
-@export var hold_height: float = 0.0
+@export var is_flying: bool = false
+@export var hold_height: float = 0.5

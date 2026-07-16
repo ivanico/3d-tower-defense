@@ -2,7 +2,8 @@ class_name MoveToTargetComponent
 extends Node
 
 @export var speed: float = 3.0
-@export var hold_height: float = 0.0
+@export var is_flying: bool = false
+@export var hold_height: float = 0.5
 @export var gravity_enabled: bool = true
 
 var target_position: Vector3 = Vector3.ZERO
@@ -16,7 +17,7 @@ func _physics_process(delta: float) -> void:
 	var origin := body.global_position
 	var direction := (target_position - origin)
 
-	if hold_height > 0.0:
+	if is_flying:
 		_bob_time += delta
 		var target_y := hold_height + sin(_bob_time * 2.0) * 0.1
 		body.velocity = Vector3(
