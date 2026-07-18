@@ -16,4 +16,4 @@ armor_type = 1
 xp_value = 55
 is_boss = false
 is_flying = true
-hold_height = 0.5
+hold_height = 1.0
