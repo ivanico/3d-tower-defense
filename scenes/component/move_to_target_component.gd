@@ -7,6 +7,8 @@ extends Node
 @export var gravity_enabled: bool = true
 
 var target_position: Vector3 = Vector3.ZERO
+# Written by StatusEffectComponent (1.0 = no slow, 0.6 = 40% slow).
+var slow_multiplier: float = 1.0
 var _bob_time: float = 0.0
 
 func _physics_process(delta: float) -> void:
@@ -16,6 +18,7 @@ func _physics_process(delta: float) -> void:
 
 	var origin := body.global_position
 	var direction := (target_position - origin)
+	var effective_speed := speed * slow_multiplier
 
 	if is_flying:
 		_bob_time += delta
@@ -24,13 +27,13 @@ func _physics_process(delta: float) -> void:
 			direction.x,
 			(target_y - origin.y) * 5.0,
 			direction.z
-		).normalized() * speed
+		).normalized() * effective_speed
 		body.velocity.y = (target_y - origin.y) * 5.0
 	else:
 		var flat := Vector3(direction.x, 0.0, direction.z)
 		if flat.length_squared() > 0.01:
-			body.velocity.x = flat.normalized().x * speed
-			body.velocity.z = flat.normalized().z * speed
+			body.velocity.x = flat.normalized().x * effective_speed
+			body.velocity.z = flat.normalized().z * effective_speed
 		else:
 			body.velocity.x = 0.0
 			body.velocity.z = 0.0

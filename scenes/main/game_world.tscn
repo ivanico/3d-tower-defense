@@ -1,7 +1,7 @@
-[gd_scene load_steps=16 format=3 uid="uid://gojcy8ojc28y"]
+[gd_scene load_steps=13 format=3 uid="uid://gojcy8ojc28y"]
 
 [ext_resource type="PackedScene" uid="uid://dy0co36gcwh34" path="res://scenes/game_object/camera_rig/camera_rig.tscn" id="1"]
-[ext_resource type="Shader" uid="uid://dqimpf6txxhdt" path="res://scenes/main/ground_checker.gdshader" id="3_cpkm4"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap1/chap1_arena/chap1_arena.tscn" id="2_arena"]
 [ext_resource type="Script" uid="uid://yejoif6ma0ec" path="res://scenes/main/game_world.gd" id="4"]
 [ext_resource type="Resource" path="res://resources/towers/tower_ancient_tower.tres" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/ui/draft_ui.tscn" id="7"]
@@ -12,22 +12,6 @@
 [ext_resource type="Resource" uid="uid://c5el3moeg23y4" path="res://resources/chapters/chapter_01.tres" id="12"]
 [ext_resource type="Script" uid="uid://cntomb20lojxx" path="res://scenes/main/hud.gd" id="Script_hud"]
 
-[sub_resource type="PlaneMesh" id="Mesh_ground"]
-size = Vector2(40, 57)
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_t07um"]
-render_priority = 0
-shader = ExtResource("3_cpkm4")
-shader_parameter/color_1 = Color(0.6, 0.78, 0.24, 1)
-shader_parameter/color_2 = Color(0.66, 0.82, 0.28, 1)
-shader_parameter/color_3 = Color(0.7, 0.85, 0.34, 1)
-shader_parameter/color_4 = Color(0.56, 0.74, 0.22, 1)
-shader_parameter/tiles_x = 40.0
-shader_parameter/tiles_z = 40.0
-
-[sub_resource type="BoxShape3D" id="Shape_ground"]
-size = Vector3(40, 0.1, 57)
-
 [sub_resource type="Environment" id="Env_world"]
 background_mode = 2
 
@@ -37,15 +21,7 @@ default_tower_def = ExtResource("6")
 
 [node name="CameraRig" parent="." instance=ExtResource("1")]
 
-[node name="Ground" type="StaticBody3D" parent="."]
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
-mesh = SubResource("Mesh_ground")
-surface_material_override/0 = SubResource("ShaderMaterial_t07um")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
-shape = SubResource("Shape_ground")
+[node name="Arena" parent="." instance=ExtResource("2_arena")]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.707107, 0.5, -0.5, 0, 0.707107, 0.707107, 0.707107, -0.5, 0.5, 0, 5, 0)

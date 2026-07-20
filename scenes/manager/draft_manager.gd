@@ -98,6 +98,10 @@ func _is_eligible(card: Resource) -> bool:
 	var count: int = _taken_counts.get(cid, 0)
 	if count == 0:
 		return true
+	if card is SpellDefinition:
+		# Spells stay draftable while under stack_max (spells.md Task S-00);
+		# stack_max = 1 spells disappear from the pool after one pick.
+		return count < card.stack_max
 	var stackable = card.get("is_stackable")
 	if stackable:
 		var max_stack = card.get("stack_max")

@@ -21,12 +21,19 @@ func _on_range_exited(body: Node3D) -> void:
 
 func get_target() -> Node3D:
 	_enemies_in_range = _enemies_in_range.filter(func(e): return is_instance_valid(e))
+	var targetable := _enemies_in_range.filter(_is_on_screen)
 	match mode:
 		Constants.TargetMode.CLOSEST:
-			return _closest_of(_enemies_in_range)
+			return _closest_of(targetable)
 		Constants.TargetMode.RANDOM:
-			return _random_of(_enemies_in_range)
+			return _random_of(targetable)
 	return null
+
+func _is_on_screen(enemy: Node3D) -> bool:
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return true
+	return camera.is_position_in_frustum(enemy.global_position)
 
 func _closest_of(nodes: Array[Node3D]) -> Node3D:
 	if nodes.is_empty():

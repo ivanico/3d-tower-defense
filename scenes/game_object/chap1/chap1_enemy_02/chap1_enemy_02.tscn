@@ -1,10 +1,11 @@
-[gd_scene load_steps=19 format=4 uid="uid://bqi4gw0smvh6d"]
+[gd_scene load_steps=20 format=4 uid="uid://bqi4gw0smvh6d"]
 
 [ext_resource type="PackedScene" uid="uid://bj5yigmuudrjr" path="res://assets/models/chap1/chap1_enemy_02.glb" id="1_glb"]
 [ext_resource type="Texture2D" uid="uid://bc28iu5lsiakm" path="res://assets/models/chap1/chap1_enemy_02_texture.png" id="4_pq54a"]
 [ext_resource type="PackedScene" uid="uid://cxjfi50df3rsr" path="res://scenes/component/death_fx_component.tscn" id="Comp_death"]
 [ext_resource type="PackedScene" path="res://scenes/component/hit_flash_component.tscn" id="Comp_flash"]
 [ext_resource type="PackedScene" path="res://scenes/component/health_component.tscn" id="Comp_health"]
+[ext_resource type="PackedScene" path="res://scenes/component/status_effect_component.tscn" id="Comp_status"]
 [ext_resource type="PackedScene" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
 [ext_resource type="PackedScene" path="res://scenes/component/move_to_target_component.tscn" id="Comp_mover"]
 [ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/game_object/enemy/enemy.gd" id="Script_enemy"]
@@ -201,6 +202,8 @@ transform = Transform3D(0.48, 0, 0, 0, 0.48, 0, 0, 0, 0.48, 0, 0, 0)
 shape = SubResource("SphereShape3D_body")
 
 [node name="HealthComponent" parent="." instance=ExtResource("Comp_health")]
+
+[node name="StatusEffectComponent" parent="." instance=ExtResource("Comp_status")]
 
 [node name="MoveToTargetComponent" parent="." instance=ExtResource("Comp_mover")]
 

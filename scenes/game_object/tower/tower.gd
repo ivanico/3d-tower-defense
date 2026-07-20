@@ -12,6 +12,7 @@ const AOE_ZONE_SCENE := preload("res://scenes/game_object/aoe_zone/aoe_zone.tscn
 
 var _active_spells: Array[SpellDefinition] = []
 var _spell_timers: Dictionary = {}
+var _spell_stacks: Dictionary = {}
 var _shot_count: int = 0
 
 func _ready() -> void:
@@ -43,11 +44,20 @@ func _load_starting_spell() -> void:
 func add_spell(spell: SpellDefinition) -> void:
 	_add_spell(spell)
 
+func get_stack_count(spell_id: String) -> int:
+	return _spell_stacks.get(spell_id, 0)
+
 func _add_spell(spell: SpellDefinition) -> void:
 	if spell == null:
 		return
+	if _spell_stacks.has(spell.spell_id):
+		# Duplicate pick: bump the stack on the existing entry — never a
+		# second cooldown/instance (spells.md Task S-00).
+		_spell_stacks[spell.spell_id] = mini(_spell_stacks[spell.spell_id] + 1, spell.stack_max)
+		return
 	_active_spells.append(spell)
 	_spell_timers[spell.spell_id] = 0.0
+	_spell_stacks[spell.spell_id] = 1
 	GameState.register_spell_rank(spell.spell_id)
 
 func _physics_process(delta: float) -> void:

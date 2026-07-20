@@ -1,7 +1,7 @@
 extends Node
 
 enum GamePhase      { WAVE, DRAFT, BOSS, DEFEAT, VICTORY }
-enum DamageType     { NORMAL, MAGIC, PIERCING }
+enum DamageType     { FIRE, FROST, VOID, POISON, NATURE }
 enum ArmorType      { UNARMORED, HEAVY }
 enum SpellCategory  { PROJECTILE, AOE_BURST, PASSIVE }
 enum TargetMode     { CLOSEST, RANDOM }
@@ -90,3 +90,21 @@ const ENERGY_REGEN_INTERVAL_SEC:         float = 1200.0  # 20 min per energy poi
 # get the cost of upgrading to the next level; index 0 is unused (no level 0)
 const TOWER_STAR_COSTS:  Array[int] = [0, 100, 250, 500, 1000]
 const SPELL_RANK_COSTS:  Array[int] = [0, 80, 200, 400, 800]
+
+# Spell school perks (spells.md Sections 2-3) — applied generically by damage
+# type in the hit-resolution path; a spell's .tres never re-implements these.
+const FIRE_BURN_DPS_PERCENT:    float = 0.30  # burn ticks 30% of hit damage per second
+const FIRE_BURN_DURATION:       float = 3.0
+const FROST_SLOW_PERCENT:       float = 0.40  # strongest slow in the game
+const FROST_SLOW_DURATION:      float = 2.0
+const POISON_DOT_PERCENT:       float = 0.15  # half of Fire's burn
+const POISON_DOT_DURATION:      float = 4.0   # longer but weaker
+const POISON_SLOW_PERCENT:      float = 0.20  # half of Frost's slow
+const POISON_SLOW_DURATION:     float = 2.0
+# Void has no status perk — its premium is baked into its .tres damage values
+# when authoring them (an equivalent-rarity Void spell's damage = other
+# school's damage * (1 + VOID_DAMAGE_PREMIUM)); nothing reads this at runtime.
+const VOID_DAMAGE_PREMIUM:      float = 0.18
+const NATURE_LIFESTEAL_PERCENT: float = 0.18  # % of damage dealt healed to tower
+const SCHOOL_RESIST_MULT:       float = 0.5   # resisted school: damage AND status halved
+const STATUS_TICK_INTERVAL:     float = 0.5   # seconds between DoT damage ticks

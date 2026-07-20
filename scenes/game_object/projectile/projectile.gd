@@ -2,7 +2,7 @@ extends Area3D
 
 var speed: float = 14.0
 var damage: float = 0.0
-var damage_type: int = Constants.DamageType.NORMAL
+var damage_type: int = Constants.DamageType.VOID
 var pierce_count: int = 0
 
 var _direction: Vector3 = Vector3.ZERO

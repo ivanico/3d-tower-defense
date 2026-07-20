@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://bloi1csic768w"]
+[gd_scene load_steps=16 format=3 uid="uid://bloi1csic768w"]
 
 [ext_resource type="PackedScene" uid="uid://c1qrwnjj57qt1" path="res://assets/models/chap1/chap1_enemy_05.glb" id="1_glb"]
 [ext_resource type="PackedScene" uid="uid://cxjfi50df3rsr" path="res://scenes/component/death_fx_component.tscn" id="Comp_death"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/component/health_component.tscn" id="Comp_health"]
 [ext_resource type="PackedScene" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
 [ext_resource type="PackedScene" path="res://scenes/component/move_to_target_component.tscn" id="Comp_mover"]
+[ext_resource type="PackedScene" path="res://scenes/component/status_effect_component.tscn" id="Comp_status"]
 [ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/game_object/enemy/enemy.gd" id="Script_enemy"]
 
 [sub_resource type="Animation" id="Animation_j54py"]
@@ -159,6 +160,8 @@ transform = Transform3D(0.675, 0, 0, 0, 0.675, 0, 0, 0, 0.675, 0, 0, 0)
 shape = SubResource("SphereShape3D_body")
 
 [node name="HealthComponent" parent="." instance=ExtResource("Comp_health")]
+
+[node name="StatusEffectComponent" parent="." instance=ExtResource("Comp_status")]
 
 [node name="MoveToTargetComponent" parent="." instance=ExtResource("Comp_mover")]
 

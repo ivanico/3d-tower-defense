@@ -27,6 +27,9 @@ func reset() -> void:
 	_damage_scale = 1.0
 	_apply_definition()
 	health.reset()
+	var status := find_child("StatusEffectComponent") as StatusEffectComponent
+	if status:
+		status.reset()
 
 func apply_wave_scale(hp_scale: float, dmg_scale: float) -> void:
 	health.max_health *= hp_scale
@@ -45,6 +48,7 @@ func _apply_definition() -> void:
 	var hurtbox := find_child("HurtboxComponent") as HurtboxComponent
 	if hurtbox:
 		hurtbox.armor_type = definition.armor_type
+		hurtbox.resisted_school = definition.resisted_school
 	var tower := get_tree().get_first_node_in_group("tower")
 	if tower:
 		mover.target_position = tower.global_position

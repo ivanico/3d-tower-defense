@@ -2,6 +2,10 @@ class_name WaveManager
 extends Node
 
 const ARENA_SPAWN_RADIUS := 5.5
+const SPAWN_OFFSCREEN_MARGIN := 2.0
+const SPAWN_RADIUS_STEP := 0.5
+const SPAWN_RADIUS_MAX := 26.0
+const SPAWN_HEIGHT := 0.6
 
 @export var chapter: ChapterDefinition = null
 
@@ -82,7 +86,17 @@ func _spawn_enemy(definition: EnemyDefinition) -> void:
 
 func _get_spawn_position() -> Vector3:
 	var angle := randf() * TAU
-	return Vector3(cos(angle) * ARENA_SPAWN_RADIUS, 0.6, sin(angle) * ARENA_SPAWN_RADIUS)
+	var dir := Vector3(cos(angle), 0.0, sin(angle))
+	var camera := get_viewport().get_camera_3d()
+	var radius := ARENA_SPAWN_RADIUS
+	if camera != null:
+		# Walk outward along the spawn direction until the point leaves the
+		# camera frustum, then add a margin so the enemy's whole mesh starts
+		# off-screen and visibly walks into view.
+		while radius < SPAWN_RADIUS_MAX and camera.is_position_in_frustum(dir * radius + Vector3(0.0, SPAWN_HEIGHT, 0.0)):
+			radius += SPAWN_RADIUS_STEP
+		radius = minf(radius + SPAWN_OFFSCREEN_MARGIN, SPAWN_RADIUS_MAX)
+	return dir * radius + Vector3(0.0, SPAWN_HEIGHT, 0.0)
 
 func _on_enemy_died(enemy: Node, _position: Vector3) -> void:
 	_active_enemies.erase(enemy)

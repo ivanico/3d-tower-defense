@@ -200,9 +200,19 @@ new damage types or armor types are added — the lookup itself is generic.
 
 | | Unarmored | Heavy |
 |---|---|---|
-| Normal | 1.0× | 0.7× |
-| Magic (AoE) | 1.0× | 1.25× |
-| Piercing | 1.5× | 0.4× |
+| Fire | 1.0× | 1.0× |
+| Frost | 1.0× | 1.0× |
+| Void | 1.0× | 1.0× |
+| Poison | 1.0× | 1.0× |
+| Nature | 1.0× | 1.0× |
+
+> The original v1 damage types (Normal/Magic/Piercing) were **removed** once
+> the five spell schools (`spells.md` Section 2) landed — every spell now
+> belongs to a school. The school rows are neutral vs. armor — school
+> counterplay comes from each enemy's *resisted school*
+> (`SCHOOL_RESIST_MULT`, halves damage and status — `spells.md` Section 3),
+> not from the armor table. Void's row must always stay ≥ 1.0× and can never
+> be a resisted school: nothing resists Void.
 
 > **Extend later by:** adding new `DamageType` / `ArmorType` enum entries and
 > new rows/columns to this table — the damage-calculation code reads the table

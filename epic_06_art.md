@@ -12,6 +12,12 @@
 > remain on gameplay objects, and no model is still unanimated.
 > Completed epic delivers: the game looks like a finished 3D product, with
 > the Archero-style camera/lighting actually paying off.
+>
+> **Arena exception (decided during implementation, see Task 06-05):** the
+> arena ground intentionally stays a shader-driven `PlaneMesh`, not a
+> Meshy-generated model — this is a deliberate choice, not a remaining gap.
+> The actual problem fixed was structural (ground was hardcoded inline in
+> `game_world.tscn` instead of being its own scene); the look never changed.
 
 ---
 
@@ -21,8 +27,9 @@
 
 - [ ] Generate (or regenerate, iterating on results) every model still
 	  missing per `assets.md` Section 2: `chap1/chap1_enemy_02.glb`,
-	  `chap1/chap1_boss_01.glb` (unless already swapped in during Epic 04), and
-	  `chap1/arena_chapter_01.glb`.
+	  `chap1/chap1_boss_01.glb` (unless already swapped in during Epic 04).
+	  `chap1/arena_chapter_01.glb` will **not** be generated — see Task
+	  06-05, the arena stays a procedural shader-driven ground by decision.
 - [ ] For `towers/ancient_tower/ancient_tower_lvl1.glb` and `chap1/chap1_enemy_01.glb` (already in the
 	  project since Epic 02 Task 02-00, static-pose only): add the required
 	  animation clips now — `idle`/`attack` for the tower, `walk`/`attack`/
@@ -89,35 +96,49 @@
 
 ---
 
-## Task 06-03 — Animation Wiring
+## Task 06-03 — Animation Wiring [DONE]
 
-**File**: `res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl1/ancient_tower_lvl1.tscn`/`ancient_tower_lvl1.gd`,
-`res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`/`enemy.gd`
+**File**: `res://scenes/game_object/tower/tower.gd`,
+`res://scenes/game_object/enemy/enemy.gd`,
+`res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn` (and
+siblings), `res://scenes/component/move_to_target_component.gd`,
+`res://scenes/component/boss_heavy_attack_component.gd`
 
-- [ ] Tower: play `idle` in `_ready()`. On firing a spell, play `attack`,
-	  connect `animation_finished` to return to `idle`.
-- [ ] Enemy: play `walk` while `MoveToTargetComponent` is actively moving the
-	  body; switch to `attack` while in the melee-attack state (from Epic
-	  02's `MeleeRangeArea` logic); on `HealthComponent.died`, play `death`
-	  via `DeathFXComponent` and connect `animation_finished` →
-	  `ObjectPool.release(self)` (replacing Epic 02's tween-based placeholder
-	  death reaction with the real animation).
-- [ ] Boss: additionally play `attack_heavy` on the telegraphed heavy-attack
-	  component's trigger (Epic 04).
-- [ ] Sprite-flip equivalent for 3D: rotate the model to face its movement
-	  direction (`look_at` toward the movement direction on the X/Z plane,
-	  or set `rotation.y` directly) — this is the 3D equivalent of the 2D
-	  `flip_h` trick, done properly with real rotation instead of a flip
-	  hack.
+**Decisions (made during implementation):**
+- **The tower has no attack animation — by design.** The tower only plays a
+  looping `idle` (`tower.gd:_play_idle()`, speed-scaled by
+  `Constants.TOWER_IDLE_ANIM_SPEED_SCALE`). The original "play `attack` on
+  every shot, return to idle on `animation_finished`" requirement is
+  removed, not pending. (The `idle` clip is embedded in the
+  `ancient_tower_lvl3/4/5.glb` models; `lvl1`/`lvl2` currently have no clip
+  and the code no-ops gracefully on them.)
+- **The Epic-02 shrink-tween death placeholder is kept permanently — by
+  choice, it looks good.** No `death` animation clips exist or are planned;
+  `DeathFXComponent` tweens scale down over 0.25s then `queue_free()`s. The
+  "replace the tween with a real `death` animation" requirement is removed.
+
+- [x] Tower: plays `idle` in `_ready()` (no attack animation — see decision
+	  above).
+- [x] Enemy: hand-authored `walk` (looping, `autoplay`) + `attack` clips in
+	  each enemy scene's AnimationPlayer; `attack` plays on each melee hit,
+	  with a short deliberate pause after every attack
+	  (`Constants.ENEMY_ATTACK_ANIM_PAUSE_RATIO` extends the attack timer
+	  past the clip length). Death stays the shrink tween (see decision
+	  above).
+- [x] Boss: plays `attack_heavy` (embedded in the boss `.glb`s) via
+	  `BossHeavyAttackComponent` on every
+	  `Constants.BOSS_HEAVY_ATTACK_EVERY_N`th attack.
+- [x] Sprite-flip equivalent for 3D: `MoveToTargetComponent._update_facing()`
+	  rotates the body toward its flattened (Y-zeroed) velocity every physics
+	  frame.
 
 **Acceptance criteria**:
-- [ ] Every enemy visibly faces its direction of travel while walking.
-- [ ] Death animation completes fully before the enemy disappears (pool
-	  release fires on `animation_finished`, not immediately on HP reaching
-	  0).
-- [ ] Tower visibly plays an attack animation synced to each shot, returning
-	  to idle between attacks.
-- [ ] Boss visibly plays a distinct heavy-attack animation on its telegraphed
+- [x] Every enemy visibly faces its direction of travel while walking.
+- [x] Enemies play `walk` while approaching and `attack` on each melee hit,
+	  with the post-attack pause between swings.
+- [x] Death shrink-tween completes fully before the enemy is freed
+	  (`queue_free()` fires from the tween callback, not instantly at 0 HP).
+- [x] Boss visibly plays a distinct heavy-attack animation on its telegraphed
 	  hits.
 
 ---
@@ -153,24 +174,39 @@
 
 ---
 
-## Task 06-05 — Arena Model Wiring
+## Task 06-05 — Arena Ground Extraction & Per-Chapter Colors [DONE]
 
-**File**: `res://scenes/main/game_world.tscn`
+**Files**: `res://scenes/game_object/chap1/chap1_arena/chap1_arena.tscn`,
+`res://scenes/game_object/arena/arena.gd`, `res://scenes/main/game_world.tscn`
 
-- [ ] Replace the Epic 01 `PlaneMesh` placeholder ground with
-	  `arena_chapter_01.glb`, instanced as a child, with its own
-	  `StaticBody3D`/`CollisionShape3D` matching its actual walkable area
-	  (adjust `WaveManager._get_spawn_position()`'s spawn-ring radius if the
-	  real arena's edge differs from the placeholder's ~12m assumption).
-- [ ] Confirm the camera rig's framing (Epic 01's `camera_distance`/
-	  `camera_height`) still correctly fits the real arena in frame; retune
-	  if the real model's actual footprint differs from the placeholder's.
+**Decision**: the arena ground stays a shader-driven `PlaneMesh` (not a
+Meshy-generated `arena_chapter_01.glb`) — explicit choice, not a skipped
+task. The real gap was structural: the ground was hardcoded inline inside
+`game_world.tscn` instead of being its own scene like every other game
+object in this project.
+
+- [x] Extracted the ground into its own scene (`chap1_arena.tscn`),
+	  matching the project's one-scene-folder-per-object convention — same
+	  `PlaneMesh` size (40×57), same `ground_checker.gdshader`, same
+	  `BoxShape3D` collision as before. `game_world.tscn` now instances it
+	  as a single `Arena` node instead of inline sub-resources.
+- [x] Added a reusable `Arena` script (`arena.gd`, `@tool class_name Arena`)
+	  exposing `color_1`–`color_4` as `@export`ed `Color` fields wired to
+	  the shader's 4 uniforms, editable live in the Inspector. Future
+	  chapters get their own ground by duplicating this scene and setting
+	  the 4 colors (e.g. blues for chapter 2) — no code changes needed.
+- [x] Dimensions/position never changed (same mesh size, same collision),
+	  so `WaveManager._get_spawn_position()`'s spawn-ring radius and the
+	  camera rig's framing did not need retuning.
 
 **Acceptance criteria**:
-- [ ] The real arena model fully fills the camera's frame with appropriate
-	  margin, matching the original placeholder's framing intent.
-- [ ] Enemies spawn at the real arena's edge (not floating off the model or
-	  spawning inside walls).
+- [x] Ground renders and collides identically to before the refactor —
+	  verified via headless Godot instantiation of both `chap1_arena.tscn`
+	  and `game_world.tscn`, no load/compile errors.
+- [x] Enemies still spawn correctly at the arena's edge — no change to
+	  spawn geometry.
+- N/A — no real-model swap occurred by design; the "fills camera frame"
+	  criterion doesn't apply since the footprint is unchanged.
 
 ---
 
@@ -242,7 +278,9 @@ Create a `GPUParticles3D` subscene for each VFX type:
 - [ ] Run the project. Confirm zero `CapsuleMesh`/`BoxMesh`/`PlaneMesh`
 	  placeholders remain on any gameplay object (UI `ColorRect`s used for
 	  non-gameplay backgrounds where no real asset applies are fine to flag
-	  separately, but every character/tower/arena placeholder must be gone).
+	  separately, but every character/tower placeholder must be gone). The
+	  arena's `PlaneMesh` (`chap1_arena.tscn`) is an intentional permanent
+	  exception per Task 06-05 and does not count as a remaining placeholder.
 - [ ] All enemy animations play correctly: `walk` → `attack` → `death`,
 	  with correct facing-direction rotation throughout.
 - [ ] Tower plays `attack` synced to firing, returns to `idle`.

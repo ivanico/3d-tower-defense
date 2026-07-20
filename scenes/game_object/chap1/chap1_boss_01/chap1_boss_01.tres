@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 enemy_id = "chap1_boss_01"
-model_path = ""
+model_path = "res://assets/models/chap1/chap1_boss_01.glb"
 scene = ExtResource("2")
 base_hp = 500.0
 base_speed = 1.0

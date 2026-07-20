@@ -118,13 +118,23 @@ func apply_card(card: Resource) -> void:
 			armor_damage_reduction = clamp(armor_damage_reduction + scaled_value, 0.0, 0.9)
 			for tag in card.tags:
 				add_tag(tag)
-		elif active_spells.size() < Constants.MAX_SPELL_SLOTS:
-			active_spells.append(card)
-			for tag in card.tags:
-				add_tag(tag)
-			var tower = get_tree().get_first_node_in_group("tower")
-			if tower:
-				tower.add_spell(card)
+		else:
+			var already_owned := active_spells.any(func(s): return s.spell_id == card.spell_id)
+			if already_owned:
+				# Duplicate pick: stack on the tower's existing entry, tags
+				# still count (spells.md Task S-00) — no second list entry.
+				for tag in card.tags:
+					add_tag(tag)
+				var tower = get_tree().get_first_node_in_group("tower")
+				if tower:
+					tower.add_spell(card)
+			elif active_spells.size() < Constants.MAX_SPELL_SLOTS:
+				active_spells.append(card)
+				for tag in card.tags:
+					add_tag(tag)
+				var tower = get_tree().get_first_node_in_group("tower")
+				if tower:
+					tower.add_spell(card)
 	elif card is StatUpgradeDefinition:
 		tower_max_hp += card.hp_bonus
 		tower_hp = min(tower_hp + card.hp_bonus, tower_max_hp)

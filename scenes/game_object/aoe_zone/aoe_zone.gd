@@ -1,7 +1,7 @@
 extends Area3D
 
 var damage: float = 0.0
-var damage_type: int = Constants.DamageType.NORMAL
+var damage_type: int = Constants.DamageType.VOID
 var _radius: float = 1.0
 
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
@@ -30,5 +30,5 @@ func _apply_damage() -> void:
 
 func reset() -> void:
 	damage = 0.0
-	damage_type = Constants.DamageType.NORMAL
+	damage_type = Constants.DamageType.VOID
 	_radius = 1.0
