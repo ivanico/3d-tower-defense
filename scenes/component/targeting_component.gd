@@ -19,15 +19,32 @@ func _on_range_entered(body: Node3D) -> void:
 func _on_range_exited(body: Node3D) -> void:
 	_enemies_in_range.erase(body)
 
-func get_target() -> Node3D:
-	_enemies_in_range = _enemies_in_range.filter(func(e): return is_instance_valid(e))
-	var targetable := _enemies_in_range.filter(_is_on_screen)
+func get_target(max_distance: float = INF) -> Node3D:
+	var targetable := _get_targetable(max_distance)
 	match mode:
 		Constants.TargetMode.CLOSEST:
 			return _closest_of(targetable)
 		Constants.TargetMode.RANDOM:
 			return _random_of(targetable)
 	return null
+
+# Up to `count` distinct targets, nearest first — used by volley-stacked
+# spells (spells.md Task S-01).
+func get_targets(count: int, max_distance: float = INF) -> Array[Node3D]:
+	var targetable := _get_targetable(max_distance)
+	var owner_node := get_parent() as Node3D
+	targetable.sort_custom(func(a, b):
+		return owner_node.global_position.distance_squared_to(a.global_position) < owner_node.global_position.distance_squared_to(b.global_position))
+	var result: Array[Node3D] = []
+	for i in mini(count, targetable.size()):
+		result.append(targetable[i])
+	return result
+
+func _get_targetable(max_distance: float) -> Array[Node3D]:
+	_enemies_in_range = _enemies_in_range.filter(func(e): return is_instance_valid(e))
+	var owner_node := get_parent() as Node3D
+	return _enemies_in_range.filter(func(e):
+		return _is_on_screen(e) and owner_node.global_position.distance_to(e.global_position) <= max_distance)
 
 func _is_on_screen(enemy: Node3D) -> bool:
 	var camera := get_viewport().get_camera_3d()

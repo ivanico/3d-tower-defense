@@ -10,7 +10,7 @@
 size = Vector3(1, 1.6, 1)
 
 [sub_resource type="SphereShape3D" id="Shape_range"]
-radius = 8.0
+radius = 10.0
 
 [node name="Tower" type="CharacterBody3D"]
 script = ExtResource("Script_tower")

@@ -6,6 +6,7 @@ var all_stat_upgrades: Array = []
 func _ready() -> void:
 	all_spells        = _scan_dir("res://resources/spells/")
 	all_stat_upgrades = _scan_dir("res://resources/upgrades/")
+	print("SpellRegistry: %d spells + %d stat upgrades loaded (%d draft cards total)" % [all_spells.size(), all_stat_upgrades.size(), get_all_cards().size()])
 
 func _scan_dir(path: String) -> Array:
 	var result: Array = []

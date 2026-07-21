@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SpellDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/spells/spell_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chain_bolt/chain_bolt.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+spell_id = "chain_chaos"
+spell_name = "Chain of Chaos"
+description = "Pure damage that leaps between enemies. Never resisted."
+rarity = 1
+spell_category = 0
+damage_type = 2
+tags = Array[int]([0])
+damage = 31.0
+cooldown = 1.6
+range = 8.0
+aoe_radius = 0.0
+pierce_count = 0
+projectile_speed = 14.0
+projectile_scene = ExtResource("2")
+bounce_radius = 4.0
+max_bounces = 2
+damage_falloff_per_bounce = 1.0
+stack_max = 3

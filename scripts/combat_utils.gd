@@ -18,6 +18,24 @@ static func calculate_damage(base_amount: float, damage_type: int, armor_type: i
 	var multiplier: float = DAMAGE_TABLE[damage_type][armor_type]
 	return base_amount * multiplier
 
+static func get_damage_color(damage_type: int) -> Color:
+	return Constants.SCHOOL_COLORS.get(damage_type, Color.WHITE)
+
+# One shared emissive material per school — shared (not duplicated) so every
+# projectile of a school batches as one material (mobile perf rule).
+static var _school_materials: Dictionary = {}
+
+static func get_school_material(damage_type: int) -> StandardMaterial3D:
+	if not _school_materials.has(damage_type):
+		var mat := StandardMaterial3D.new()
+		var color := get_damage_color(damage_type)
+		mat.albedo_color = color
+		mat.emission_enabled = true
+		mat.emission = color
+		mat.emission_energy_multiplier = 1.5
+		_school_materials[damage_type] = mat
+	return _school_materials[damage_type]
+
 # School perk on-hit application (spells.md Section 2) — the one generic
 # match on DamageType, used by every archetype's hit path. `resist_mult` is
 # 1.0 normally, SCHOOL_RESIST_MULT when the target resists this school.

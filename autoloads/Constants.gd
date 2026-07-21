@@ -3,7 +3,7 @@ extends Node
 enum GamePhase      { WAVE, DRAFT, BOSS, DEFEAT, VICTORY }
 enum DamageType     { FIRE, FROST, VOID, POISON, NATURE }
 enum ArmorType      { UNARMORED, HEAVY }
-enum SpellCategory  { PROJECTILE, AOE_BURST, PASSIVE }
+enum SpellCategory  { PROJECTILE, PASSIVE, ORB, AOE_AREA }
 enum TargetMode     { CLOSEST, RANDOM }
 enum CardRarity     { COMMON, RARE, EPIC }
 enum SynergyTag     { OFFENSE, ARMOR, UTILITY }
@@ -108,3 +108,52 @@ const VOID_DAMAGE_PREMIUM:      float = 0.18
 const NATURE_LIFESTEAL_PERCENT: float = 0.18  # % of damage dealt healed to tower
 const SCHOOL_RESIST_MULT:       float = 0.5   # resisted school: damage AND status halved
 const STATUS_TICK_INTERVAL:     float = 0.5   # seconds between DoT damage ticks
+
+# Spell archetype range hierarchy (spells.md Section 5) — mirrored into each
+# spell's .tres `range` field; Bolt > Chain > AoE Area > Line Lance.
+const BOLT_RANGE:               float = 10.0
+const CHAIN_RANGE:              float = 8.0
+const AOE_AREA_RANGE:           float = 6.5
+const LINE_AOE_RANGE:           float = 4.0
+const BOLT_VOLLEY_STAGGER_SEC:  float = 0.07  # delay between stacked volley bolts
+
+# Chain Bolt archetype (spells.md Task S-02)
+const CHAIN_BOUNCE_RADIUS:      float = 4.0   # max distance a chain can jump between enemies
+const CHAIN_MAX_BOUNCES:        int   = 2     # 2 bounces = 3 hits total
+
+# Orb archetype (spells.md Task S-03)
+# Stacking angle sequence: orb N sits at ORB_ANGLE_SEQUENCE[N-1] degrees on
+# its ring — keeps splitting the circle in half. stack_max caps at its length.
+const ORB_ANGLE_SEQUENCE: Array[float] = [0.0, 180.0, 90.0, 270.0, 45.0, 225.0, 135.0, 315.0]
+# Per-school ring radius — every school's ring is distinct so all 5 orb
+# spells can be owned at once with no orb-vs-orb overlap. Mirrored into each
+# .tres's orbit_radius (the .tres value is what the game reads).
+const ORB_ORBIT_RADII: Dictionary = {
+	DamageType.FIRE:   1.6,
+	DamageType.FROST:  2.0,
+	DamageType.VOID:   2.4,
+	DamageType.POISON: 2.8,
+	DamageType.NATURE: 3.2,
+}
+const ORB_ORBIT_SPEED_DEG:      float = 90.0  # degrees/sec, shared by a ring
+const ORB_HIT_INTERVAL:         float = 0.5   # seconds between re-hits on one enemy
+const ORB_HEIGHT:               float = 0.6   # orb hover height above ground
+
+# AoE Area archetype (spells.md Task S-04)
+const AOE_AREA_DURATION:        float = 4.0   # zone lifetime, seconds
+const AOE_AREA_TICK_INTERVAL:   float = 0.5   # seconds between damage ticks
+const AOE_AREA_SHARD_INTERVAL:  float = 0.2   # base seconds between shard drops (randomized ±50%)
+
+# Line AoE Bolt archetype (spells.md Task S-05)
+const LANCE_MAX_TRAVEL:         float = 30.0  # crosses the whole visible arena, then despawns
+const LANCE_HITBOX_LENGTH:      float = 1.6   # longer than the standard bolt's hit reach
+const LANCE_HITBOX_WIDTH:       float = 0.7
+
+# School tint colors (spells.md Section 2), read via CombatUtils.get_damage_color()
+const SCHOOL_COLORS: Dictionary = {
+	DamageType.FIRE:   Color(1.0, 0.45, 0.1),   # orange/red
+	DamageType.FROST:  Color(0.45, 0.8, 1.0),   # ice blue
+	DamageType.VOID:   Color(0.8, 0.3, 1.0),    # purple/magenta
+	DamageType.POISON: Color(0.35, 0.9, 0.3),   # green
+	DamageType.NATURE: Color(0.75, 0.85, 0.2),  # leaf green / gold
+}

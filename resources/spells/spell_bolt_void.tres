@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SpellDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/spells/spell_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+spell_id = "bolt_void"
+spell_name = "Void Bolt"
+description = "Pure damage. Never resisted."
+rarity = 0
+spell_category = 0
+damage_type = 2
+tags = Array[int]([0])
+damage = 47.0
+cooldown = 1.0
+range = 10.0
+aoe_radius = 0.0
+pierce_count = 0
+projectile_speed = 14.0
+stack_max = 3

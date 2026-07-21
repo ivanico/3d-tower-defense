@@ -72,12 +72,10 @@ res://
 │   ├── game_object/                   # ONE FOLDER PER SCENE
 │   │   ├── tower/
 │   │   │   └── tower.tscn / .gd
-│   │   ├── projectile/
-│   │   │   └── projectile.tscn / .gd
+│   │   ├── standard_bolt/
+│   │   │   └── standard_bolt.tscn / .gd
 │   │   ├── arc_projectile/            # (added when a spell needs unique arc behavior)
 │   │   │   └── arc_projectile.tscn / .gd
-│   │   ├── aoe_zone/
-│   │   │   └── aoe_zone.tscn / .gd
 │   │   ├── camera_rig/
 │   │   │   └── camera_rig.tscn / .gd
 │   │   ├── enemy/                      # SHARED enemy script, chapter-agnostic

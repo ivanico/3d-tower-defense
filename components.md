@@ -85,10 +85,8 @@ res://
 │   ├── game_object/                # one folder per scene
 │   │   ├── tower/
 │   │   │   └── tower.tscn          # single tower scene, driven by TowerDefinition
-│   │   ├── projectile/
-│   │   │   └── projectile.tscn     # generic straight-line projectile
-│   │   ├── aoe_zone/
-│   │   │   └── aoe_zone.tscn       # generic ground-targeted AoE burst
+│   │   ├── standard_bolt/
+│   │   │   └── standard_bolt.tscn  # generic straight-line projectile (spells.md archetype #2)
 │   │   ├── camera_rig/
 │   │   │   └── camera_rig.tscn     # fixed-angle Camera3D rig
 │   │   └── chap1/                  # enemies grouped by chapter
@@ -109,9 +107,7 @@ res://
 ├── resources/
 │   ├── spells/
 │   │   ├── spell_definition.gd     # base Resource class
-│   │   ├── spell_basic_bolt.tres
-│   │   ├── spell_basic_aoe.tres
-│   │   └── spell_basic_passive.tres
+│   │   ├── spell_<archetype>_<school>.tres  # the 20 catalog spells (spells.md §4)
 │   ├── upgrades/
 │   │   ├── stat_upgrade_definition.gd
 │   │   ├── upgrade_damage.tres
@@ -156,7 +152,7 @@ res://
 enum GamePhase      { WAVE, DRAFT, BOSS, DEFEAT, VICTORY }
 enum DamageType     { NORMAL, MAGIC, PIERCING }
 enum ArmorType      { UNARMORED, HEAVY }
-enum SpellCategory  { PROJECTILE, AOE_BURST, PASSIVE }
+enum SpellCategory  { PROJECTILE, PASSIVE, ORB, AOE_AREA }
 enum TargetMode     { CLOSEST }
 enum CardRarity     { COMMON, RARE, EPIC }
 enum SynergyTag     { OFFENSE, ARMOR, UTILITY }
@@ -366,7 +362,7 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
   (projectile, AoE zone) right before it enters the scene tree. Pure data +
   the `Area3D` shape; no behavior beyond carrying these two values for the
   hurtbox to read.
-- **Used by**: `projectile.tscn`, `Arcprojectile.tscn`, `aoe_zone.tscn`.
+- **Used by**: `standard_bolt.tscn`, `Arcprojectile.tscn`, the spell archetype scenes (`chain_bolt`, `line_aoe_bolt`, `aoe_area`).
 
 ### `move_to_target_component.gd`
 - **What it does**: `class_name MoveToTargetComponent extends Node`. Exports
@@ -498,7 +494,7 @@ scene to use — `projectile.tscn` or `Arcprojectile.tscn`).
   script — movement, health, damage-taking, flashing, and dying are all
   delegated.
 
-### `projectile.tscn` / `Arcprojectile.tscn` / `aoe_zone.tscn`
+### `standard_bolt.tscn` / `Arcprojectile.tscn`
 - Generic, reused by every spell of that category. `Arcprojectile.tscn`
   computes a parabolic `Y` path from spawn point to target point (see
   `mechanics.md` Verticality Rules) instead of a straight line — this is the

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SpellDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/spells/spell_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+spell_id = "area_blizzard"
+spell_name = "Blizzard"
+description = "A frozen storm that chills and slows everyone inside."
+rarity = 2
+spell_category = 3
+damage_type = 1
+tags = Array[int]([2])
+damage = 8.0
+cooldown = 6.0
+range = 6.5
+aoe_radius = 2.5
+pierce_count = 0
+projectile_speed = 14.0
+stack_max = 1
+duration = 4.0
+tick_interval = 0.5
+shard_spawn_interval = 0.2

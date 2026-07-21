@@ -4,15 +4,20 @@
 
 [resource]
 script = ExtResource("1")
-spell_id = "basic_bolt"
-spell_name = "Bolt"
-description = "A targeted bolt of magical energy."
+spell_id = "orb_void"
+spell_name = "Orb of the Void"
+description = "Orbits the tower. Pure damage, never resisted."
 rarity = 0
-spell_category = 0
+spell_category = 2
 damage_type = 2
 tags = Array[int]([0])
-damage = 60.0
-cooldown = 1.0
-range = 8.0
+damage = 14.0
+cooldown = 0.0
+range = 0.0
 aoe_radius = 0.0
 pierce_count = 0
+projectile_speed = 14.0
+stack_max = 8
+orbit_radius = 2.4
+orbit_speed = 90.0
+orb_hit_interval = 0.5

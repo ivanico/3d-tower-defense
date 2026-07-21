@@ -12,4 +12,4 @@ base_damage = 20.0
 base_fire_rate = 1.0
 base_range = 8.0
 base_armor = 0.0
-starting_spell_id = "basic_bolt"
+starting_spell_id = "bolt_thorn"

@@ -97,6 +97,12 @@ func _is_eligible(card: Resource) -> bool:
 		return false
 	var count: int = _taken_counts.get(cid, 0)
 	if count == 0:
+		if card is SpellDefinition and card.spell_category != Constants.SpellCategory.PASSIVE \
+				and GameState.active_spells.size() >= Constants.MAX_SPELL_SLOTS:
+			# All spell slots taken: never offer a NEW spell the pick
+			# couldn't add (GameState.apply_card would silently drop it).
+			# Owned spells below stay offerable — stacking needs no slot.
+			return false
 		return true
 	if card is SpellDefinition:
 		# Spells stay draftable while under stack_max (spells.md Task S-00);
