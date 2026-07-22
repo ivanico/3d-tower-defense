@@ -78,11 +78,15 @@ func start_run(tower_def) -> void:
 
 func gain_xp(amount: int) -> void:
 	run_xp += amount
+	var level_ups_this_call := 0
 	while run_xp >= run_xp_to_next:
 		run_xp -= run_xp_to_next
 		run_level += 1
 		run_xp_to_next = int(run_xp_to_next * Constants.XP_LEVEL_SCALE_PER_LEVEL)
+		level_ups_this_call += 1
 		EventBus.level_up.emit(run_level)
+	if level_ups_this_call > 0:
+		print("DEBUGTEST gain_xp(", amount, ") -> ", level_ups_this_call, " level-up(s), now level ", run_level, " wave=", wave_number)
 	xp_bar_updated.emit(run_xp, run_xp_to_next, run_level)
 
 func take_damage(amount: float) -> void:

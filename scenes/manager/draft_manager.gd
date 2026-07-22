@@ -28,14 +28,17 @@ func reset_run() -> void:
 	_pool_exhausted = false
 
 func open_draft(trigger: String = "wave_clear") -> void:
+	print("DEBUGTEST open_draft(", trigger, ") phase=", GameState.phase, " queue_before=", _queue.size())
 	if GameState.phase == Constants.GamePhase.DRAFT:
 		_queue.append(trigger)
+		print("DEBUGTEST   queued, queue_after=", _queue.size())
 		return
 	if trigger == "wave_clear":
 		_start_wave_after = true
 	if _pool_exhausted:
 		if _start_wave_after:
 			_start_wave_after = false
+			print("DEBUGTEST start_wave_requested (pool_exhausted path) wave=", GameState.wave_number)
 			EventBus.start_wave_requested.emit(GameState.wave_number)
 		return
 	_do_open_draft(trigger)
@@ -43,6 +46,7 @@ func open_draft(trigger: String = "wave_clear") -> void:
 func _do_open_draft(trigger: String) -> void:
 	_draft_trigger = trigger
 	_draft_cards = get_draft_cards()
+	print("DEBUGTEST _do_open_draft(", trigger, ") cards=", _draft_cards.size(), " queue=", _queue.size())
 	if _draft_cards.is_empty():
 		_pool_exhausted = true
 		if not _queue.is_empty():
@@ -54,6 +58,7 @@ func _do_open_draft(trigger: String) -> void:
 		_close_draft()
 		if _start_wave_after:
 			_start_wave_after = false
+			print("DEBUGTEST start_wave_requested (exhausted+empty_queue path) wave=", GameState.wave_number)
 			EventBus.start_wave_requested.emit(GameState.wave_number)
 		return
 	GameState.phase = Constants.GamePhase.DRAFT
@@ -89,6 +94,7 @@ func select_card(card: Resource) -> void:
 		EventBus.phase_changed.emit(GameState.phase)
 		if _start_wave_after:
 			_start_wave_after = false
+			print("DEBUGTEST start_wave_requested (select_card path) wave=", GameState.wave_number)
 			EventBus.start_wave_requested.emit(GameState.wave_number)
 
 func _is_eligible(card: Resource) -> bool:

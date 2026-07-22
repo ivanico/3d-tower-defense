@@ -94,10 +94,27 @@ func _spawn_shard() -> void:
 	var r := sqrt(randf()) * spell.aoe_radius
 	var a := randf() * TAU
 	var ground := Vector3(cos(a) * r, 0.0, sin(a) * r)
-	shard.position = ground + Vector3(0, SHARD_DROP_HEIGHT, 0)
+	var spawn_pos := _get_shard_spawn_position(ground)
+	# Position and rotation are set separately (never the whole transform) so
+	# the scale set above is never touched.
+	shard.position = spawn_pos
+	shard.quaternion = _get_shard_rotation(ground, spawn_pos)
 	var tw := shard.create_tween()
 	tw.tween_property(shard, "position", ground, SHARD_DROP_TIME).set_ease(Tween.EASE_IN)
 	tw.tween_callback(_on_shard_landed.bind(ground))
+
+# Where a shard starts falling from, given where it will land. Default:
+# straight above (a vertical drop).
+func _get_shard_spawn_position(ground: Vector3) -> Vector3:
+	return ground + Vector3(0, SHARD_DROP_HEIGHT, 0)
+
+# How the shard is tilted to match its own fall path. Default: no tilt
+# (straight vertical drop needs none). Shortest-arc rotation from "straight
+# down" to the actual spawn->ground direction, so it's always exactly
+# consistent with wherever _get_shard_spawn_position puts the shard.
+func _get_shard_rotation(ground: Vector3, spawn_pos: Vector3) -> Quaternion:
+	var drop_dir := (ground - spawn_pos).normalized()
+	return Quaternion(Vector3.DOWN, drop_dir)
 
 func _on_shard_landed(local_pos: Vector3) -> void:
 	if not _active:

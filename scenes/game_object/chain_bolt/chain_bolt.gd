@@ -63,7 +63,7 @@ func _physics_process(delta: float) -> void:
 	if not _initialized:
 		return
 	_age += delta
-	if _age > MAX_LIFETIME_SEC or not is_instance_valid(_target):
+	if _age > MAX_LIFETIME_SEC or not is_instance_valid(_target) or not _target.is_inside_tree():
 		_despawn()
 		return
 	# Tumbling-shuriken spin — sells the motion regardless of travel direction.

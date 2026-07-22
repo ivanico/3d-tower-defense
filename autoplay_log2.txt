@@ -1,0 +1,120 @@
+Godot Engine v4.4.stable.official.4c311cbee - https://godotengine.org
+
+SpellRegistry: 20 spells + 3 stat upgrades loaded (23 draft cards total)
+DEBUGTEST start_wave(1)
+DEBUGTEST   spawned 3 enemies, active_enemies=3
+DEBUGTEST _finish_wave wave=1
+DEBUGTEST open_draft(wave_clear) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(wave_clear) cards=3 queue=0
+DEBUGTEST open_draft(level_up) phase=1 queue_before=0
+DEBUGTEST   queued, queue_after=1
+DEBUGTEST gain_xp(55) -> 1 level-up(s), now level 2 wave=2
+DEBUGTEST AUTOPLAY selecting card wave=2 level=2 frame=1324
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST AUTOPLAY selecting card wave=2 level=2 frame=1325
+DEBUGTEST start_wave_requested (select_card path) wave=2
+DEBUGTEST start_wave(2)
+DEBUGTEST   spawned 5 enemies, active_enemies=5
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(40) -> 1 level-up(s), now level 3 wave=2
+DEBUGTEST AUTOPLAY selecting card wave=2 level=3 frame=2339
+DEBUGTEST _finish_wave wave=2
+DEBUGTEST open_draft(wave_clear) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(wave_clear) cards=3 queue=0
+DEBUGTEST AUTOPLAY selecting card wave=3 level=3 frame=3079
+DEBUGTEST start_wave_requested (select_card path) wave=3
+DEBUGTEST start_wave(3)
+DEBUGTEST   spawned 7 enemies, active_enemies=7
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(45) -> 1 level-up(s), now level 4 wave=3
+DEBUGTEST AUTOPLAY selecting card wave=3 level=4 frame=3872
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(45) -> 1 level-up(s), now level 5 wave=3
+DEBUGTEST AUTOPLAY selecting card wave=3 level=5 frame=4754
+DEBUGTEST _finish_wave wave=3
+DEBUGTEST open_draft(wave_clear) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(wave_clear) cards=3 queue=0
+DEBUGTEST AUTOPLAY selecting card wave=4 level=5 frame=5079
+DEBUGTEST start_wave_requested (select_card path) wave=4
+DEBUGTEST start_wave(4)
+DEBUGTEST   spawned 10 enemies, active_enemies=10
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(40) -> 1 level-up(s), now level 6 wave=4
+DEBUGTEST AUTOPLAY selecting card wave=4 level=6 frame=5858
+DEBUGTEST _finish_wave wave=4
+DEBUGTEST open_draft(wave_clear) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(wave_clear) cards=3 queue=0
+DEBUGTEST open_draft(level_up) phase=1 queue_before=0
+DEBUGTEST   queued, queue_after=1
+DEBUGTEST gain_xp(55) -> 1 level-up(s), now level 7 wave=5
+DEBUGTEST AUTOPLAY selecting card wave=5 level=7 frame=6603
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST AUTOPLAY selecting card wave=5 level=7 frame=6604
+DEBUGTEST start_wave_requested (select_card path) wave=5
+DEBUGTEST start_wave(5)
+DEBUGTEST   spawned 15 enemies, active_enemies=15
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(45) -> 1 level-up(s), now level 8 wave=5
+DEBUGTEST AUTOPLAY selecting card wave=5 level=8 frame=7852
+DEBUGTEST _finish_wave wave=5
+DEBUGTEST open_draft(wave_clear) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(wave_clear) cards=3 queue=0
+DEBUGTEST AUTOPLAY selecting card wave=6 level=8 frame=8928
+DEBUGTEST start_wave_requested (select_card path) wave=6
+DEBUGTEST start_wave(6)
+DEBUGTEST   spawned 23 enemies, active_enemies=23
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(20) -> 1 level-up(s), now level 9 wave=6
+DEBUGTEST AUTOPLAY selecting card wave=6 level=9 frame=9227
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(45) -> 1 level-up(s), now level 10 wave=6
+DEBUGTEST AUTOPLAY selecting card wave=6 level=10 frame=10557
+DEBUGTEST _finish_wave wave=6
+DEBUGTEST open_draft(wave_clear) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(wave_clear) cards=3 queue=0
+DEBUGTEST AUTOPLAY selecting card wave=7 level=10 frame=11647
+DEBUGTEST start_wave_requested (select_card path) wave=7
+DEBUGTEST start_wave(7)
+DEBUGTEST   spawned 34 enemies, active_enemies=34
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(20) -> 1 level-up(s), now level 11 wave=7
+DEBUGTEST AUTOPLAY selecting card wave=7 level=11 frame=11983
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(55) -> 1 level-up(s), now level 12 wave=7
+DEBUGTEST AUTOPLAY selecting card wave=7 level=12 frame=13255
+DEBUGTEST _finish_wave wave=7
+DEBUGTEST open_draft(wave_clear) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(wave_clear) cards=3 queue=0
+DEBUGTEST AUTOPLAY selecting card wave=8 level=12 frame=14566
+DEBUGTEST start_wave_requested (select_card path) wave=8
+DEBUGTEST start_wave(8)
+DEBUGTEST   spawned 51 enemies, active_enemies=51
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(20) -> 1 level-up(s), now level 13 wave=8
+DEBUGTEST AUTOPLAY selecting card wave=8 level=13 frame=14955
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(45) -> 1 level-up(s), now level 14 wave=8
+DEBUGTEST AUTOPLAY selecting card wave=8 level=14 frame=16406
+DEBUGTEST open_draft(level_up) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(level_up) cards=3 queue=0
+DEBUGTEST gain_xp(55) -> 1 level-up(s), now level 15 wave=8
+DEBUGTEST AUTOPLAY selecting card wave=8 level=15 frame=18449
+DEBUGTEST _finish_wave wave=8
+DEBUGTEST open_draft(wave_clear) phase=0 queue_before=0
+DEBUGTEST _do_open_draft(wave_clear) cards=3 queue=0
+DEBUGTEST AUTOPLAY selecting card wave=9 level=15 frame=18559
+DEBUGTEST start_wave_requested (select_card path) wave=9
+DEBUGTEST start_wave(9)
+DEBUGTEST   spawned 60 enemies, active_enemies=60
+DEBUGTEST AUTOPLAY done, final wave=9 frames=36000

@@ -24,6 +24,7 @@ func _ready() -> void:
 	add_child(_wave_timer)
 
 func start_wave(wave_number: int) -> void:
+	print("DEBUGTEST start_wave(", wave_number, ")")
 	_current_wave = wave_number
 	_active_enemies.clear()
 	_wave_timer.start(Constants.WAVE_DURATION_MAX)
@@ -31,9 +32,12 @@ func start_wave(wave_number: int) -> void:
 		_spawn_enemy(_pick_boss())
 		EventBus.boss_spawned.emit()
 		EventBus.wave_started.emit(wave_number)
+		print("DEBUGTEST   spawned BOSS")
 		return
-	for definition in _get_wave_composition(wave_number):
+	var comp := _get_wave_composition(wave_number)
+	for definition in comp:
 		_spawn_enemy(definition)
+	print("DEBUGTEST   spawned ", comp.size(), " enemies, active_enemies=", _active_enemies.size())
 	EventBus.wave_started.emit(wave_number)
 
 func _pick_boss() -> EnemyDefinition:
@@ -42,7 +46,8 @@ func _pick_boss() -> EnemyDefinition:
 	return chapter.boss_pool[randi() % chapter.boss_pool.size()]
 
 func _get_wave_composition(wave_number: int) -> Array[EnemyDefinition]:
-	var count: int = mini(Constants.WAVE_ENEMY_COUNT_BASE + wave_number, Constants.WAVE_ENEMY_COUNT_MAX)
+	var exp_count := Constants.WAVE_ENEMY_COUNT_BASE * pow(Constants.WAVE_ENEMY_COUNT_GROWTH_RATE, wave_number - 1)
+	var count: int = mini(roundi(exp_count), Constants.WAVE_ENEMY_COUNT_MAX)
 	# Index 0 is the baseline enemy, index 1 is the fast/small variant (gated to
 	# later waves), indices 2+ are additional basic-tier variants available from
 	# wave 1 onward alongside index 0.
@@ -99,11 +104,14 @@ func _get_spawn_position() -> Vector3:
 	return dir * radius + Vector3(0.0, SPAWN_HEIGHT, 0.0)
 
 func _on_enemy_died(enemy: Node, _position: Vector3) -> void:
+	var had := _active_enemies.has(enemy)
 	_active_enemies.erase(enemy)
+	print("DEBUGTEST enemy_died was_tracked=", had, " remaining=", _active_enemies.size())
 	if _active_enemies.is_empty():
 		_finish_wave()
 
 func _on_wave_timeout() -> void:
+	print("DEBUGTEST wave_timeout wave=", _current_wave, " remaining=", _active_enemies.size())
 	if _active_enemies.is_empty():
 		return
 	for enemy in _active_enemies:
@@ -113,6 +121,7 @@ func _on_wave_timeout() -> void:
 	_finish_wave()
 
 func _finish_wave() -> void:
+	print("DEBUGTEST _finish_wave wave=", _current_wave)
 	_wave_timer.stop()
 	if _current_wave >= chapter.wave_count:
 		EventBus.boss_died.emit()

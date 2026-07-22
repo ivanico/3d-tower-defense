@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="SpellDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SpellDefinition" load_steps=3 format=3 uid="uid://bhdwcrskyrvlx"]
 
-[ext_resource type="Script" path="res://resources/spells/spell_definition.gd" id="1"]
+[ext_resource type="Script" uid="uid://hqdb16klf778" path="res://resources/spells/spell_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/aoe_area/blizzard/blizzard.tscn" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -12,12 +13,21 @@ spell_category = 3
 damage_type = 1
 tags = Array[int]([2])
 damage = 8.0
-cooldown = 6.0
+cooldown = 5.0
 range = 6.5
 aoe_radius = 2.5
 pierce_count = 0
 projectile_speed = 14.0
-stack_max = 1
+projectile_scene = ExtResource("2")
+bounce_radius = 4.0
+max_bounces = 2
+damage_falloff_per_bounce = 1.0
+orbit_radius = 2.0
+orbit_speed = 90.0
+orb_hit_interval = 0.5
 duration = 4.0
 tick_interval = 0.5
 shard_spawn_interval = 0.2
+max_travel_distance = 30.0
+passive_value = 0.0
+stack_max = 1

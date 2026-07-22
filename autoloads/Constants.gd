@@ -67,7 +67,8 @@ const TOWER_IDLE_ANIM_SPEED_SCALE:       float = 1.0 / 3.0
 
 # Wave composition (Epic 04)
 const WAVE_ENEMY_COUNT_BASE:             int   = 3
-const WAVE_ENEMY_COUNT_MAX:              int   = 20
+const WAVE_ENEMY_COUNT_GROWTH_RATE:      float = 1.5    # count = BASE * RATE^(wave-1), rounded, capped at MAX
+const WAVE_ENEMY_COUNT_MAX:              int   = 60
 const WAVE_FAST_ENEMY_MIN_WAVE:          int   = 5
 const WAVE_BASIC_ENEMY_WEIGHT:           int   = 70
 const WAVE_FAST_ENEMY_WEIGHT:            int   = 30

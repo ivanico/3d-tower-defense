@@ -10,6 +10,7 @@ var target_position: Vector3 = Vector3.ZERO
 # Written by StatusEffectComponent (1.0 = no slow, 0.6 = 40% slow).
 var slow_multiplier: float = 1.0
 var _bob_time: float = 0.0
+var _faced_initially: bool = false
 
 func _physics_process(delta: float) -> void:
 	var body := get_parent() as CharacterBody3D
@@ -19,6 +20,15 @@ func _physics_process(delta: float) -> void:
 	var origin := body.global_position
 	var direction := (target_position - origin)
 	var effective_speed := speed * slow_multiplier
+
+	# Enemies walk in a straight line to the fixed tower — face once at
+	# spawn, toward the tower, and never recompute it again. Recomputing
+	# facing every frame from post-move_and_slide() velocity used to make
+	# enemies snap/spin whenever collision with another enemy deflected
+	# their velocity for a frame.
+	if not _faced_initially:
+		_update_facing(body, direction)
+		_faced_initially = true
 
 	if is_flying:
 		_bob_time += delta
@@ -43,7 +53,6 @@ func _physics_process(delta: float) -> void:
 			body.velocity.y = 0.0
 
 	body.move_and_slide()
-	_update_facing(body, body.velocity)
 
 func _update_facing(body: CharacterBody3D, direction: Vector3) -> void:
 	var flat := Vector3(direction.x, 0.0, direction.z)

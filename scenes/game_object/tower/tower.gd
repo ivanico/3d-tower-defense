@@ -116,8 +116,11 @@ func _try_fire(spell: SpellDefinition) -> void:
 
 func _fire_aoe_area(spell: SpellDefinition, target: Node3D) -> void:
 	# Zone lands at the enemy's position at the moment of cast and never
-	# moves afterwards (spells.md Task S-04).
-	var zone := ObjectPool.acquire(AOE_AREA_SCENE)
+	# moves afterwards (spells.md Task S-04). A spell's .tres can point at
+	# its own zone scene (Blizzard, Rain of Fire); the generic aoe_area is
+	# the fallback for any AoE-Area spell that doesn't need its own look.
+	var scene: PackedScene = spell.projectile_scene if spell.projectile_scene != null else AOE_AREA_SCENE
+	var zone := ObjectPool.acquire(scene)
 	zone.initialize(Vector3(target.global_position.x, 0.0, target.global_position.z), spell)
 
 func _fire_projectile(spell: SpellDefinition, target: Node3D) -> void:
