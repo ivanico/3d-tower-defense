@@ -1,117 +1,119 @@
 # UI Assets Checklist — Tower's Last Stand (3D)
 
-> Everything you need to make/source in a 2D art tool for the UI layer.
-> Source: `assets.md` Section 4 (+ cross-refs from epics 03/05/06/08).
-> All UI is a flat 2D `CanvasLayer` concern — no 3D pipeline needed for
-> anything on this list.
+> [x] = DONE, [ ] = TO MAKE. "Generate" = ChatGPT. "Download" = Google Fonts.
 
----
+=====================================================================
+## DONE
+=====================================================================
 
-## 1. Bars
+CURRENCY / TOP BAR
+- [x] icon_currency_materials.png
+- [x] icon_currency_energy.png
+- [x] ui_topbar_pill_bg.png
 
-- [ ] `ui_hp_bar_bg.png` — Tower HP bar background
-- [ ] `ui_hp_bar_fill.png` — Tower HP bar fill
-- [ ] `ui_xp_bar_bg.png` — XP bar background
-- [ ] `ui_xp_bar_fill.png` — XP bar fill
+NAVIGATION
+- [x] icon_nav_worldmap.png
+- [x] icon_nav_garage.png
+- [x] icon_nav_codex.png
 
----
+WORLD MAP
+- [x] ui_play_button.png
+- [x] ui_chapter_node_frame.png
+- [x] ui_locked_overlay.png
+- [x] ui_notification_badge.png
 
-## 2. Draft Card Backgrounds (9-slice, one per rarity)
+TOWER GARAGE STARS
+- [x] ui_star_filled.png
+- [x] ui_star_empty.png
 
-- [ ] `ui_card_bg_common.png`
-- [ ] `ui_card_bg_rare.png`
-- [ ] `ui_card_bg_epic.png`
+BARS (HUD)
+- [x] ui_hp_bar_bg.png
+- [x] ui_hp_bar_fill.png
+- [x] ui_xp_bar_bg.png
+- [x] ui_xp_bar_fill.png
 
----
+DRAFT CARD BACKGROUNDS
+- [x] ui_card_bg_common.png
+- [x] ui_card_bg_rare.png
+- [x] ui_card_bg_epic.png
+- [x] ui_card_bg_legendary.png (spare)
 
-## 3. Spell Icons (one per v1 spell)
+SPELL ICONS (all 5 schools + cross-school)
+- [x] Fire, Frost, Poison, Shadow, Nature + Chain etc.
 
-- [ ] `icon_spell_basic_bolt.png`
-- [ ] `icon_spell_basic_aoe.png`
-- [ ] `icon_spell_basic_passive.png`
+IN-RUN UPGRADE ICONS (drafted during gameplay)
+- [x] icon_upgrade_damage_fire.png
+- [x] icon_upgrade_damage_frost.png
+- [x] icon_upgrade_damage_poison.png
+- [x] icon_upgrade_damage_shadow.png
+- [x] icon_upgrade_damage_nature.png
+- [x] icon_upgrade_armor.png     (shield)
+- [x] icon_upgrade_max_hp.png    (heart)
+- [x] icon_upgrade_fire_rate.png (attack speed)
 
-> Extend later: new spells follow `icon_spell_<id>.png` naming.
+=====================================================================
+## TO MAKE (generate in ChatGPT)
+=====================================================================
 
----
+A. SCHOOL BONUS EMBLEMS — 5
+   (shown when all-in on one school)
+- [ ] icon_bonus_fire.png  (in progress)
+- [ ] icon_bonus_frost.png
+- [ ] icon_bonus_poison.png
+- [ ] icon_bonus_shadow.png
+- [ ] icon_bonus_nature.png
 
-## 4. Stat Upgrade Icons (one per v1 upgrade)
+B. GARAGE-HUB STAT READOUT ICONS
+   (tower's current ATK / HP shown on the garage screen)
+- [ ] icon_stat_atk.png   (sword)
+- [ ] icon_stat_hp.png     (heart — OR reuse icon_upgrade_max_hp if you like)
+- [ ] icon_tower_ability.png  (your tower's ability — 1)
 
-- [ ] `icon_upgrade_damage.png`
-- [ ] `icon_upgrade_fire_rate.png`
-- [ ] `icon_upgrade_max_hp.png`
+C. REWARDS & MATERIALS
+   Chests (2-3):
+   - [ ] icon_chest_common.png
+   - [ ] icon_chest_rare.png
+   - [ ] icon_chest_epic.png  (optional)
+   Spell upgrade scroll-mats (1 per school):
+   - [ ] icon_mat_scroll_fire.png
+   - [ ] icon_mat_scroll_frost.png
+   - [ ] icon_mat_scroll_poison.png
+   - [ ] icon_mat_scroll_shadow.png
+   - [ ] icon_mat_scroll_nature.png
+   Rare tower material:
+   - [ ] icon_mat_tower_rare.png
 
-> Extend later: new upgrades follow `icon_upgrade_<id>.png` naming.
+D. BACKGROUNDS (full-screen 2D images, portrait 1080x1920)
+- [ ] bg_worldmap.png       (sky/scenery behind the world map)
+- [ ] bg_garage.png         (backdrop behind garage screen)
+- [ ] bg_menu_generic.png   (reusable backdrop for codex/other menus)
+- [ ] bg_victory.png        (optional)
+- [ ] bg_defeat.png         (optional)
 
----
+E. CHAPTER IMAGE
+- [ ] chapter_01_image.png  (flat 2D painting of the arena; sits inside
+                            ui_chapter_node_frame.png)
 
-## 5. Synergy Tag Icons (one per v1 tag)
+F. TOWER ICON
+- [ ] icon_tower_default.png (tower portrait for the garage selection grid;
+                            +1 per future tower)
 
-- [ ] `icon_tag_offense.png`
-- [ ] `icon_tag_armor.png`
-- [ ] `icon_tag_utility.png`
+G. CHEST KEYS (only if chests need keys to open)
+- [ ] icon_key_common.png
+- [ ] icon_key_rare.png
 
-> Extend later: new tags follow `icon_tag_<id>.png` naming.
+H. BUTTONS & PANELS — 3
+- [ ] ui_button_primary.png
+- [ ] ui_button_secondary.png
+- [ ] ui_panel_dark.png
 
----
+-----
+NOTE: Monetization UI (shop packs, subscription cards, battle pass, gems,
+ad/"watch video" button, gift icons) is LATER / design-only per mechanics.md
+Sec 12 — not built for v1. Say so if you want them pulled into scope.
 
-## 6. Buttons & Panels (9-slice)
-
-- [ ] `ui_button_primary.png`
-- [ ] `ui_button_secondary.png`
-- [ ] `ui_panel_dark.png`
-
----
-
-## 7. Tower Garage Extras
-
-Not named as files in `assets.md`, but called out as needed in Epic 05:
-
-- [ ] Filled star icon (tower star rating)
-- [ ] Empty star icon (tower star rating)
-
----
-
-## 8. Fonts
-
-- [ ] Bold display font — title screen, wave/level-up banners
-      (e.g. **Cinzel** or **Bebas Neue**, Google Fonts, OFL license)
-- [ ] Clean sans-serif — card text, stat text, body UI
-      (e.g. **Nunito** or **Roboto**, Google Fonts)
-
----
-
-## 9. Where each asset gets used (scene reference)
-
-| Asset group | Used in scene |
-|---|---|
-| HP bar, XP bar, tag icons | `HUD.tscn`, `TagRowWidget.tscn` |
-| Card backgrounds, spell/upgrade icons | `DraftCard.tscn`, `DraftUI.tscn` |
-| Tag icon (single) | `SynergyBanner.tscn` |
-| Buttons, dark panel | `victory_screen.tscn`, `defeat_screen.tscn`, generic UI dialogs |
-| Star icons | `tower_garage.tscn` |
-| Both fonts | Title screen, HUD, draft cards, banners, victory/defeat screens |
-
----
-
-## 10. NOT on this list (don't make these as flat sprites)
-
-These look like "UI" but are actually 3D/world-space, built in Epic 06/08 —
-not flat art:
-
-- Enemy/boss floating HP bars → billboarded `Sprite3D`/`Label3D` in 3D space
-- Damage numbers → `Label3D` in 3D world space
-- Hit sparks / death burst / level-up ring → `GPUParticles3D` textures
-  (tracked separately in `assets.md` Section 3, not this file)
-
----
-
-## 11. Free / fallback sources
-
-- [Google Fonts](https://fonts.google.com) — both fonts above, OFL license
-- [kenney.nl](https://kenney.nl) — pre-made UI kit if you don't want to
-  hand-make 9-slice panels/buttons
-
----
-
-**Total flat 2D files to make: 18** (4 bars + 3 card backs + 3 spell icons +
-3 upgrade icons + 3 tag icons + 2 buttons + 1 panel) **+ 2 star icons + 2 fonts.**
+=====================================================================
+## DOWNLOAD (not generated)
+=====================================================================
+- [ ] Bold display font (Cinzel / Bebas Neue)
+- [ ] Clean sans-serif (Nunito / Roboto)
