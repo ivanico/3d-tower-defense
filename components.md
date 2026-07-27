@@ -125,7 +125,7 @@ res://
     ├── models/                     # .glb from Meshy: towers/<tower_id>/, chap<N>/ — see assets.md
     ├── materials/
     ├── audio/
-    ├── ui/
+    ├── ui/                         # per-screen/shared subfolders — full tree in ui_assets.md
     └── fonts/
 ```
 
@@ -513,8 +513,169 @@ scene to use — `projectile.tscn` or `Arcprojectile.tscn`).
 
 Same shape as the original design's UI layer (`HUD`, `DraftUI`, `DraftCard`,
 `SynergyBanner`, `TagRowWidget`), unchanged in spirit since UI is a 2D
-`CanvasLayer` concern regardless of whether the game world is 2D or 3D. One
-addition:
+`CanvasLayer` concern regardless of whether the game world is 2D or 3D.
+
+### Reusable widgets (`scenes/ui/widget/<name>/<name>.tscn`)
+
+One folder per widget; screens **instance** the widget instead of rebuilding
+it, so a texture/scale change inside the widget scene applies everywhere at
+once. Each art texture is referenced in exactly ONE widget `.tscn` — swapping
+an asset version = changing that single texture reference. Built so far:
+`primary_button` (Button + `ui_button_primary.png` stylebox),
+`secondary_button` (Button + `ui_button_secondary_v3.png` stylebox),
+`currency_pill` (PanelContainer + `ui_topbar_pill_bg.png` stylebox; script with
+`@export icon/amount` + `set_amount()` so each instance picks its currency),
+`top_bar` (HBoxContainer instancing two `currency_pill`s: energy =
+`icon_currency_energy1.png`, materials = `icon_currency_materials.png`),
+`nav_button` (TextureButton + hidden `Badge` TextureRect =
+`ui_notification_badge.png`; icon set per instance via `texture_normal`),
+`nav_bar` (HBoxContainer instancing three `nav_button`s: worldmap =
+`icon_nav_worldmap1.png`, garage = `icon_nav_garage.png`, codex =
+`icon_nav_codex_v2.png`; screens toggle `<Button>/Badge.visible`),
+`hp_bar` / `xp_bar` (**fill-only** TextureProgressBars — no `texture_under`,
+so no frame or empty track, just a coloured pill that shrinks as the value
+drops. Textures are `ui_hp_bar_pill.png` / `ui_xp_bar_pill.png`: the same
+bar is **drawn procedurally**, not stretched from a texture: `value_bar.gd`
+(one `@tool` script shared by both widgets — do not duplicate it) generates a
+rounded-rect image at exactly `bar_size` with an anti-aliased edge, so the
+corners are geometrically correct at any size or proportion. This replaced a
+bitmap approach that squashed a 1563×235 pill into 740×56 — a 2:1 non-uniform
+scale that flattened the round caps into stretched ovals, which is what the
+user kept rejecting. Inspector properties: `bar_size` (px), `color_top` /
+`color_bottom` (gradient), `corner_radius` (px, 8 = chosen look). `scale` is
+forced to 1 — **never scale these bars**. Both carry `modulate` alpha 0.72 so
+enemies stay visible. `hud.gd` drives them via `value` 0–100, unchanged. All
+the bar PNGs (`*_bg_*`, `*_fill_*`, `*_pill*`) are now unused, kept only in
+case the painted look is ever wanted back),
+`chapter_node` (flat Button + chapter image `chapter_01_image_v2.png` +
+frame `ui_chapter_node_frame_v2.png` + PlayBar `ui_play_button_v3.png`
+holding the chapter-name label + hidden `ui_locked_overlay.png`; script
+exports `chapter_image`/`chapter_title`/`locked`),
+`star_row` (5 TextureRects swapped between `ui_star_filled/empty.png` by
+`set_stars()`; `Constants.TOWER_MAX_STARS` worth of nodes live in the scene
+so they're editor-tunable),
+`meta_row` (`class_name MetaRow` — the ONE shared upgrade row for BOTH meta
+screens. Layout is horizontal: `HBox` = Icon · Info (NameLabel, StatusSlot
+holding either a `star_row` or a RankLabel, StatsRow with two icon+value
+chips OR one plain stats line) · Actions (hidden "In Use" CheckButton +
+`primary_button` UpgradeButton at a fixed 280×154). Screens call
+`set_row_icon/set_title/show_stars|show_rank/set_stat_chip|set_stat_text/
+set_upgrade_cost|set_upgrade_maxed/show_select` and connect its
+`upgrade_pressed`/`select_pressed` signals — **never build row Controls in
+code, and never copy this scene per screen**. Its panel is a
+**StyleBoxFlat**, not the panel art — see the sizing rules below).
+
+**Wired screens:** `world_map.tscn` uses `bg_worldmap.png` full-screen,
+`top_bar` (pills fed from `MetaManager.energy/materials` in `_refresh()`),
+`nav_bar` (Garage/Codex navigate, Worldmap disabled as current screen),
+and instances `chapter_node` per chapter in the grid (`world_map.gd`
+`_build_chapter_node()`); the old EnergyLabel + plain bottom buttons are
+gone.
+
+**Victory/defeat screens:** both use `ui_panel_dark_v2.png` as the stats
+panel — sized 800×1099 to match the art's 0.73 aspect, with every label and
+button positioned inside the panel's interior rect (rule 2/3 above) —
+`icon_currency_materials.png` beside the materials-earned label
+(label moved to `StatsPanel/MaterialsRow/MaterialsLabel`), and widget
+buttons instanced under the original node names (`ContinueButton`/
+`RetryButton` = `primary_button`, `MapButton` = `secondary_button`) so
+the scripts' typed `Button` refs and signal wiring are unchanged.
+
+### Theme (`resources/theme/ui_theme.tres`)
+
+Registered as `gui/theme/custom` in `project.godot`, so every Control inherits
+it. Holds the base font size (30, tuned for the 1080×1920 portrait target) and
+the default Label colour + dark outline. **Fonts are not in yet** — this uses
+the engine default face; assigning a `.ttf` from `assets/fonts/` to
+`default_font` here restyles the whole game at once. Change ordinary text
+sizing *here*, not with per-node `theme_override_font_sizes` — those exist only
+where a control genuinely differs (titles, HUD readouts).
+
+### Tuning the HUD by hand (no code needed)
+
+Everything is a plain number in the Godot inspector. Open
+`scenes/main/game_world.tscn` and pick a node under `HUD`.
+
+| What you want to change | Where | How |
+|---|---|---|
+| Bar **width / height** | `HUD/HPBar` and `HUD/XPBar` → **Bar Size** | Type pixels, e.g. `740, 56`. Set the **same value on both**. The capsule is redrawn at that exact size, so ends stay perfectly round at any proportions. |
+| Bar **colours** | same nodes → **Color Top** / **Color Bottom** | Vertical gradient of the bar. |
+| **How round the corners are** | same nodes → **Corner Radius** | In pixels. `0` = square, `8` = current (slightly rounded), `28` (half the height) = full capsule. |
+| Bar **position** | same nodes → Layout → Transform → **Position** | The bar's top-left corner on screen. Nothing hidden — rect = what you see. |
+| **Gap between the bars** | `HPBar` Position **Y** | Gap = HPBar.y − (XPBar.y + height). Currently 180 − (100 + 56) = **24 px**. |
+| **Horizontal centring** | both bars' Position **X** | Centred X = (1080 − width) ÷ 2. For 740 wide that's **170**. |
+| **Transparency** | both bars → **Modulate** → alpha | 1.0 = solid, 0.72 = current. Keep both equal. |
+| **Text size** | `HPLabel` / `LevelLabel` → Theme Overrides → Font Sizes | — |
+| **Where the text sits** | `HPLabel` / `LevelLabel` → Offset **Top and Bottom** | Both set to the *same* number with `grow_vertical = Both`, so text centres on that line and grows evenly either side. LevelLabel = `100` (Lv bar's top edge → text straddles it); HPLabel = `208` (HP bar's centre). |
+
+**Never set `scale` on these bars.** Scaling a bar non-uniformly is what
+flattened the round caps into stretched ovals; `value_bar.gd` keeps scale at
+1 and redraws the capsule instead. Change `bar_size`, not scale.
+
+**If the bars are 740×56 at x 170, the numbers are:** XPBar y `100`,
+LevelLabel top/bottom `100`, HPBar y `180`, HPLabel top/bottom `208`.
+Move a bar and its label's anchor line has to move by the same amount.
+
+> ⚠️ **Close `game_world.tscn` in the editor before asking for changes to it.**
+> Godot writes its whole in-memory copy on save, so an open scene will silently
+> overwrite edits made to the file — that produced a HUD with new bar sizes at
+> stale positions, overlapping and off-centre.
+
+### UI art sizing rules (learned the hard way — read before placing art)
+
+The generated UI PNGs are very large and have thick decorative borders, so
+they break naive layouts. Three rules:
+
+1. **Never assign a raw icon to `Button.icon`.** The icons are ~1254×1254, and
+   a Button's minimum size includes its icon, so one icon inflated a row to
+   1641×1662, forced a horizontal scrollbar, and pushed text off the panel.
+   Always pair it with `expand_icon = true` **and**
+   `theme_override_constants/icon_max_width` (28–30). TextureRects are safe —
+   they use `expand_mode = 1` (ignore size) + `custom_minimum_size`.
+2. **Match the container to the art's aspect ratio, or don't use the art.**
+   `ui_panel_dark_v2` is 1070×1470 (0.73), `ui_button_primary` 1693×929
+   (1.82), `ui_button_secondary_v3` 2070×760 (2.72). Stretching a 0.73 panel
+   into a 3:1 row strip looks mangled. The victory/defeat panels are sized to
+   0.73 exactly, and every button instance keeps its source aspect; the wide
+   meta rows use a StyleBoxFlat instead.
+3. **These borders cannot be 9-sliced.** The panel frame is ~15% of width /
+   12% of height — at source scale a 9-patch corner would be 159 px, far
+   bigger than a row. So a textured StyleBox stretches the whole image, which
+   means **content margins must clear the border**: on-panel content has to
+   sit inside the interior rect (panel rect inset by 14.9% × 12.2%).
+
+`ScrollContainer`s on the meta screens set `horizontal_scroll_mode = 0` so a
+too-wide child can never produce a sideways scrollbar again.
+
+**Tower Garage:** `bg_garage.png` BG, `top_bar` fed from `MetaManager`,
+`nav_bar` (Garage disabled) **replacing the old "Back to Map" button**, and
+one `meta_row` per owned tower — stars from `star_row`, HP/damage shown as
+`icon_stat_hp`/`icon_stat_atk` chips, cost button from
+`Constants.TOWER_STAR_COSTS`. The tower portrait is data-driven:
+`TowerDefinition.icon` (new `@export`), set to `icon_tower_ancient.png` in
+`tower_ancient_tower.tres` — tower #2 just sets its own, no code change.
+`tower_garage.gd` adds each row to the tree *before* configuring it, so the
+row's `@onready` refs are resolved.
+
+**Spell Codex:** same shape as the garage and the **same `meta_row` scene** —
+`bg_garage.png` reused as BG (no codex art exists yet; `bg_menu_generic.png`
+is still unmade), `top_bar`, `nav_bar` with Codex disabled. Each of the 20
+rows shows a rank label instead of stars, one plain stats line instead of
+chips, no "In Use" toggle, and its icon comes free from
+`SpellRegistry.get_card_icon(spell)` — zero per-spell configuration.
+
+**Draft cards:** `SpellRegistry.get_card_icon(card_data)` resolves icons —
+explicit `.tres` `icon` wins, else the assets.md ID convention
+(`assets/ui/spells/<school>/icon_spell_<spell_id>.png`,
+`assets/ui/upgrades/icon_<upgrade_id>.png`). All 23 cards resolve (two
+`.tres` overrides: `upgrade_damage` → `garage/icon_stat_atk.png`,
+`upgrade_fire_rate` → `icon_upgrade_fire_rate_v2.png`). `draft_card.gd`
+applies the rarity card bg as the panel stylebox (common = base,
+rare = `_v2`, epic = `_v3` of `ui_card_bg_*`) and hides the old
+RarityBorder strip.
+UI art folder tree: see `ui_assets.md`.
+
+One addition:
 
 ### `DamageNumber3D.tscn`
 - **What it does**: A pooled `Label3D` (or `Sprite3D` displaying a generated

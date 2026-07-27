@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ui/common/ui_button_primary.png" id="1"]
+
+[sub_resource type="StyleBoxTexture" id="1"]
+content_margin_left = 48.0
+content_margin_top = 24.0
+content_margin_right = 48.0
+content_margin_bottom = 24.0
+texture = ExtResource("1")
+
+[sub_resource type="StyleBoxTexture" id="2"]
+content_margin_left = 48.0
+content_margin_top = 24.0
+content_margin_right = 48.0
+content_margin_bottom = 24.0
+texture = ExtResource("1")
+modulate_color = Color(0.8, 0.8, 0.8, 1)
+
+[sub_resource type="StyleBoxEmpty" id="3"]
+
+[node name="PrimaryButton" type="Button"]
+custom_minimum_size = Vector2(400, 220)
+offset_right = 400.0
+offset_bottom = 220.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.2, 0.02, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 56
+theme_override_styles/focus = SubResource("3")
+theme_override_styles/hover = SubResource("1")
+theme_override_styles/pressed = SubResource("2")
+theme_override_styles/normal = SubResource("1")
+text = "BUTTON"

@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/nav_button/nav_button.tscn" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/nav/icon_nav_worldmap1.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/nav/icon_nav_garage.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/ui/nav/icon_nav_codex_v2.png" id="4"]
+
+[node name="NavBar" type="HBoxContainer"]
+offset_right = 600.0
+offset_bottom = 140.0
+theme_override_constants/separation = 48
+alignment = 1
+
+[node name="WorldmapButton" parent="." instance=ExtResource("1")]
+texture_normal = ExtResource("2")
+
+[node name="GarageButton" parent="." instance=ExtResource("1")]
+texture_normal = ExtResource("3")
+
+[node name="CodexButton" parent="." instance=ExtResource("1")]
+texture_normal = ExtResource("4")

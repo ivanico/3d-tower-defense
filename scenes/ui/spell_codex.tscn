@@ -1,49 +1,53 @@
-[gd_scene load_steps=2 format=3 uid="uid://bf7kithkm6sb2"]
+[gd_scene load_steps=5 format=3 uid="uid://bf7kithkm6sb2"]
 
 [ext_resource type="Script" uid="uid://3hfauhvlu881" path="res://scenes/ui/spell_codex.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/garage/bg_garage.png" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/top_bar/top_bar.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/nav_bar/nav_bar.tscn" id="4"]
 
 [node name="SpellCodex" type="CanvasLayer"]
 layer = 20
 script = ExtResource("1")
 
-[node name="BG" type="ColorRect" parent="."]
+[node name="BG" type="TextureRect" parent="."]
 offset_right = 1080.0
 offset_bottom = 1920.0
-color = Color(0.08, 0.08, 0.1, 1)
+expand_mode = 1
+stretch_mode = 6
+texture = ExtResource("2")
+
+[node name="TopBar" parent="." instance=ExtResource("3")]
+offset_left = 240.0
+offset_top = 24.0
+offset_right = 840.0
+offset_bottom = 114.0
 
 [node name="TitleLabel" type="Label" parent="."]
 offset_left = 140.0
-offset_top = 120.0
+offset_top = 140.0
 offset_right = 940.0
-offset_bottom = 220.0
+offset_bottom = 240.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.25, 0.1, 0.3, 1)
+theme_override_constants/outline_size = 8
 theme_override_font_sizes/font_size = 56
 text = "Spell Codex"
 horizontal_alignment = 1
 
-[node name="MaterialsLabel" type="Label" parent="."]
-offset_left = 140.0
-offset_top = 220.0
-offset_right = 940.0
-offset_bottom = 280.0
-theme_override_font_sizes/font_size = 28
-text = "Materials: 0"
-horizontal_alignment = 1
-
 [node name="ScrollContainer" type="ScrollContainer" parent="."]
 offset_left = 60.0
-offset_top = 320.0
+offset_top = 300.0
 offset_right = 1020.0
-offset_bottom = 1800.0
+offset_bottom = 1700.0
+horizontal_scroll_mode = 0
 
 [node name="SpellList" type="VBoxContainer" parent="ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 24
 
-[node name="BackButton" type="Button" parent="."]
-offset_left = 340.0
-offset_top = 1820.0
-offset_right = 740.0
-offset_bottom = 1890.0
-theme_override_font_sizes/font_size = 28
-text = "Back to Map"
+[node name="NavBar" parent="." instance=ExtResource("4")]
+offset_left = 240.0
+offset_top = 1720.0
+offset_right = 840.0
+offset_bottom = 1860.0

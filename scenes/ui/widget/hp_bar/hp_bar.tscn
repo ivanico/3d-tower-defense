@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://bfdqmptjv0lxj"]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/value_bar.gd" id="1"]
+
+[node name="HpBar" type="TextureProgressBar"]
+modulate = Color(1, 1, 1, 0.72)
+offset_right = 740.0
+offset_bottom = 56.0
+value = 100.0
+script = ExtResource("1")
+bar_size = Vector2i(740, 56)
+color_top = Color(0.973, 0.373, 0.353, 1)
+color_bottom = Color(0.78, 0.02, 0.024, 1)
+corner_radius = 8

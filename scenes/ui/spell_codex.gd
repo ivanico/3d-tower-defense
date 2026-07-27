@@ -1,73 +1,56 @@
 extends CanvasLayer
 
-@onready var materials_label: Label = $MaterialsLabel
+const MetaRowScene := preload("res://scenes/ui/widget/meta_row/meta_row.tscn")
+
 @onready var spell_list: VBoxContainer = $ScrollContainer/SpellList
-@onready var back_button: Button = $BackButton
+@onready var energy_pill: PanelContainer = $TopBar/EnergyPill
+@onready var materials_pill: PanelContainer = $TopBar/MaterialsPill
+@onready var worldmap_button: TextureButton = $NavBar/WorldmapButton
+@onready var garage_button: TextureButton = $NavBar/GarageButton
+@onready var codex_button: TextureButton = $NavBar/CodexButton
 
 func _ready() -> void:
-	back_button.pressed.connect(_on_back_pressed)
+	codex_button.disabled = true
+	worldmap_button.pressed.connect(_on_map_pressed)
+	garage_button.pressed.connect(_on_garage_pressed)
 	_refresh()
 
-func _on_back_pressed() -> void:
+func _on_map_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/world_map.tscn")
 
+func _on_garage_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/ui/tower_garage.tscn")
+
 func _refresh() -> void:
-	materials_label.text = "Materials: %d" % MetaManager.materials
+	energy_pill.set_amount(MetaManager.energy)
+	materials_pill.set_amount(MetaManager.materials)
 	for child in spell_list.get_children():
 		spell_list.remove_child(child)
 		child.queue_free()
 	for spell in SpellRegistry.all_spells:
-		spell_list.add_child(_build_spell_row(spell))
+		_add_spell_row(spell)
 
-func _build_spell_row(spell: SpellDefinition) -> Control:
+func _add_spell_row(spell: SpellDefinition) -> void:
 	var rank: int = MetaManager.spell_ranks.get(spell.spell_id, 1)
 	var at_max: bool = rank >= Constants.SPELL_MAX_RANK
 	var next_rank: int = rank + 1
 
-	var card := VBoxContainer.new()
-	card.name = "SpellRow_%s" % spell.spell_id
-	card.add_theme_constant_override("separation", 6)
+	# Added to the tree first so the row's @onready refs resolve before setup.
+	var row: MetaRow = MetaRowScene.instantiate()
+	row.name = "SpellRow_%s" % spell.spell_id
+	spell_list.add_child(row)
 
-	var top_row := HBoxContainer.new()
-	top_row.name = "TopRow"
-	top_row.add_theme_constant_override("separation", 20)
-	card.add_child(top_row)
+	row.set_row_icon(SpellRegistry.get_card_icon(spell))
+	row.set_title(spell.spell_name)
+	row.show_rank("Rank %d/%d" % [rank, Constants.SPELL_MAX_RANK])
+	row.set_stat_text(_stats_text(spell, rank, next_rank, at_max))
 
-	var name_label := Label.new()
-	name_label.name = "NameLabel"
-	name_label.text = spell.spell_name
-	name_label.custom_minimum_size = Vector2(280, 0)
-	name_label.add_theme_font_size_override("font_size", 28)
-	top_row.add_child(name_label)
-
-	var rank_label := Label.new()
-	rank_label.name = "RankLabel"
-	rank_label.text = "Rank %d/%d" % [rank, Constants.SPELL_MAX_RANK]
-	rank_label.custom_minimum_size = Vector2(200, 0)
-	rank_label.add_theme_font_size_override("font_size", 28)
-	top_row.add_child(rank_label)
-
-	var stats_label := Label.new()
-	stats_label.name = "StatsLabel"
-	stats_label.text = _stats_text(spell, rank, next_rank, at_max)
-	stats_label.add_theme_font_size_override("font_size", 22)
-	stats_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
-	card.add_child(stats_label)
-
-	var upgrade_button := Button.new()
-	upgrade_button.name = "UpgradeButton"
-	upgrade_button.add_theme_font_size_override("font_size", 24)
 	if at_max:
-		upgrade_button.text = "MAX"
-		upgrade_button.disabled = true
+		row.set_upgrade_maxed()
 	else:
 		var cost: int = Constants.SPELL_RANK_COSTS[rank]
-		upgrade_button.text = "Upgrade (%d)" % cost
-		upgrade_button.disabled = MetaManager.materials < cost
-		upgrade_button.pressed.connect(_on_upgrade_pressed.bind(spell.spell_id))
-	card.add_child(upgrade_button)
-
-	return card
+		row.set_upgrade_cost(cost, MetaManager.materials >= cost)
+		row.upgrade_pressed.connect(_on_upgrade_pressed.bind(spell.spell_id))
 
 func _stats_text(spell: SpellDefinition, rank: int, next_rank: int, at_max: bool) -> String:
 	if spell.spell_category == Constants.SpellCategory.PASSIVE:

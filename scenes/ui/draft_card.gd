@@ -3,11 +3,14 @@ class_name DraftCard
 
 signal card_selected(card_data: Resource)
 
-const RARITY_COLORS := {
-	0: Color(0.55, 0.55, 0.55),  # COMMON — gray
-	1: Color(0.20, 0.50, 1.00),  # RARE   — blue
-	2: Color(0.65, 0.15, 1.00),  # EPIC   — purple
+const CARD_BG_TEXTURES := {
+	0: preload("res://assets/ui/draft/ui_card_bg_common.png"),
+	1: preload("res://assets/ui/draft/ui_card_bg_rare_v2.png"),
+	2: preload("res://assets/ui/draft/ui_card_bg_epic_v3.png"),
 }
+
+# One shared StyleBoxTexture per rarity, built on first use.
+static var _bg_styles := {}
 
 # Flat white texture reused by every card's icon slot until real icon art
 # exists — modulated to the spell's school color (spells.md Task S-06).
@@ -33,14 +36,26 @@ func setup(card_data: Resource) -> void:
 	var desc = card_data.get("description")
 	desc_label.text = str(desc) if desc != null else ""
 	var rarity = card_data.get("rarity")
-	rarity_border.color = RARITY_COLORS.get(rarity if rarity != null else 0, RARITY_COLORS[0])
+	add_theme_stylebox_override("panel", _get_bg_style(rarity if rarity != null else 0))
+	rarity_border.visible = false
 	_setup_icon(card_data)
 
+static func _get_bg_style(rarity: int) -> StyleBoxTexture:
+	if not _bg_styles.has(rarity):
+		var sb := StyleBoxTexture.new()
+		sb.texture = CARD_BG_TEXTURES.get(rarity, CARD_BG_TEXTURES[0])
+		sb.content_margin_left = 18.0
+		sb.content_margin_top = 22.0
+		sb.content_margin_right = 18.0
+		sb.content_margin_bottom = 22.0
+		_bg_styles[rarity] = sb
+	return _bg_styles[rarity]
+
 func _setup_icon(card_data: Resource) -> void:
-	var icon = card_data.get("icon")
+	var icon := SpellRegistry.get_card_icon(card_data)
 	var dtype = card_data.get("damage_type")
 	if icon != null:
-		# Real icon art wins as soon as a .tres provides it.
+		# Real icon art: explicit .tres icon or the assets.md ID-convention lookup.
 		icon_rect.texture = icon
 		icon_rect.modulate = Color.WHITE
 	else:

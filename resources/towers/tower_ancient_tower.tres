@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TowerDefinition" load_steps=7 format=3 uid="uid://bx10rnihvihju"]
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=8 format=3 uid="uid://bx10rnihvihju"]
 
 [ext_resource type="Script" uid="uid://bhj88b4e7miwt" path="res://resources/towers/tower_definition.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://ci0tbwq5uksfr" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl1/ancient_tower_lvl1.tscn" id="2_lvl1"]
@@ -6,11 +6,13 @@
 [ext_resource type="PackedScene" uid="uid://c42r8u3uk0nx8" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl3/ancient_tower_lvl3.tscn" id="4_lvl3"]
 [ext_resource type="PackedScene" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl4/ancient_tower_lvl4.tscn" id="5_lvl4"]
 [ext_resource type="PackedScene" uid="uid://cer1blly3mgyn" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl5/ancient_tower_lvl5.tscn" id="6_lvl5"]
+[ext_resource type="Texture2D" uid="uid://bdusiyj4dxftf" path="res://assets/ui/garage/icon_tower_ancient.png" id="7_icon"]
 
 [resource]
 script = ExtResource("1")
 tower_id = "ancient_tower"
 tower_name = "Ancient Tower"
+icon = ExtResource("7_icon")
 model_path = ""
 base_hp = 1000.0
 base_damage = 20.0

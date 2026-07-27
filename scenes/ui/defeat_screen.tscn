@@ -1,6 +1,13 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/defeat_screen.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/common/ui_panel_dark_v2.png" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/primary_button/primary_button.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/secondary_button/secondary_button.tscn" id="4"]
+[ext_resource type="Texture2D" path="res://assets/ui/topbar/icon_currency_materials.png" id="5"]
+
+[sub_resource type="StyleBoxTexture" id="1"]
+texture = ExtResource("2")
 
 [node name="DefeatScreen" type="CanvasLayer"]
 layer = 20
@@ -11,44 +18,64 @@ offset_right = 1080.0
 offset_bottom = 1920.0
 color = Color(0, 0, 0, 0.75)
 
-[node name="TitleLabel" type="Label" parent="."]
+[node name="Panel" type="PanelContainer" parent="."]
 offset_left = 140.0
-offset_top = 650.0
+offset_top = 440.0
 offset_right = 940.0
-offset_bottom = 750.0
-theme_override_font_sizes/font_size = 64
+offset_bottom = 1539.0
+theme_override_styles/panel = SubResource("1")
+
+[node name="TitleLabel" type="Label" parent="."]
+offset_left = 280.0
+offset_top = 600.0
+offset_right = 800.0
+offset_bottom = 700.0
+theme_override_font_sizes/font_size = 60
 horizontal_alignment = 1
 text = "Defeat"
 
 [node name="StatsPanel" type="VBoxContainer" parent="."]
-offset_left = 140.0
+offset_left = 285.0
 offset_top = 780.0
-offset_right = 940.0
-offset_bottom = 920.0
-theme_override_constants/separation = 16
+offset_right = 795.0
+offset_bottom = 1000.0
+theme_override_constants/separation = 18
 
 [node name="WaveLabel" type="Label" parent="StatsPanel"]
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 30
 horizontal_alignment = 1
 text = "Wave Reached: 0"
 
-[node name="MaterialsLabel" type="Label" parent="StatsPanel"]
-theme_override_font_sizes/font_size = 32
-horizontal_alignment = 1
+[node name="MaterialsRow" type="HBoxContainer" parent="StatsPanel"]
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="MatIcon" type="TextureRect" parent="StatsPanel/MaterialsRow"]
+custom_minimum_size = Vector2(40, 40)
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("5")
+
+[node name="MaterialsLabel" type="Label" parent="StatsPanel/MaterialsRow"]
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 30
 text = "Materials Earned: 0"
 
-[node name="RetryButton" type="Button" parent="."]
-offset_left = 190.0
-offset_top = 1150.0
-offset_right = 540.0
-offset_bottom = 1230.0
-theme_override_font_sizes/font_size = 32
+[node name="RetryButton" parent="." instance=ExtResource("3")]
+custom_minimum_size = Vector2(330, 181)
+offset_left = 375.0
+offset_top = 1060.0
+offset_right = 705.0
+offset_bottom = 1241.0
+theme_override_font_sizes/font_size = 34
 text = "Retry"
 
-[node name="MapButton" type="Button" parent="."]
-offset_left = 570.0
-offset_top = 1150.0
-offset_right = 920.0
-offset_bottom = 1230.0
-theme_override_font_sizes/font_size = 32
+[node name="MapButton" parent="." instance=ExtResource("4")]
+custom_minimum_size = Vector2(330, 121)
+offset_left = 375.0
+offset_top = 1261.0
+offset_right = 705.0
+offset_bottom = 1382.0
+theme_override_font_sizes/font_size = 30
 text = "Map"

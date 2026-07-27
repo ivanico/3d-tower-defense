@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ui/common/ui_notification_badge.png" id="1"]
+
+[node name="NavButton" type="TextureButton"]
+custom_minimum_size = Vector2(140, 140)
+offset_right = 140.0
+offset_bottom = 140.0
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Badge" type="TextureRect" parent="."]
+visible = false
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -48.0
+offset_bottom = 48.0
+grow_horizontal = 0
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("1")

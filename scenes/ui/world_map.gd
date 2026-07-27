@@ -2,21 +2,26 @@ extends CanvasLayer
 
 const CHAPTER_IDS: Array[String] = ["chapter_01"]
 const OUT_OF_ENERGY_DISPLAY_SEC := 2.0
+const ChapterNodeScene := preload("res://scenes/ui/widget/chapter_node/chapter_node.tscn")
 
-@onready var energy_label: Label = $EnergyLabel
 @onready var out_of_energy_label: Label = $OutOfEnergyLabel
 @onready var chapter_grid: GridContainer = $ChapterGrid
-@onready var garage_button: Button = $GarageButton
-@onready var codex_button: Button = $CodexButton
+@onready var energy_pill: PanelContainer = $TopBar/EnergyPill
+@onready var materials_pill: PanelContainer = $TopBar/MaterialsPill
+@onready var worldmap_button: TextureButton = $NavBar/WorldmapButton
+@onready var garage_button: TextureButton = $NavBar/GarageButton
+@onready var codex_button: TextureButton = $NavBar/CodexButton
 
 func _ready() -> void:
 	out_of_energy_label.visible = false
+	worldmap_button.disabled = true
 	garage_button.pressed.connect(_on_garage_pressed)
 	codex_button.pressed.connect(_on_codex_pressed)
 	_refresh()
 
 func _refresh() -> void:
-	energy_label.text = "Energy: %d/%d" % [MetaManager.energy, Constants.MAX_ENERGY]
+	energy_pill.set_amount(MetaManager.energy)
+	materials_pill.set_amount(MetaManager.materials)
 	for child in chapter_grid.get_children():
 		chapter_grid.remove_child(child)
 		child.queue_free()
@@ -25,13 +30,11 @@ func _refresh() -> void:
 
 func _build_chapter_node(chapter_id: String) -> Control:
 	var chapter_def: ChapterDefinition = load("res://resources/chapters/%s.tres" % chapter_id)
-	var button := Button.new()
-	button.name = "ChapterNode_%s" % chapter_id
-	button.text = chapter_def.chapter_name
-	button.custom_minimum_size = Vector2(300, 140)
-	button.add_theme_font_size_override("font_size", 28)
-	button.pressed.connect(_on_chapter_pressed.bind(chapter_id))
-	return button
+	var node: Button = ChapterNodeScene.instantiate()
+	node.name = "ChapterNode_%s" % chapter_id
+	node.chapter_title = chapter_def.chapter_name
+	node.pressed.connect(_on_chapter_pressed.bind(chapter_id))
+	return node
 
 func _on_chapter_pressed(chapter_id: String) -> void:
 	if not MetaManager.spend_energy():

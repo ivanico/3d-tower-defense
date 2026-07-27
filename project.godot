@@ -33,6 +33,10 @@ window/size/window_width_override=662
 window/size/window_height_override=900
 window/stretch/mode="canvas_items"
 
+[gui]
+
+theme/custom="res://resources/theme/ui_theme.tres"
+
 [rendering]
 
 renderer/rendering_method="mobile"

@@ -332,7 +332,9 @@ res://
     │   └── chap<N>/        # every enemy/boss/arena model for that chapter
     ├── materials/
     ├── audio/
-    ├── ui/
+    ├── ui/                 # per-screen + shared subfolders: common/, topbar/, nav/,
+    │                       # world_map/, garage/, hud/, draft/, spells/<school>/,
+    │                       # upgrades/, bonuses/, rewards/ — full tree in ui_assets.md
     └── fonts/
 ```
 

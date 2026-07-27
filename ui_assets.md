@@ -3,6 +3,51 @@
 > [x] = DONE, [ ] = TO MAKE. "Generate" = ChatGPT. "Download" = Google Fonts.
 
 =====================================================================
+## FOLDER STRUCTURE (`assets/ui/`) — source of truth
+=====================================================================
+
+> Reorganized 2026-07-27. One tree: per-screen folders + shared folders
+> (the old flat `assets/ui/` and `assets/ui_spellsdraft/` are gone).
+> Many assets still have multiple candidate versions side-by-side
+> (`_v2`, `_v3`, `1` suffixes) — the winner gets picked when each widget
+> scene is wired; losing versions get archived at that point.
+
+```
+assets/ui/
+├── common/       # shared across screens: ui_button_primary, ui_button_secondary,
+│                 # ui_panel_dark, ui_notification_badge (each + versions)
+├── topbar/       # ui_topbar_pill_bg, icon_currency_energy, icon_currency_materials
+├── nav/          # icon_nav_worldmap, icon_nav_garage, icon_nav_codex
+├── world_map/    # bg_worldmap, ui_play_button, ui_chapter_node_frame,
+│                 # ui_locked_overlay, chapter_01_image
+├── garage/       # bg_garage, icon_stat_atk, icon_stat_hp, icon_tower_ancient,
+│                 # ui_star_filled, ui_star_empty
+├── hud/          # in-run bars. IN USE: ui_hp_bar_fill_v3.png and
+│                 # ui_xp_bar_fill_v5.png (v3 recoloured blue) — the HUD is
+│                 # fill-only, no frame. The *_bg_* frames and the generated
+│                 # *_fill_v4 squared rectangles are unused but kept.
+├── draft/        # ui_card_bg_common / _rare / _epic / _legendary
+├── spells/       # icon_spell_<spell_id>.png — names match resources/spells/*.tres
+│   ├── fire/     #   bolt_fire, orb_embers, lance_flame, area_rain_of_fire,
+│   │             #   chain_fire (backlog spell, no .tres yet — spells.md §4)
+│   ├── frost/    #   bolt_frost, orb_frost, lance_glacier, area_blizzard
+│   ├── void/     #   bolt_void, orb_void, lance_rift, chain_chaos
+│   ├── poison/   #   bolt_venom, orb_venom, lance_toxic, chain_contagion
+│   └── nature/   #   bolt_thorn, orb_thorn, lance_briar, chain_vines
+├── upgrades/     # in-run stat-upgrade icons: icon_upgrade_armor / _max_hp /
+│                 # _fire_rate (+ versions) + icon_upgrade_damage_<school> ×5
+│                 # (filenames say "shadow" for the void school)
+├── bonuses/      # school all-in emblems: icon_bonus_<school> ×5 ("shadow" = void)
+└── rewards/      # icon_chest_common/rare/epic (+ _open each), icon_key_common/
+                  # rare/epic, icon_mat_scroll_<school> ×5, icon_mat_tower_rare
+```
+
+> `codex/` folder doesn't exist yet — create it when its first asset
+> (bg_menu_generic) is made. `icon_spell_orb_thorn.png` is blue lightning-orb
+> art in a nature-green frame (was "lightning orb.png") — swap it out if a
+> Lightning school ever ships and nature gets a real thorn orb icon.
+
+=====================================================================
 ## DONE
 =====================================================================
 

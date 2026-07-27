@@ -175,20 +175,23 @@ simple billboarded sprite — pick whichever is faster to iterate on; the
 UI stays a flat 2D `CanvasLayer` concern regardless of the 3D game world —
 no 3D pipeline involved here.
 
-| File | Notes |
-|---|---|
-| `ui_hp_bar_bg.png` / `ui_hp_bar_fill.png` | Tower HP bar |
-| `ui_xp_bar_bg.png` / `ui_xp_bar_fill.png` | XP bar |
-| `ui_card_bg_common.png` / `ui_card_bg_rare.png` / `ui_card_bg_epic.png` | 9-slice draft card backgrounds, one per rarity |
-| `icon_spell_basic_bolt.png` / `icon_spell_basic_aoe.png` / `icon_spell_basic_passive.png` | One icon per v1 spell |
-| `icon_upgrade_damage.png` / `icon_upgrade_fire_rate.png` / `icon_upgrade_max_hp.png` | One icon per v1 stat upgrade |
-| `icon_tag_offense.png` / `icon_tag_armor.png` / `icon_tag_utility.png` | One icon per v1 synergy tag |
-| `ui_button_primary.png` / `ui_button_secondary.png` | 9-slice buttons |
-| `ui_panel_dark.png` | 9-slice generic dark panel |
+All UI art lives under `assets/ui/` in per-screen + shared subfolders —
+**the full tree and per-folder inventory is in `ui_assets.md` ("FOLDER
+STRUCTURE"), which is the source of truth.** Highlights:
 
-> **Extend later by:** new spell/upgrade/tag icons follow the same naming —
-> `icon_spell_<id>.png`, `icon_upgrade_<id>.png`, `icon_tag_<id>.png` — so the
-> draft UI can look up an icon by ID convention rather than a hardcoded map.
+| Location | Notes |
+|---|---|
+| `assets/ui/hud/` — `ui_hp_bar_bg/_fill.png`, `ui_xp_bar_bg/_fill.png` | In-run HP / XP bars |
+| `assets/ui/draft/` — `ui_card_bg_<rarity>.png` | 9-slice draft card backgrounds (common/rare/epic/legendary) |
+| `assets/ui/spells/<school>/` — `icon_spell_<spell_id>.png` | One icon per catalog spell; filename matches `spell_id` in `resources/spells/*.tres` |
+| `assets/ui/upgrades/` — `icon_upgrade_<id>.png` | Stat-upgrade draft icons (armor, max_hp, fire_rate, damage_<school>) |
+| `assets/ui/bonuses/` — `icon_bonus_<school>.png` | School all-in synergy emblems |
+| `assets/ui/common/` — `ui_button_primary/_secondary.png`, `ui_panel_dark.png` | 9-slice buttons and generic dark panel, shared across screens |
+
+> **Extend later by:** new spell/upgrade icons follow the same naming —
+> `icon_spell_<spell_id>.png` (in its school folder), `icon_upgrade_<id>.png` —
+> so the draft UI can look up an icon by ID convention rather than a
+> hardcoded map.
 
 ---
 

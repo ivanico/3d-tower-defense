@@ -1,7 +1,7 @@
 extends CanvasLayer
 
 @onready var wave_label: Label = $StatsPanel/WaveLabel
-@onready var materials_label: Label = $StatsPanel/MaterialsLabel
+@onready var materials_label: Label = $StatsPanel/MaterialsRow/MaterialsLabel
 @onready var retry_button: Button = $RetryButton
 @onready var map_button: Button = $MapButton
 

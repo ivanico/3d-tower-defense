@@ -1,0 +1,46 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/star_row/star_row.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/garage/ui_star_empty.png" id="2"]
+
+[node name="StarRow" type="HBoxContainer"]
+offset_right = 260.0
+offset_bottom = 48.0
+theme_override_constants/separation = 4
+script = ExtResource("1")
+stars = 1
+
+[node name="Star1" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(38, 38)
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("2")
+
+[node name="Star2" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(38, 38)
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("2")
+
+[node name="Star3" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(38, 38)
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("2")
+
+[node name="Star4" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(38, 38)
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("2")
+
+[node name="Star5" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(38, 38)
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("2")

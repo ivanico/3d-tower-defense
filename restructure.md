@@ -90,6 +90,18 @@ res://
 │   │           └── chap1_boss_01.tscn / .tres
 │   │
 │   └── ui/                            # flat, snake_case
+│       ├── widget/                    # reusable UI widgets, one folder per widget —
+│       │   ├── primary_button/        # instanced by screens; each texture is referenced
+│       │   ├── secondary_button/      # ONLY in its widget .tscn (swap/scale in one place)
+│       │   ├── currency_pill/         # pill bg + icon + amount (icon set per instance)
+│       │   ├── top_bar/               # energy pill + materials pill row
+│       │   ├── nav_button/            # icon button + hidden notification badge
+│       │   ├── nav_bar/               # worldmap / garage / codex nav_button row
+│       │   ├── hp_bar/                # TextureProgressBar (in-run HUD, red)
+│       │   ├── xp_bar/                # TextureProgressBar (in-run HUD, blue)
+│       │   ├── chapter_node/          # world-map chapter card (image+frame+play bar+lock)
+│       │   ├── star_row/              # 5 filled/empty star textures, set_stars()
+│       │   └── meta_row/              # SHARED upgrade row — garage AND codex use this one
 │       ├── world_map.tscn / .gd
 │       ├── tower_garage.tscn / .gd
 │       ├── spell_codex.tscn / .gd
@@ -117,7 +129,11 @@ res://
 	├── models/                        # .glb stay here (NOT bundled per game_object
 	│                                   # folder — see §3), organized instead as
 	│                                   # towers/<tower_id>/ and chap<N>/ (assets.md §2)
-	├── materials/  audio/  ui/  fonts/
+	├── materials/  audio/  fonts/
+	└── ui/                            # per-screen + shared subfolders (common/, topbar/,
+										# nav/, world_map/, garage/, hud/, draft/,
+										# spells/<school>/, upgrades/, bonuses/, rewards/)
+										# — full tree in ui_assets.md
 ```
 
 > **Enemies now = folders under `game_object/`.** The generic `Enemy.tscn` is

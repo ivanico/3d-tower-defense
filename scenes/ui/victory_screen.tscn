@@ -1,6 +1,12 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/victory_screen.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/common/ui_panel_dark_v2.png" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/primary_button/primary_button.tscn" id="3"]
+[ext_resource type="Texture2D" path="res://assets/ui/topbar/icon_currency_materials.png" id="4"]
+
+[sub_resource type="StyleBoxTexture" id="1"]
+texture = ExtResource("2")
 
 [node name="VictoryScreen" type="CanvasLayer"]
 layer = 20
@@ -11,46 +17,65 @@ offset_right = 1080.0
 offset_bottom = 1920.0
 color = Color(0, 0, 0, 0.75)
 
-[node name="TitleLabel" type="Label" parent="."]
+[node name="Panel" type="PanelContainer" parent="."]
 offset_left = 140.0
-offset_top = 650.0
+offset_top = 440.0
 offset_right = 940.0
-offset_bottom = 750.0
-theme_override_font_sizes/font_size = 64
+offset_bottom = 1539.0
+theme_override_styles/panel = SubResource("1")
+
+[node name="TitleLabel" type="Label" parent="."]
+offset_left = 280.0
+offset_top = 600.0
+offset_right = 800.0
+offset_bottom = 700.0
+theme_override_font_sizes/font_size = 60
 horizontal_alignment = 1
 text = "Victory!"
 
 [node name="StatsPanel" type="VBoxContainer" parent="."]
-offset_left = 140.0
-offset_top = 780.0
-offset_right = 940.0
+offset_left = 285.0
+offset_top = 760.0
+offset_right = 795.0
 offset_bottom = 1090.0
-theme_override_constants/separation = 16
+theme_override_constants/separation = 18
 
 [node name="WavesLabel" type="Label" parent="StatsPanel"]
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 30
 horizontal_alignment = 1
 text = "Waves Cleared: 0"
 
 [node name="KillsLabel" type="Label" parent="StatsPanel"]
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 30
 horizontal_alignment = 1
 text = "Kills: 0"
 
 [node name="TimeLabel" type="Label" parent="StatsPanel"]
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 30
 horizontal_alignment = 1
 text = "Time: 0:00"
 
-[node name="MaterialsLabel" type="Label" parent="StatsPanel"]
-theme_override_font_sizes/font_size = 32
-horizontal_alignment = 1
+[node name="MaterialsRow" type="HBoxContainer" parent="StatsPanel"]
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="MatIcon" type="TextureRect" parent="StatsPanel/MaterialsRow"]
+custom_minimum_size = Vector2(40, 40)
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("4")
+
+[node name="MaterialsLabel" type="Label" parent="StatsPanel/MaterialsRow"]
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 30
 text = "Materials Earned: 0"
 
-[node name="ContinueButton" type="Button" parent="."]
-offset_left = 340.0
-offset_top = 1150.0
-offset_right = 740.0
-offset_bottom = 1230.0
-theme_override_font_sizes/font_size = 32
+[node name="ContinueButton" parent="." instance=ExtResource("3")]
+custom_minimum_size = Vector2(380, 209)
+offset_left = 350.0
+offset_top = 1190.0
+offset_right = 730.0
+offset_bottom = 1399.0
+theme_override_font_sizes/font_size = 34
 text = "Return to Map"

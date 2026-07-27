@@ -3,7 +3,7 @@ extends CanvasLayer
 @onready var waves_label: Label = $StatsPanel/WavesLabel
 @onready var kills_label: Label = $StatsPanel/KillsLabel
 @onready var time_label: Label = $StatsPanel/TimeLabel
-@onready var materials_label: Label = $StatsPanel/MaterialsLabel
+@onready var materials_label: Label = $StatsPanel/MaterialsRow/MaterialsLabel
 @onready var continue_button: Button = $ContinueButton
 
 func _ready() -> void:

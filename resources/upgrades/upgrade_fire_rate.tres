@@ -1,10 +1,12 @@
-[gd_resource type="Resource" script_class="StatUpgradeDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="StatUpgradeDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://resources/upgrades/stat_upgrade_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/upgrades/icon_upgrade_fire_rate_v2.png" id="2"]
 
 [resource]
 script = ExtResource("1")
 upgrade_id = "upgrade_fire_rate"
+icon = ExtResource("2")
 upgrade_name = "Quickened"
 description = "Reduces all spell cooldowns."
 rarity = 1

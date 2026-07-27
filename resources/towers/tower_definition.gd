@@ -3,6 +3,7 @@ extends Resource
 
 @export var tower_id: String = ""
 @export var tower_name: String = ""
+@export var icon: Texture2D = null
 @export var model_path: String = ""
 @export var base_hp: float = 1000.0
 @export var base_damage: float = 20.0

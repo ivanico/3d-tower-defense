@@ -2,9 +2,9 @@ extends CanvasLayer
 
 @onready var wave_label: Label = $WaveLabel
 @onready var hp_label: Label = $HPLabel
-@onready var hp_bar: ProgressBar = $HPBar
+@onready var hp_bar: TextureProgressBar = $HPBar
 @onready var level_label: Label = $LevelLabel
-@onready var xp_bar: ProgressBar = $XPBar
+@onready var xp_bar: TextureProgressBar = $XPBar
 
 var _hp_tween: Tween
 var _xp_tween: Tween

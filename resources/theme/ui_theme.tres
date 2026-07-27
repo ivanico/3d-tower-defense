@@ -1,0 +1,16 @@
+[gd_resource type="Theme" format=3]
+
+; Project-wide UI theme. Registered as gui/theme/custom in project.godot, so
+; every Control inherits these unless it sets a theme_override_* itself.
+;
+; Fonts: none yet — this uses the engine default face at a size that suits the
+; 1080x1920 portrait target. Dropping a .ttf into assets/fonts/ and assigning it
+; to `default_font` here restyles the entire game at once (ui_assets.md lists the
+; intended faces). Do NOT add per-node font size overrides for ordinary text;
+; change it here so it stays consistent.
+
+[resource]
+default_font_size = 30
+Label/colors/font_color = Color(1, 1, 1, 1)
+Label/colors/font_outline_color = Color(0.04, 0.05, 0.09, 1)
+Label/constants/outline_size = 5
