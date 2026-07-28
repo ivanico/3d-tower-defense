@@ -1,0 +1,67 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/play_button/play_button.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/world_map/ui_play_button_v3.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/topbar/icon_currency_energy1.png" id="3"]
+
+; Content sits in an anchored box the script insets to clear the gold frame.
+; mouse_filter 2 (IGNORE) on the content so clicks reach the Button underneath.
+
+[sub_resource type="StyleBoxTexture" id="1"]
+texture = ExtResource("2")
+
+[node name="PlayButton" type="Button"]
+offset_right = 660.0
+offset_bottom = 286.0
+focus_mode = 0
+theme_override_styles/normal = SubResource("1")
+theme_override_styles/hover = SubResource("1")
+theme_override_styles/pressed = SubResource("1")
+theme_override_styles/focus = SubResource("1")
+theme_override_styles/disabled = SubResource("1")
+script = ExtResource("1")
+cost_icon = ExtResource("3")
+
+[node name="Content" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 0
+
+[node name="PlayLabel" type="Label" parent="Content"]
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.12, 0.2, 1)
+theme_override_constants/outline_size = 8
+text = "PLAY"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CostRow" type="HBoxContainer" parent="Content"]
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+; Both children use size_flags_vertical 4 (SHRINK_CENTER) so each is centred on
+; the row's centre line — that is what puts "x1" level with the middle of the
+; bolt rather than sitting on the row baseline.
+
+[node name="Icon" type="TextureRect" parent="Content/CostRow"]
+custom_minimum_size = Vector2(72, 72)
+mouse_filter = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Amount" type="Label" parent="Content/CostRow"]
+mouse_filter = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.12, 0.2, 1)
+theme_override_constants/outline_size = 6
+text = "x1"
+vertical_alignment = 1

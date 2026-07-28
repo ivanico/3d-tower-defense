@@ -511,6 +511,12 @@ scene to use — `projectile.tscn` or `Arcprojectile.tscn`).
 
 ## 7. UI Scenes
 
+> **Changing how the UI looks? Read `ui_tuning.md` instead of this section.**
+> It is the practical guide: which file to open, which exported knob to change,
+> and the traps (icon canvas fill, sub-pixel outlines, non-9-sliceable art).
+> This section explains how the layer is *wired* and why; that one explains how
+> to *tune* it without touching code.
+
 Same shape as the original design's UI layer (`HUD`, `DraftUI`, `DraftCard`,
 `SynergyBanner`, `TagRowWidget`), unchanged in spirit since UI is a 2D
 `CanvasLayer` concern regardless of whether the game world is 2D or 3D.
@@ -523,34 +529,104 @@ once. Each art texture is referenced in exactly ONE widget `.tscn` — swapping
 an asset version = changing that single texture reference. Built so far:
 `primary_button` (Button + `ui_button_primary.png` stylebox),
 `secondary_button` (Button + `ui_button_secondary_v3.png` stylebox),
-`currency_pill` (PanelContainer + `ui_topbar_pill_bg.png` stylebox; script with
-`@export icon/amount` + `set_amount()` so each instance picks its currency),
+`currency_pill` (`class_name CurrencyPill`, `@tool` Control. The icon is **not
+inside** the pill — it is a sibling declared after it so it paints on top, which
+is the only way it can be TALLER than the pill and overhang it top and bottom.
+That overhang is the look. `Pill` is a PanelContainer with the
+`ui_topbar_pill_bg.png` stylebox; its `margin_left` is driven to `icon_overlap +
+text_gap` so the amount always clears the icon. Knobs: `pill_size`, `icon_size`
+(keep above `pill_size.y`), `icon_overlap`, `text_gap`, `font_size`, `icon`,
+`amount`. `set_amount()` unchanged for screens),
 `top_bar` (HBoxContainer instancing two `currency_pill`s: energy =
-`icon_currency_energy1.png`, materials = `icon_currency_materials.png`),
+`icon_currency_energy1.png`, materials = **`icon_currency_materials1.png`** at
+`icon_scale = 0.82`. Its height is the ICON's height, not the pill's, because of
+that overhang. **The icon PNGs are all 1254×1254 but their artwork fills wildly
+different fractions of that canvas** — bolt 47.4%×67.0%, plain gem 57.4%×56.2%,
+`materials1` gem 83.1%×81.2% — so identical node sizes do NOT give identical
+apparent sizes. `icon_scale` exists to correct for that: 0.82 puts the gem's
+drawn height at 0.812×0.82×124 = 83px, matching the bolt's 0.670×124 = 83px.
+Measure with `Image.get_used_rect()` before changing an icon; do not eyeball it.
+⚠️ `victory_screen.tscn` and `defeat_screen.tscn` still use the *plain*
+`icon_currency_materials.png` for their materials-earned label, so the two gems
+differ between screens — unify when those screens next get touched),
+`play_button` (`class_name PlayButton`, `@tool` Button — the big Play control on
+the world map. `ui_play_button_v3.png` as a StyleBoxTexture with two stacked
+lines: `play_text` on top, then the energy icon + `xN` cost. **The art is 1905×825
+and its gold frame cannot be 9-sliced**, so the whole image stretches: keep
+`lock_aspect` on or the corners visibly distort, and content sits inside the
+art's interior via `margin_h`/`margin_top`/`margin_bottom` fractions measured off
+the blue panel. `cost_amount` is fed from `Constants.ENERGY_COST_PER_RUN`.
+Note `_apply()` carries an `_applying` re-entry guard — locking the aspect writes
+back to `button_height`, whose setter re-enters `_apply()` and would recurse
+until the stack blew),
 `nav_button` (TextureButton + hidden `Badge` TextureRect =
 `ui_notification_badge.png`; icon set per instance via `texture_normal`),
-`nav_bar` (HBoxContainer instancing three `nav_button`s: worldmap =
-`icon_nav_worldmap1.png`, garage = `icon_nav_garage.png`, codex =
-`icon_nav_codex_v2.png`; screens toggle `<Button>/Badge.visible`),
-`hp_bar` / `xp_bar` (**fill-only** TextureProgressBars — no `texture_under`,
-so no frame or empty track, just a coloured pill that shrinks as the value
-drops. Textures are `ui_hp_bar_pill.png` / `ui_xp_bar_pill.png`: the same
-bar is **drawn procedurally**, not stretched from a texture: `value_bar.gd`
-(one `@tool` script shared by both widgets — do not duplicate it) generates a
-rounded-rect image at exactly `bar_size` with an anti-aliased edge, so the
-corners are geometrically correct at any size or proportion. This replaced a
-bitmap approach that squashed a 1563×235 pill into 740×56 — a 2:1 non-uniform
-scale that flattened the round caps into stretched ovals, which is what the
-user kept rejecting. Inspector properties: `bar_size` (px), `color_top` /
-`color_bottom` (gradient), `corner_radius` (px, 8 = chosen look). `scale` is
-forced to 1 — **never scale these bars**. Both carry `modulate` alpha 0.72 so
-enemies stay visible. `hud.gd` drives them via `value` 0–100, unchanged. All
-the bar PNGs (`*_bg_*`, `*_fill_*`, `*_pill*`) are now unused, kept only in
-case the painted look is ever wanted back),
-`chapter_node` (flat Button + chapter image `chapter_01_image_v2.png` +
-frame `ui_chapter_node_frame_v2.png` + PlayBar `ui_play_button_v3.png`
-holding the chapter-name label + hidden `ui_locked_overlay.png`; script
-exports `chapter_image`/`chapter_title`/`locked`),
+`nav_bar` (`class_name NavBar`, `@tool` HBoxContainer instancing three
+`nav_button`s. **Order is Garage · Worldmap · Codex — Worldmap is deliberately in
+the MIDDLE**, because the world map is what the game opens on, so it is the home
+position. `nav_bar.gd`'s `Nav` enum indexes that same order; keep them in step if
+you reorder. Screens set `nav_bar.selected = NavBar.Nav.X` and the bar does the
+rest: the selected entry is drawn at `selected_size` instead of `normal_size` and
+is disabled so a screen cannot navigate to itself. **Do not set `disabled` on the
+buttons from a screen** — that is what `selected` replaced. Screens still connect
+`pressed` on the other two. Icons still carry `<Button>/Badge.visible`),
+`hp_bar` / `xp_bar` (TextureProgressBars driven by `value_bar.gd` — one `@tool`
+script shared by both widgets, do not duplicate it. The bar is **drawn
+procedurally**, not stretched from a texture, which replaced a bitmap approach
+that squashed a 1563×235 pill into 740×56 — a 2:1 non-uniform scale that
+flattened the round caps into stretched ovals. Three stacked layers, all from
+the same generator: `texture_under` = the dark empty track, `texture_progress`
+= the coloured fill, `texture_over` = the rim that frames the bar. Because the
+fill is clipped horizontally by `value`, a partly-full bar has a **flat right
+edge** — that is correct and matches the reference art; only the track keeps
+round ends. Inspector properties: `bar_size` (px), `color_top`/`color_bottom`
+(fill gradient), `track_color_top`/`track_color_bottom`, `rim_color`,
+`rim_width` (px, 0 = no rim), `corner_radius` (px). `scale` is forced to 1 —
+**never scale these bars**. `hud.gd` drives `value` 0–100, unchanged.
+**`hp_bar` is retired from the in-run HUD** — the tower's health is now
+`health_bar_3d` floating over the tower. The scene is kept as the ready-made
+red screen-space variant if a 2D health readout is ever wanted back. All the
+bar PNGs (`*_bg_*`, `*_fill_*`, `*_pill*`) are unused — the bars have been
+fully procedural since the art was retired),
+`bar_texture.gd` (**not a widget** — one static `make_capsule()` that rasterises
+the rounded-rect capsule. Shared by BOTH `value_bar.gd` and `health_bar_3d.gd` so
+the 2D and 3D bars cannot drift apart. It lives at `scenes/ui/widget/` root rather
+than in a widget folder, same as `value_bar.gd`, because it belongs to no single
+widget. It is `@tool` because both its callers are. **Consumers `preload()` it and
+deliberately do NOT use a global `class_name`** — see the warning below),
+`pause_button` (`@tool` Button, top-left in-run. **Drawn, not art** — there is
+no pause-glyph PNG, and a StyleBoxFlat panel plus two Panel bars stays crisp
+where a 1200px generated icon would have to be shrunk. Knobs: `button_size`,
+`panel_color`, `corner_radius`, `border_color`/`border_width`, `pressed_dim`,
+`glyph_color`, `glyph_bar_size`, `glyph_gap`, `glyph_corner_radius`. It only
+emits `pressed` — **it deliberately does not touch `get_tree().paused`**, see
+the pause note below),
+`health_bar_3d` (`@tool` Node3D — the floating bar over a unit. Three
+billboarded layers: Track → Fill → Value (`Label3D` showing the number). Art
+comes from `BarTexture.make_capsule()`, so it matches the HUD bar automatically.
+**The outline is baked into the Track and the Fill is inset inside it by
+`rim_width`** — it is deliberately NOT a separate rim quad on top. It was, and
+it failed: four billboarded sprites all sit at the same depth, `render_priority`
+did not reliably hold the rim above the fill, and the green covered the outline
+along the flat top and bottom while the rounded caps still showed it. Insetting
+makes the outline geometrically unreachable regardless of sort order. Keep it
+that way. `billboard = BILLBOARD_ENABLED`, **not**
+`BILLBOARD_FIXED_Y` — the camera is locked at 60° pitch, which would leave a
+fixed-Y bar tilted. The fill does not regenerate its image per hit: it reveals
+part of the drawn capsule via `region_rect` and shifts `offset` to stay pinned
+left — two floats per update. No `SubViewport`, per the vfx-audio skill.
+`follow_game_state = true` makes it subscribe to `GameState.hp_changed` and
+self-prime on its own, which is why the tower scenes needed no script change.
+**Enemies reuse this** (epic_08-03): instance it, set `follow_game_state =
+false`, call `set_hp()`. It is instanced into all five
+`ancient_tower_lvlN.tscn` — tune it **inside `health_bar_3d.tscn`** and all
+five update at once; `height_offset` is the knob for how high it floats),
+`chapter_node` (`@tool` Control — **display only, not a Button any more**. Just
+the chapter artwork plus a hidden `ui_locked_overlay.png`; exports
+`chapter_image`/`locked`. The decorative frame was dropped, the play bar moved out
+to the screen-level `play_button`, and the chapter name moved to the world map's
+title label — matching the reference layout where the art is a picture and Play is
+the control. `ui_chapter_node_frame*.png` is orphaned by this),
 `star_row` (5 TextureRects swapped between `ui_star_filled/empty.png` by
 `set_stars()`; `Constants.TOWER_MAX_STARS` worth of nodes live in the scene
 so they're editor-tunable),
@@ -565,12 +641,18 @@ set_upgrade_cost|set_upgrade_maxed/show_select` and connect its
 code, and never copy this scene per screen**. Its panel is a
 **StyleBoxFlat**, not the panel art — see the sizing rules below).
 
-**Wired screens:** `world_map.tscn` uses `bg_worldmap.png` full-screen,
-`top_bar` (pills fed from `MetaManager.energy/materials` in `_refresh()`),
-`nav_bar` (Garage/Codex navigate, Worldmap disabled as current screen),
-and instances `chapter_node` per chapter in the grid (`world_map.gd`
-`_build_chapter_node()`); the old EnergyLabel + plain bottom buttons are
-gone.
+**Wired screens:** `world_map.tscn` is the home screen and the project's
+`main_scene`. Top to bottom: `top_bar` (pills fed from
+`MetaManager.energy/materials`), a big `TitleLabel` carrying the chapter name, a
+760×760 centred `chapter_node`, the `play_button`, then `nav_bar` with
+`selected = WORLDMAP`. Background is `bg_worldmap.png` full-screen.
+**Pressing Play** — not the artwork — spends energy and starts the run.
+The chapter's picture is data-driven: `ChapterDefinition.map_image` (new
+`@export`, set to `chapter_01_image_v2.png` in `chapter_01.tres`), the same
+pattern as `TowerDefinition.icon`, so chapter #2 needs no code change.
+v1 has one chapter, so `world_map.gd` shows `CHAPTER_IDS[_current_index]`
+rather than a grid — **choosing between chapters still needs a carousel plus a
+way to move `_current_index`**, which is not built.
 
 **Victory/defeat screens:** both use `ui_panel_dark_v2.png` as the stats
 panel — sized 800×1099 to match the art's 0.73 aspect, with every label and
@@ -596,30 +678,104 @@ where a control genuinely differs (titles, HUD readouts).
 Everything is a plain number in the Godot inspector. Open
 `scenes/main/game_world.tscn` and pick a node under `HUD`.
 
+Current layout, top to bottom, on the 1080×1920 portrait target:
+`PauseButton` (96×96 at 32,32) · `WaveLabel` (centred, y 36) ·
+`XPBar` (740×52 at 170,186) with `LevelLabel` **straddling its top edge** ·
+`TagRowWidget` (y 268). There is no HP bar here — see `health_bar_3d`.
+
+> **Anything overlapping the bar must be a LATER sibling than it.** 2D Controls
+> have no depth — they paint in scene-tree order, so a later child draws on top.
+> There is no `z_index` to reach for; reorder the nodes. The HUD's order is
+> therefore `WaveLabel → XPBar → LevelLabel → TagRowWidget → PauseButton`:
+> `LevelLabel` sits *after* `XPBar` precisely because it straddles it. Listed
+> before, the bar painted straight over the text.
+> (The 3D bar solves the same problem differently — `Sprite3D`/`Label3D` do have
+> depth, so `health_bar_3d` orders its four layers with `render_priority`
+> 0→3 instead, and the number is 3 so it lands on top.)
+
 | What you want to change | Where | How |
 |---|---|---|
-| Bar **width / height** | `HUD/HPBar` and `HUD/XPBar` → **Bar Size** | Type pixels, e.g. `740, 56`. Set the **same value on both**. The capsule is redrawn at that exact size, so ends stay perfectly round at any proportions. |
-| Bar **colours** | same nodes → **Color Top** / **Color Bottom** | Vertical gradient of the bar. |
-| **How round the corners are** | same nodes → **Corner Radius** | In pixels. `0` = square, `8` = current (slightly rounded), `28` (half the height) = full capsule. |
-| Bar **position** | same nodes → Layout → Transform → **Position** | The bar's top-left corner on screen. Nothing hidden — rect = what you see. |
-| **Gap between the bars** | `HPBar` Position **Y** | Gap = HPBar.y − (XPBar.y + height). Currently 180 − (100 + 56) = **24 px**. |
-| **Horizontal centring** | both bars' Position **X** | Centred X = (1080 − width) ÷ 2. For 740 wide that's **170**. |
-| **Transparency** | both bars → **Modulate** → alpha | 1.0 = solid, 0.72 = current. Keep both equal. |
-| **Text size** | `HPLabel` / `LevelLabel` → Theme Overrides → Font Sizes | — |
-| **Where the text sits** | `HPLabel` / `LevelLabel` → Offset **Top and Bottom** | Both set to the *same* number with `grow_vertical = Both`, so text centres on that line and grows evenly either side. LevelLabel = `100` (Lv bar's top edge → text straddles it); HPLabel = `208` (HP bar's centre). |
+| Bar **width / height** | `HUD/XPBar` → **Bar Size** | Type pixels, e.g. `740, 52`. The capsule is redrawn at that exact size, so ends stay perfectly round at any proportions. |
+| **Fill** colours | `HUD/XPBar` → **Color Top** / **Color Bottom** | Vertical gradient of the filled part. |
+| **Empty track** colours | same node → **Track Color Top** / **Bottom** | The dark bar you see to the right of the fill. |
+| The **outline** | same node → **Rim Color** / **Rim Width** | Width in pixels, `0` = no rim. Set Rim Color's alpha to 0 to hide it without losing the width. |
+| **How round the corners are** | same node → **Corner Radius** | In pixels. `0` = square, `10` = current, `26` (half the height) = full capsule. |
+| Bar **position** | same node → Layout → Transform → **Position** | The bar's top-left corner on screen. Nothing hidden — rect = what you see. |
+| **Horizontal centring** | Position **X** | Centred X = (1080 − width) ÷ 2. For 740 wide that's **170**. |
+| **Transparency** | **Modulate** → alpha | 1.0 = current (the reference bar is opaque). |
+| **Text size** | `WaveLabel` / `LevelLabel` → Theme Overrides → Font Sizes | 40 and 64 currently. |
+| **Where the text sits** | `WaveLabel` / `LevelLabel` → Offset **Top / Bottom** | Both span the full 1080 width with `horizontal_alignment = Center`, so only the Y offsets matter — the text self-centres horizontally at any width. |
+| **Lv text straddling the bar** | `LevelLabel` → Offset Top **and** Bottom set to the *same* number, `grow_vertical = Both` | The text then centres on that Y line and grows evenly either side, so its top half hangs above the bar and its bottom half covers the bar's upper part — the reference look. Set both to the **bar's top edge** (`186` for a bar at y 186). Move the bar and this number has to move with it. |
+| **Pause button** look | `HUD/PauseButton` → Button Size, Panel Color, Corner Radius, Border…, Glyph… | Whole button is drawn from these; no art file to swap. Keep it at or above 80×80 for touch. |
+| **Floating HP bar** | `health_bar_3d.tscn` → Bar Size, Pixel Size, Height Offset, colours | Tune it in the WIDGET scene, not per tower — all five star levels instance the same scene. `Editor Preview Fill` lets you judge a part-full bar without running the game. |
+| **Floating bar's on-screen size** | `health_bar_3d.tscn` → **Pixel Size** | World size is `bar_size × pixel_size`. `bar_size` is texture resolution, not screen size — changing it alone rescales the bar. |
+| **Floating bar's outline** | `health_bar_3d.tscn` → **Rim Width** | The outline is geometrically identical on all four sides (`rim_width × pixel_size` world units each way). What decides how it *looks* is where that width lands on the screen pixel grid. The bar is ~10px tall in the editor preview, so `rim_width` maps to roughly `rim_width × 0.146` screen px. **Aim for the middle of a pixel bucket, not the edge of one:** `7` → 1.02px → a clean 1px line all round (current, matches the reference art). `10` → 1.47px → sits exactly on the 1/2 boundary and comes out **1px vertically, 2px horizontally** — visibly lopsided. `14` → 2.04px → even, but chunky. If you change it, verify by rendering a frame and counting pixels; the texture is symmetric at every value, so inspecting it proves nothing. |
+| **HP number straddling its bar** | `health_bar_3d.tscn` → **Value Raise** | In bar heights: `0` centres the number on the bar, **`0.5` centres it on the top edge** (current, matches the reference), `1.0` clears the bar. Expressed in bar heights so it survives changes to `bar_size` / `pixel_size`. |
 
 **Never set `scale` on these bars.** Scaling a bar non-uniformly is what
 flattened the round caps into stretched ovals; `value_bar.gd` keeps scale at
 1 and redraws the capsule instead. Change `bar_size`, not scale.
 
-**If the bars are 740×56 at x 170, the numbers are:** XPBar y `100`,
-LevelLabel top/bottom `100`, HPBar y `180`, HPLabel top/bottom `208`.
-Move a bar and its label's anchor line has to move by the same amount.
+**Do not add generated properties back into the .tscn.** `value_bar.gd`,
+`pause_button.gd` and `health_bar_3d.gd` are `@tool` scripts that build their
+own textures and styleboxes. Left alone, the editor serialises those into
+whatever scene instances the widget, and the stale baked copy then silently
+wins over the widget's own settings — that is how `game_world.tscn` reached
+**1.45 MB** of `PackedByteArray`. Two defences are in place and must stay:
+`_validate_property()` strips `PROPERTY_USAGE_STORAGE` from the generated
+properties, and any node the script draws into is added as an **internal
+child** (`Node.INTERNAL_MODE_BACK`), which Godot never serialises. The scene
+is 3.3 KB now and stays byte-identical across editor reopens.
 
 > ⚠️ **Close `game_world.tscn` in the editor before asking for changes to it.**
 > Godot writes its whole in-memory copy on save, so an open scene will silently
 > overwrite edits made to the file — that produced a HUD with new bar sizes at
 > stale positions, overlapping and off-centre.
+
+### Who is allowed to pause
+
+`get_tree().paused` has **four** writers and they must not fight:
+
+| Source | Where | When |
+|---|---|---|
+| Draft | `game_world.gd:_on_phase_changed` | phase → DRAFT pauses, → WAVE resumes |
+| Victory | `game_world.gd:_on_boss_died` | after `end_run(true)` |
+| Defeat | `game_world.gd:_on_tower_died` | after `end_run(false)` |
+| Player | `hud.gd:_on_pause_pressed` | **only while phase == WAVE** |
+
+The pause button is hidden outside the WAVE phase (`hud.gd:_on_phase_changed`)
+and re-checks the phase before toggling, so it can never resume a draft or
+un-pause a defeat screen. `pause_button.tscn` sets `process_mode = 3`
+(ALWAYS) — a pause button that stops processing while paused could pause the
+game and never let you out.
+
+`game_world.gd:_unhandled_input` restarts the run on `ui_accept` **only once
+`run_is_over()`**. It used to test `get_tree().paused` instead, which meant
+every pause source restarted the run: since the draft pauses the tree, the
+DRAFT auto-pick branch below it was unreachable and pressing Space during a
+draft wiped the run instead of picking a card.
+
+### `class_name` is not safe to depend on — `preload()` instead
+
+A global `class_name` resolves only through `.godot/global_script_class_cache.cfg`,
+and **only the editor rebuilds that file**. Consequences that have already bitten:
+
+- adding `class_name` to a script that *already existed* does not reliably refresh
+  the cache, so the new name stays unresolvable — `CurrencyPill` did exactly this
+  and broke `world_map.gd`, `tower_garage.gd` and `spell_codex.gd` with
+  `Could not find type "CurrencyPill"`
+- headless runs and fresh clones have no cache at all until someone opens the editor
+
+So the UI widgets here are consumed by **`const X := preload("res://…gd")`**, which
+resolves at load time with no cache involved (`NavBarScript` in the three meta
+screens, `BarTexture` in `value_bar.gd` / `health_bar_3d.gd`). Node references are
+typed to their **base** class (`Control`, `HBoxContainer`, `Button`) — the widget
+methods resolve dynamically at runtime, exactly as they did before.
+
+Verify by deleting `.godot/global_script_class_cache.cfg` and running the scene: it
+must still load. Note the *older* resource classes (`TowerDefinition`,
+`CombatUtils`, `SaveData`, …) still use `class_name` and do fail that test — that is
+pre-existing and only survives because the editor is always opened first.
 
 ### UI art sizing rules (learned the hard way — read before placing art)
 

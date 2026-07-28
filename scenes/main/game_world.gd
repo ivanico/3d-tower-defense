@@ -33,13 +33,25 @@ func _spawn_tower() -> void:
 	add_child(tower)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if get_tree().paused and event.is_action_pressed("ui_accept"):
+	if not event.is_action_pressed("ui_accept"):
+		return
+	# Restart only once the run is actually over. This used to test `paused`
+	# instead, which meant every other pause source restarted the run too: the
+	# draft pauses the tree, so the DRAFT branch below could never be reached and
+	# ui_accept during a draft wiped the run. The pause button adds a third source.
+	if run_is_over():
 		get_tree().paused = false
 		GameState.reset()
 		get_tree().reload_current_scene()
-	elif GameState.phase == Constants.GamePhase.DRAFT and event.is_action_pressed("ui_accept"):
+	elif GameState.phase == Constants.GamePhase.DRAFT:
 		if not draft_manager._draft_cards.is_empty():
 			draft_manager.select_card(draft_manager._draft_cards[0])
+
+## True once victory or defeat has been decided. `GameState.end_run()` is what
+## moves the phase there, from the boss dying or the tower dying.
+func run_is_over() -> bool:
+	return GameState.phase == Constants.GamePhase.VICTORY \
+			or GameState.phase == Constants.GamePhase.DEFEAT
 
 func _on_wave_cleared(wave_number: int) -> void:
 	GameState.waves_cleared += 1

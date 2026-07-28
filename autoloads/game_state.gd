@@ -74,6 +74,11 @@ func start_run(tower_def) -> void:
 		tower_range = tower_def.base_range
 	run_start_time = Time.get_ticks_msec() / 1000.0
 	phase = Constants.GamePhase.WAVE
+	# Announce the starting health. Without this, anything that displays HP reads
+	# 0 until the FIRST damage/heal happens to emit — and `_ready()` runs on
+	# children before parents, so the tower's own health bar is always built
+	# before Tower._ready() gets here to set the values.
+	hp_changed.emit(tower_hp, tower_max_hp)
 	EventBus.phase_changed.emit(phase)
 
 func gain_xp(amount: int) -> void:

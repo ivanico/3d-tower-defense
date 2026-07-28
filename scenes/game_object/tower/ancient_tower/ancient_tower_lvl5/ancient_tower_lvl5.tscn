@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://cer1blly3mgyn"]
+[gd_scene load_steps=23 format=3 uid="uid://cer1blly3mgyn"]
 
 [ext_resource type="PackedScene" uid="uid://de37477qn57ve" path="res://assets/models/towers/ancient_tower/ancient_tower_lvl5.glb" id="2_model"]
 [ext_resource type="Shader" uid="uid://rti363f5hrmg" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl5/ancient_tower_lvl5.gdshader" id="3_ldftq"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/component/health_component.tscn" id="Comp_health"]
 [ext_resource type="PackedScene" path="res://scenes/component/targeting_component.tscn" id="Comp_targeting"]
 [ext_resource type="Script" uid="uid://cjdt6pivkugg1" path="res://scenes/game_object/tower/tower.gd" id="Script_tower"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/health_bar_3d/health_bar_3d.tscn" id="Widget_hpbar"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ldftq"]
 size = Vector2(0.07, 0.47)
@@ -117,6 +118,8 @@ shape = SubResource("Shape_body")
 [node name="TargetingComponent" parent="." instance=ExtResource("Comp_targeting")]
 
 [node name="HitFlashComponent" parent="." instance=ExtResource("Comp_flash")]
+
+[node name="HealthBar3D" parent="." instance=ExtResource("Widget_hpbar")]
 
 [node name="AttackRangeArea" type="Area3D" parent="."]
 visible = false

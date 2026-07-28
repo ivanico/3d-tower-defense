@@ -2,13 +2,20 @@
 
 [ext_resource type="Script" path="res://scenes/ui/widget/value_bar.gd" id="1"]
 
+; Retired from the in-run HUD — the tower's health is now the floating 3D bar
+; (scenes/ui/widget/health_bar_3d/). Kept because it is the ready-made red
+; screen-space variant of value_bar.gd if a 2D health readout is ever wanted back.
+
 [node name="HpBar" type="TextureProgressBar"]
-modulate = Color(1, 1, 1, 0.72)
 offset_right = 740.0
-offset_bottom = 56.0
+offset_bottom = 52.0
 value = 100.0
 script = ExtResource("1")
-bar_size = Vector2i(740, 56)
+bar_size = Vector2i(740, 52)
 color_top = Color(0.973, 0.373, 0.353, 1)
 color_bottom = Color(0.78, 0.02, 0.024, 1)
-corner_radius = 8
+track_color_top = Color(0.16, 0.18, 0.24, 1)
+track_color_bottom = Color(0.09, 0.1, 0.14, 1)
+rim_color = Color(0.04, 0.04, 0.06, 1)
+rim_width = 3
+corner_radius = 10

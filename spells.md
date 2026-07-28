@@ -540,11 +540,13 @@ Lance, Rift Lance, Toxic Lance, Briar Lance
 > routing were built in S-00 and re-verified here end-to-end. Draft cards
 > now show the school as a school-colored icon block + school-colored name
 > (`draft_card.gd` reads `CombatUtils.get_damage_color()`); a real `icon`
-> texture in a `.tres` automatically replaces the colored block — **no
-> icon art exists in the repo yet**, so authoring the 20
-> `icon_spell_<id>.png` files remains open as art-pass work (assets.md
-> Section 4 naming). `SpellRegistry` logs its counts on startup:
-> 23 spells (3 v1 + 20 catalog) + 3 stat upgrades = 26 draft cards.
+> texture in a `.tres` automatically replaces the colored block — **all 20
+> `icon_spell_<id>.png` files now exist** under
+> `assets/ui/spells/<school>/` and every one of them resolves through
+> `SpellRegistry.get_card_icon()` by the assets.md Section 4 naming
+> convention, with no per-spell configuration. `SpellRegistry` logs its
+> counts on startup: 23 spells (3 v1 + 20 catalog) + 3 stat upgrades = 26
+> draft cards.
 
 **Refs**: `mechanics.md` Section 4 (draft), `epic_03_draft.md` (DraftManager,
 SpellRegistry), `components.md` (`SpellDefinition` fields)

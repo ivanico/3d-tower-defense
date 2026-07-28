@@ -22,10 +22,11 @@ assets/ui/
 │                 # ui_locked_overlay, chapter_01_image
 ├── garage/       # bg_garage, icon_stat_atk, icon_stat_hp, icon_tower_ancient,
 │                 # ui_star_filled, ui_star_empty
-├── hud/          # in-run bars. IN USE: ui_hp_bar_fill_v3.png and
-│                 # ui_xp_bar_fill_v5.png (v3 recoloured blue) — the HUD is
-│                 # fill-only, no frame. The *_bg_* frames and the generated
-│                 # *_fill_v4 squared rectangles are unused but kept.
+├── hud/          # in-run bars. NOTHING HERE IS IN USE — all 17 PNGs are dead.
+│                 # Both bars are drawn procedurally by value_bar.gd (track +
+│                 # fill + rim, from BarTexture.make_capsule) because stretching
+│                 # a painted pill to an arbitrary size flattened its round caps.
+│                 # Kept only in case the painted look is ever wanted back.
 ├── draft/        # ui_card_bg_common / _rare / _epic / _legendary
 ├── spells/       # icon_spell_<spell_id>.png — names match resources/spells/*.tres
 │   ├── fire/     #   bolt_fire, orb_embers, lance_flame, area_rain_of_fire,
@@ -71,11 +72,11 @@ TOWER GARAGE STARS
 - [x] ui_star_filled.png
 - [x] ui_star_empty.png
 
-BARS (HUD)
-- [x] ui_hp_bar_bg.png
-- [x] ui_hp_bar_fill.png
-- [x] ui_xp_bar_bg.png
-- [x] ui_xp_bar_fill.png
+BARS (HUD) — SUPERSEDED, the bars are drawn in code now, not from these
+- [x] ui_hp_bar_bg.png     (unused)
+- [x] ui_hp_bar_fill.png   (unused)
+- [x] ui_xp_bar_bg.png     (unused)
+- [x] ui_xp_bar_fill.png   (unused)
 
 DRAFT CARD BACKGROUNDS
 - [x] ui_card_bg_common.png
@@ -97,60 +98,49 @@ IN-RUN UPGRADE ICONS (drafted during gameplay)
 - [x] icon_upgrade_fire_rate.png (attack speed)
 
 =====================================================================
-## TO MAKE (generate in ChatGPT)
+## PAINTED BUT NOT WIRED — art exists on disk, nothing displays it yet
 =====================================================================
 
-A. SCHOOL BONUS EMBLEMS — 5
-   (shown when all-in on one school)
-- [ ] icon_bonus_fire.png  (in progress)
-- [ ] icon_bonus_frost.png
-- [ ] icon_bonus_poison.png
-- [ ] icon_bonus_shadow.png
-- [ ] icon_bonus_nature.png
+> Verified against the files on disk 2026-07-28. These are done as ART; what is
+> missing is a screen or widget that references them. No more generating needed.
 
-B. GARAGE-HUB STAT READOUT ICONS
-   (tower's current ATK / HP shown on the garage screen)
-- [ ] icon_stat_atk.png   (sword)
-- [ ] icon_stat_hp.png     (heart — OR reuse icon_upgrade_max_hp if you like)
+A. SCHOOL BONUS EMBLEMS — all 5 exist in `bonuses/`
+   (icon_bonus_fire / _frost / _poison / _shadow / _nature)
+   Needs: a synergy "all-in" readout to show them. `tag_row_widget` is the
+   natural home. ("shadow" is the void school's filename.)
+
+B. IN-RUN PER-SCHOOL DAMAGE ICONS — all 5 exist in `upgrades/`
+   (icon_upgrade_damage_<school>)
+   Needs: nothing generated. Note `upgrade_damage.tres` has
+   upgrade_id = "upgrade_damage", so SpellRegistry's convention path would be
+   `icon_upgrade_damage.png`, which does NOT exist — it falls back to the
+   explicit `garage/icon_stat_atk.png` override. Either add the plain-named
+   file or split the upgrade per school.
+
+C. REWARDS & MATERIALS — all 16 exist in `rewards/`
+   (icon_chest_common/_rare/_epic + each _open, icon_key_common/_rare/_epic,
+   icon_mat_scroll_<school> x5, icon_mat_tower_rare + _v2)
+   Needs: a rewards / chest-opening screen, which does not exist yet.
+
+=====================================================================
+## STILL TO MAKE (generate in ChatGPT)
+=====================================================================
+
+> This is the whole remaining art list. Everything else in sections A–H of the
+> old list turned out to be on disk already; most of it is wired.
+
 - [ ] icon_tower_ability.png  (your tower's ability — 1)
+- [ ] icon_tower_default.png  (portrait for the garage selection grid, +1 per
+                              future tower. icon_tower_ancient.png already
+                              covers tower #1 via TowerDefinition.icon)
+- [ ] bg_menu_generic.png     (reusable backdrop for codex/other menus — the
+                              codex currently borrows bg_garage.png)
+- [ ] bg_victory.png          (optional)
+- [ ] bg_defeat.png           (optional)
 
-C. REWARDS & MATERIALS
-   Chests (2-3):
-   - [ ] icon_chest_common.png
-   - [ ] icon_chest_rare.png
-   - [ ] icon_chest_epic.png  (optional)
-   Spell upgrade scroll-mats (1 per school):
-   - [ ] icon_mat_scroll_fire.png
-   - [ ] icon_mat_scroll_frost.png
-   - [ ] icon_mat_scroll_poison.png
-   - [ ] icon_mat_scroll_shadow.png
-   - [ ] icon_mat_scroll_nature.png
-   Rare tower material:
-   - [ ] icon_mat_tower_rare.png
-
-D. BACKGROUNDS (full-screen 2D images, portrait 1080x1920)
-- [ ] bg_worldmap.png       (sky/scenery behind the world map)
-- [ ] bg_garage.png         (backdrop behind garage screen)
-- [ ] bg_menu_generic.png   (reusable backdrop for codex/other menus)
-- [ ] bg_victory.png        (optional)
-- [ ] bg_defeat.png         (optional)
-
-E. CHAPTER IMAGE
-- [ ] chapter_01_image.png  (flat 2D painting of the arena; sits inside
-                            ui_chapter_node_frame.png)
-
-F. TOWER ICON
-- [ ] icon_tower_default.png (tower portrait for the garage selection grid;
-                            +1 per future tower)
-
-G. CHEST KEYS (only if chests need keys to open)
-- [ ] icon_key_common.png
-- [ ] icon_key_rare.png
-
-H. BUTTONS & PANELS — 3
-- [ ] ui_button_primary.png
-- [ ] ui_button_secondary.png
-- [ ] ui_panel_dark.png
+Not needed any more: the HUD bar art. `value_bar.gd` and `health_bar_3d.gd`
+draw their bars from `BarTexture.make_capsule()`, so track / fill / rim / radius
+are inspector knobs, not files to repaint.
 
 -----
 NOTE: Monetization UI (shop packs, subscription cards, battle pass, gems,

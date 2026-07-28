@@ -17,10 +17,10 @@ stretch_mode = 6
 texture = ExtResource("2")
 
 [node name="TopBar" parent="." instance=ExtResource("3")]
-offset_left = 240.0
+offset_left = 60.0
 offset_top = 24.0
-offset_right = 840.0
-offset_bottom = 114.0
+offset_right = 1020.0
+offset_bottom = 148.0
 
 [node name="TitleLabel" type="Label" parent="."]
 offset_left = 140.0
@@ -47,7 +47,8 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 24
 
 [node name="NavBar" parent="." instance=ExtResource("4")]
-offset_left = 240.0
-offset_top = 1720.0
-offset_right = 840.0
-offset_bottom = 1860.0
+offset_left = 60.0
+offset_top = 1700.0
+offset_right = 1020.0
+offset_bottom = 1880.0
+selected = 2

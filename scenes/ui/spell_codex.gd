@@ -3,16 +3,18 @@ extends CanvasLayer
 const MetaRowScene := preload("res://scenes/ui/widget/meta_row/meta_row.tscn")
 
 @onready var spell_list: VBoxContainer = $ScrollContainer/SpellList
-@onready var energy_pill: PanelContainer = $TopBar/EnergyPill
-@onready var materials_pill: PanelContainer = $TopBar/MaterialsPill
-@onready var worldmap_button: TextureButton = $NavBar/WorldmapButton
-@onready var garage_button: TextureButton = $NavBar/GarageButton
-@onready var codex_button: TextureButton = $NavBar/CodexButton
+# preload, not the global class `NavBar` — see the note in tower_garage.gd.
+const NavBarScript := preload("res://scenes/ui/widget/nav_bar/nav_bar.gd")
+
+@onready var energy_pill: Control = $TopBar/EnergyPill
+@onready var materials_pill: Control = $TopBar/MaterialsPill
+@onready var nav_bar: Control = $NavBar
 
 func _ready() -> void:
-	codex_button.disabled = true
-	worldmap_button.pressed.connect(_on_map_pressed)
-	garage_button.pressed.connect(_on_garage_pressed)
+	# NavBar enlarges and disables the entry we are on; no per-button fiddling.
+	nav_bar.selected = NavBarScript.Nav.CODEX
+	$NavBar/WorldmapButton.pressed.connect(_on_map_pressed)
+	$NavBar/GarageButton.pressed.connect(_on_garage_pressed)
 	_refresh()
 
 func _on_map_pressed() -> void:

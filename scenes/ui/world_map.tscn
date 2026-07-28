@@ -1,9 +1,18 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/world_map.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/ui/world_map/bg_worldmap.png" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/top_bar/top_bar.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/nav_bar/nav_bar.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/chapter_node/chapter_node.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/play_button/play_button.tscn" id="6"]
+
+; Layout top to bottom on the 1080x1920 portrait target:
+;   TopBar (energy / materials)  y 24
+;   TitleLabel (chapter name)    y 300
+;   ChapterImage 760x760 centred y 440
+;   PlayButton 600x260 centred   y 1360
+;   NavBar                       y 1700
 
 [node name="WorldMap" type="CanvasLayer"]
 layer = 20
@@ -16,44 +25,49 @@ expand_mode = 1
 stretch_mode = 6
 texture = ExtResource("2")
 
-[node name="TitleLabel" type="Label" parent="."]
-offset_left = 140.0
-offset_top = 140.0
-offset_right = 940.0
-offset_bottom = 240.0
-theme_override_colors/font_color = Color(0.15, 0.18, 0.32, 1)
-theme_override_font_sizes/font_size = 56
-horizontal_alignment = 1
-text = "World Map"
-
 [node name="TopBar" parent="." instance=ExtResource("3")]
-offset_left = 240.0
+offset_left = 60.0
 offset_top = 24.0
-offset_right = 840.0
-offset_bottom = 114.0
+offset_right = 1020.0
+offset_bottom = 148.0
+
+[node name="TitleLabel" type="Label" parent="."]
+offset_left = 60.0
+offset_top = 300.0
+offset_right = 1020.0
+offset_bottom = 386.0
+theme_override_font_sizes/font_size = 68
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "Chapter 1"
+
+[node name="ChapterImage" parent="." instance=ExtResource("5")]
+offset_left = 160.0
+offset_top = 440.0
+offset_right = 920.0
+offset_bottom = 1200.0
 
 [node name="OutOfEnergyLabel" type="Label" parent="."]
-offset_left = 140.0
-offset_top = 280.0
-offset_right = 940.0
-offset_bottom = 330.0
-theme_override_font_sizes/font_size = 24
+offset_left = 60.0
+offset_top = 1250.0
+offset_right = 1020.0
+offset_bottom = 1310.0
+theme_override_font_sizes/font_size = 36
 theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
 horizontal_alignment = 1
+vertical_alignment = 1
 text = "Out of energy!"
 visible = false
 
-[node name="ChapterGrid" type="GridContainer" parent="."]
-offset_left = 60.0
-offset_top = 400.0
-offset_right = 1020.0
-offset_bottom = 1600.0
-columns = 2
-theme_override_constants/h_separation = 24
-theme_override_constants/v_separation = 24
+[node name="PlayButton" parent="." instance=ExtResource("6")]
+offset_left = 240.0
+offset_top = 1360.0
+offset_right = 840.0
+offset_bottom = 1620.0
 
 [node name="NavBar" parent="." instance=ExtResource("4")]
-offset_left = 240.0
-offset_top = 1720.0
-offset_right = 840.0
-offset_bottom = 1860.0
+offset_left = 60.0
+offset_top = 1700.0
+offset_right = 1020.0
+offset_bottom = 1880.0
+selected = 1

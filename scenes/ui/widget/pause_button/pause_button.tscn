@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/pause_button/pause_button.gd" id="1"]
+
+; Intentionally a single node. The panel stylebox and the two glyph bars are built
+; by the script — the bars as INTERNAL children — so Godot never serialises them as
+; instance overrides into game_world.tscn. Tune everything via the exported knobs.
+; process_mode 3 is PROCESS_MODE_ALWAYS: the button must still work while paused,
+; otherwise it could pause the game and never unpause it.
+
+[node name="PauseButton" type="Button"]
+process_mode = 3
+custom_minimum_size = Vector2(96, 96)
+offset_right = 96.0
+offset_bottom = 96.0
+focus_mode = 0
+script = ExtResource("1")

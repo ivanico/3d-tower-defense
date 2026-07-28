@@ -1,14 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://p554x4rbygwa"]
 
-[ext_resource type="Script" path="res://scenes/ui/widget/value_bar.gd" id="1"]
+[ext_resource type="Script" uid="uid://cfgn57ewf3tty" path="res://scenes/ui/widget/value_bar.gd" id="1"]
 
 [node name="XpBar" type="TextureProgressBar"]
-modulate = Color(1, 1, 1, 0.72)
+custom_minimum_size = Vector2(740, 52)
 offset_right = 740.0
-offset_bottom = 56.0
+offset_bottom = 52.0
 value = 40.0
 script = ExtResource("1")
-bar_size = Vector2i(740, 56)
-color_top = Color(0.353, 0.635, 0.973, 1)
-color_bottom = Color(0.012, 0.357, 0.761, 1)
-corner_radius = 8
+corner_radius = 10

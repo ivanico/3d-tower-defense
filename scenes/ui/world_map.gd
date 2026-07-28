@@ -1,48 +1,57 @@
 extends CanvasLayer
 
+## Home screen. Shows the current chapter's artwork with its name above it and a
+## Play button that spends energy and starts the run.
+##
+## v1 has one chapter, so the chapter is simply CHAPTER_IDS[0] rather than a grid
+## of selectable nodes. Picking between chapters needs a carousel here plus a way
+## to move `_current_index`; the artwork itself is display-only by design (see
+## chapter_node.gd), so the Play button stays the single control.
+
 const CHAPTER_IDS: Array[String] = ["chapter_01"]
 const OUT_OF_ENERGY_DISPLAY_SEC := 2.0
-const ChapterNodeScene := preload("res://scenes/ui/widget/chapter_node/chapter_node.tscn")
 
+# preload, not the global class `NavBar` — see the note in tower_garage.gd.
+const NavBarScript := preload("res://scenes/ui/widget/nav_bar/nav_bar.gd")
+
+@onready var title_label: Label = $TitleLabel
+@onready var chapter_image: Control = $ChapterImage
 @onready var out_of_energy_label: Label = $OutOfEnergyLabel
-@onready var chapter_grid: GridContainer = $ChapterGrid
-@onready var energy_pill: PanelContainer = $TopBar/EnergyPill
-@onready var materials_pill: PanelContainer = $TopBar/MaterialsPill
-@onready var worldmap_button: TextureButton = $NavBar/WorldmapButton
-@onready var garage_button: TextureButton = $NavBar/GarageButton
-@onready var codex_button: TextureButton = $NavBar/CodexButton
+@onready var play_button: Button = $PlayButton
+@onready var energy_pill: Control = $TopBar/EnergyPill
+@onready var materials_pill: Control = $TopBar/MaterialsPill
+@onready var nav_bar: Control = $NavBar
+
+var _current_index: int = 0
 
 func _ready() -> void:
 	out_of_energy_label.visible = false
-	worldmap_button.disabled = true
-	garage_button.pressed.connect(_on_garage_pressed)
-	codex_button.pressed.connect(_on_codex_pressed)
+	nav_bar.selected = NavBarScript.Nav.WORLDMAP
+	play_button.cost_amount = Constants.ENERGY_COST_PER_RUN
+	play_button.pressed.connect(_on_play_pressed)
+	$NavBar/GarageButton.pressed.connect(_on_garage_pressed)
+	$NavBar/CodexButton.pressed.connect(_on_codex_pressed)
 	_refresh()
 
 func _refresh() -> void:
 	energy_pill.set_amount(MetaManager.energy)
 	materials_pill.set_amount(MetaManager.materials)
-	for child in chapter_grid.get_children():
-		chapter_grid.remove_child(child)
-		child.queue_free()
-	for chapter_id in CHAPTER_IDS:
-		chapter_grid.add_child(_build_chapter_node(chapter_id))
+	var chapter_def := _current_chapter()
+	title_label.text = chapter_def.chapter_name
+	if chapter_def.map_image != null:
+		chapter_image.chapter_image = chapter_def.map_image
 
-func _build_chapter_node(chapter_id: String) -> Control:
-	var chapter_def: ChapterDefinition = load("res://resources/chapters/%s.tres" % chapter_id)
-	var node: Button = ChapterNodeScene.instantiate()
-	node.name = "ChapterNode_%s" % chapter_id
-	node.chapter_title = chapter_def.chapter_name
-	node.pressed.connect(_on_chapter_pressed.bind(chapter_id))
-	return node
+func _current_chapter() -> ChapterDefinition:
+	return load("res://resources/chapters/%s.tres" % CHAPTER_IDS[_current_index])
 
-func _on_chapter_pressed(chapter_id: String) -> void:
+func _on_play_pressed() -> void:
 	if not MetaManager.spend_energy():
 		_show_out_of_energy()
 		return
 	_refresh()
-	GameState.pending_chapter_def = load("res://resources/chapters/%s.tres" % chapter_id)
-	GameState.pending_tower_def = load("res://resources/towers/tower_%s.tres" % MetaManager.selected_tower_id)
+	GameState.pending_chapter_def = _current_chapter()
+	GameState.pending_tower_def = load(
+			"res://resources/towers/tower_%s.tres" % MetaManager.selected_tower_id)
 	get_tree().change_scene_to_file("res://scenes/main/game_world.tscn")
 
 func _show_out_of_energy() -> void:

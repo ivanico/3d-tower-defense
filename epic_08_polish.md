@@ -85,6 +85,15 @@ not affected by the 3D rebuild) — same approach as the original design:
 
 **File**: `res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`
 
+> **The widget already exists** — `scenes/ui/widget/health_bar_3d/` was built for
+> the tower during the HUD pass and is deliberately generic. Instance it under the
+> enemy, set `follow_game_state = false`, and call `set_hp(current, max)` from the
+> enemy's `HealthComponent`. **Do not write a second bar.** It already resolves the
+> "pick whichever renders cleanly" question below: four billboarded `Sprite3D`/
+> `Label3D` layers with `BILLBOARD_ENABLED`, partial fill via `region_rect`, and no
+> `SubViewport`. What is still open here is the per-enemy work: height tuning for
+> each model, the colour thresholds, the damage tween, and the boss HUD bar.
+
 - [ ] Replace Epic 02's simple HP bar approach with a clean billboarded
 	  version: a small `Node3D` positioned above the enemy's head (height
 	  tuned per the model's actual size from Epic 06), containing either two
@@ -157,6 +166,15 @@ not affected by the 3D rebuild) — same approach as the original design:
 ## Task 08-06 — Pause Menu
 
 **File**: `res://scenes/ui/PauseMenu.tscn`
+
+> **Partly done.** The in-run pause *button* exists
+> (`scenes/ui/widget/pause_button/`, instanced in the HUD, wired in
+> `hud.gd:_on_pause_pressed`) and toggles `get_tree().paused` while the phase is
+> WAVE. The pre-existing bug where any `ui_accept` while paused wiped the run is
+> fixed — `game_world.gd:_unhandled_input` now restarts only once `run_is_over()`.
+> Still open: the menu itself, and the `ui_cancel` / Android back button binding.
+> See "Who is allowed to pause" in components.md §7 before adding a fifth writer
+> of `get_tree().paused`.
 
 - [ ] Create `PauseMenu.tscn`, root `CanvasLayer`, layer 50. `DimBG`
 	  (`ColorRect`), `Panel` with `TitleLabel`, `ResumeButton`,

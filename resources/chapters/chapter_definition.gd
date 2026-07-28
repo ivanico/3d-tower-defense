@@ -7,3 +7,6 @@ extends Resource
 @export var enemy_pool: Array[EnemyDefinition] = []
 @export var boss_pool: Array[EnemyDefinition] = []
 @export var arena_model_path: String = ""
+## Artwork shown on the world map. Data-driven like TowerDefinition.icon — a new
+## chapter sets its own here and the world map needs no code change.
+@export var map_image: Texture2D

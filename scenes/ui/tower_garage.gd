@@ -4,17 +4,23 @@ const MetaRowScene := preload("res://scenes/ui/widget/meta_row/meta_row.tscn")
 const ICON_HP := preload("res://assets/ui/garage/icon_stat_hp.png")
 const ICON_ATK := preload("res://assets/ui/garage/icon_stat_atk.png")
 
+# Preloaded rather than referenced as the global class `NavBar`: `class_name` only
+# resolves through .godot/global_script_class_cache.cfg, which ONLY the editor
+# rebuilds, so a headless run or a fresh clone fails to parse until someone opens
+# the editor. preload has no such dependency. Node refs below are typed to their
+# base class for the same reason — the methods resolve dynamically at runtime.
+const NavBarScript := preload("res://scenes/ui/widget/nav_bar/nav_bar.gd")
+
 @onready var tower_list: VBoxContainer = $ScrollContainer/TowerList
-@onready var energy_pill: PanelContainer = $TopBar/EnergyPill
-@onready var materials_pill: PanelContainer = $TopBar/MaterialsPill
-@onready var worldmap_button: TextureButton = $NavBar/WorldmapButton
-@onready var garage_button: TextureButton = $NavBar/GarageButton
-@onready var codex_button: TextureButton = $NavBar/CodexButton
+@onready var energy_pill: Control = $TopBar/EnergyPill
+@onready var materials_pill: Control = $TopBar/MaterialsPill
+@onready var nav_bar: Control = $NavBar
 
 func _ready() -> void:
-	garage_button.disabled = true
-	worldmap_button.pressed.connect(_on_map_pressed)
-	codex_button.pressed.connect(_on_codex_pressed)
+	# NavBar enlarges and disables the entry we are on; no per-button fiddling.
+	nav_bar.selected = NavBarScript.Nav.GARAGE
+	$NavBar/WorldmapButton.pressed.connect(_on_map_pressed)
+	$NavBar/CodexButton.pressed.connect(_on_codex_pressed)
 	_refresh()
 
 func _on_map_pressed() -> void:

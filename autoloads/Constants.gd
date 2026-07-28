@@ -22,6 +22,7 @@ const SYNERGY_THRESHOLD_HIGH:   int   = 5
 const TOWER_MAX_STARS:          int   = 5
 const SPELL_MAX_RANK:           int   = 5
 const MAX_ENERGY:               int   = 5
+const ENERGY_COST_PER_RUN:      int   = 1
 const CAMERA_PITCH_DEGREES:     float = 60.0
 
 # Balance tuning constants — never use bare literals in gameplay logic, always reference these
