@@ -26,10 +26,6 @@ TowerRegistry="*res://autoloads/tower_registry.gd"
 ObjectPool="*res://autoloads/object_pool.gd"
 AudioManager="*res://autoloads/audio_manager.gd"
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/ui_icon_cap/plugin.cfg")
-
 [display]
 
 window/size/viewport_width=1080
@@ -37,6 +33,10 @@ window/size/viewport_height=1920
 window/size/window_width_override=662
 window/size/window_height_override=900
 window/stretch/mode="canvas_items"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/ui_icon_cap/plugin.cfg")
 
 [gui]
 

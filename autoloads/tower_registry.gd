@@ -45,7 +45,14 @@ func get_unlocked() -> Array:
 ##
 ## Returns null when a tower has no model yet, which is the normal case for the
 ## locked placeholders; callers just show nothing.
-func get_preview_model(tower_id: String, star: int) -> PackedScene:
+##
+## `static` because `tower_preview_3d.gd` is a @tool script: at editor time this
+## autoload is a placeholder instance, and calling an instance method on it fails
+## with "Attempt to call a method on a placeholder instance". A static function
+## needs no instance, so the preview can preload this script and call it directly —
+## the same trick the preview already uses for `constants.gd`. Nothing here reads
+## `all_towers`, so there is no instance state to lose.
+static func get_preview_model(tower_id: String, star: int) -> PackedScene:
 	var path := "res://assets/models/towers/%s/%s_lvl%d.glb" % [tower_id, tower_id, star]
 	if not ResourceLoader.exists(path):
 		return null

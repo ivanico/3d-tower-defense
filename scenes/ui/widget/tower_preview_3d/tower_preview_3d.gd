@@ -25,6 +25,12 @@ const IDLE_ANIMATION := "idle"
 ## guaranteed to exist at editor time. Constants on a script need no instance.
 const ConstantsScript := preload("res://autoloads/constants.gd")
 
+## Same reason, same trick: `get_preview_model` is reached through the script, not
+## the `TowerRegistry` singleton. At editor time that autoload is a placeholder
+## instance and any instance call on it dies with "Attempt to call a method on a
+## placeholder instance", which is why the preview showed no model in the editor.
+const TowerRegistryScript := preload("res://autoloads/tower_registry.gd")
+
 ## Where a star level's decoration scene lives, by convention:
 ##   scenes/game_object/tower/<id>/<id>_lvl<star>/<id>_lvl<star>_fx.tscn
 const EFFECTS_PATH := "res://scenes/game_object/tower/%s/%s_lvl%d/%s_lvl%d_fx.tscn"
@@ -195,7 +201,7 @@ func _reload_model() -> void:
 	if _model != null:
 		_model.queue_free()
 		_model = null
-	var packed := TowerRegistry.get_preview_model(tower_id, star)
+	var packed := TowerRegistryScript.get_preview_model(tower_id, star)
 	if packed == null:
 		return
 	_model = packed.instantiate()
