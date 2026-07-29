@@ -17,11 +17,13 @@ func _ready() -> void:
 	$NavBar/GarageButton.pressed.connect(_on_garage_pressed)
 	_refresh()
 
+# navigate_to plays the nav bar's select transition before swapping scene;
+# calling change_scene_to_file here directly would cut it off on frame one.
 func _on_map_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/world_map.tscn")
+	nav_bar.navigate_to(NavBarScript.Nav.WORLDMAP, "res://scenes/ui/world_map.tscn")
 
 func _on_garage_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/tower_garage.tscn")
+	nav_bar.navigate_to(NavBarScript.Nav.GARAGE, "res://scenes/ui/tower_garage.tscn")
 
 func _refresh() -> void:
 	energy_pill.set_amount(MetaManager.energy)

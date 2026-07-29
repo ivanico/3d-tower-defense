@@ -22,8 +22,13 @@ EventBus="*res://autoloads/event_bus.gd"
 GameState="*res://autoloads/game_state.gd"
 MetaManager="*res://autoloads/meta_manager.gd"
 SpellRegistry="*res://autoloads/spell_registry.gd"
+TowerRegistry="*res://autoloads/tower_registry.gd"
 ObjectPool="*res://autoloads/object_pool.gd"
 AudioManager="*res://autoloads/audio_manager.gd"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/ui_icon_cap/plugin.cfg")
 
 [display]
 

@@ -1,0 +1,103 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Shader" uid="uid://rti363f5hrmg" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl5/ancient_tower_lvl5.gdshader" id="1"]
+
+; The lvl5 tower's waterfalls, split out of ancient_tower_lvl5.tscn so the garage
+; preview can show them too. The preview must never instance the gameplay tower —
+; tower.gd._ready() calls GameState.start_run() — so the decoration lives here and
+; both sides instance THIS.
+;
+; Found by convention: tower_preview_3d.gd looks for
+;   scenes/game_object/tower/<id>/<id>_lvl<star>/<id>_lvl<star>_fx.tscn
+; and adds it under the model if the file exists. A star level with no _fx scene
+; simply gets nothing — no per-tower configuration anywhere.
+;
+; Transforms are in the .glb's local space, exactly as they were when these were
+; direct children of the model instance. Do not add a transform to the root.
+;
+; Optimised vs. the original inline copy:
+;   - 6 PlaneMesh sub-resources collapsed to 4 (three planes shared 0.07x0.47,
+;     two shared 0.04x0.47) and 7 materials to 6 (two were the same colour), so
+;     identical quads can batch instead of each carrying its own resource
+;   - cast_shadow = 0 on every plane. They are `unshaded` + `blend_mix`, so a
+;     shadow pass over them is pure cost for something that should not cast one.
+
+[sub_resource type="PlaneMesh" id="plane_tall_wide"]
+size = Vector2(0.07, 0.47)
+
+[sub_resource type="PlaneMesh" id="plane_tall_narrow"]
+size = Vector2(0.04, 0.47)
+
+[sub_resource type="PlaneMesh" id="plane_splash_l"]
+size = Vector2(0.08, 0.11)
+
+[sub_resource type="PlaneMesh" id="plane_splash_r"]
+size = Vector2(0.08, 0.15)
+
+[sub_resource type="ShaderMaterial" id="mat_l_top"]
+shader = ExtResource("1")
+shader_parameter/water_color = Color(0.282353, 0.427451, 0.0588235, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_l_middle"]
+shader = ExtResource("1")
+shader_parameter/water_color = Color(0.74902, 0.854902, 0.176471, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_l_bottom"]
+shader = ExtResource("1")
+shader_parameter/water_color = Color(0.258824, 0.419608, 0.129412, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_r_top"]
+shader = ExtResource("1")
+shader_parameter/water_color = Color(0.258824, 0.45098, 0.0588235, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_r_middle"]
+shader = ExtResource("1")
+shader_parameter/water_color = Color(0.851, 1, 0.165, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_r_bottom"]
+shader = ExtResource("1")
+shader_parameter/water_color = Color(0.376471, 0.584314, 0.0784314, 1)
+
+[node name="AncientTowerLvl5FX" type="Node3D"]
+
+[node name="waterfall_l_top" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.998535, -0.00608262, -0.0537821, -0.0536405, 0.0214603, -0.998331, 0.00722656, 0.999751, 0.0211025, -0.311047, -0.0908365, -0.0142379)
+cast_shadow = 0
+mesh = SubResource("plane_tall_wide")
+surface_material_override/0 = SubResource("mat_l_top")
+
+[node name="watterfall_l_middle" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.933467, -0.313638, -0.173983, 0.220596, 0.884543, -0.411003, 0.282802, 0.345277, 0.894878, -0.347458, -0.325435, 0.0336353)
+cast_shadow = 0
+mesh = SubResource("plane_splash_l")
+surface_material_override/0 = SubResource("mat_l_middle")
+
+[node name="waterfall_l_bottom" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.997267, -0.0497201, -0.0546521, -0.0536405, 0.0214603, -0.998331, 0.05081, 0.998533, 0.0187346, -0.363989, -0.582821, 0.108525)
+cast_shadow = 0
+mesh = SubResource("plane_tall_wide")
+surface_material_override/0 = SubResource("mat_l_bottom")
+
+[node name="waterfall_r_top" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.997661, -0.0682994, 0.00328087, 0.0044826, 0.0174511, -0.99984, 0.0682312, 0.997512, 0.0177163, 0.29563, -0.0888841, -0.0124727)
+cast_shadow = 0
+mesh = SubResource("plane_tall_wide")
+surface_material_override/0 = SubResource("mat_r_top")
+
+[node name="watterfall_r_middle" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.846221, 0.074042, 0.527662, 0.0471631, 0.976003, -0.212589, -0.53074, 0.204784, 0.822422, 0.325098, -0.326089, 0.0185084)
+cast_shadow = 0
+mesh = SubResource("plane_splash_r")
+surface_material_override/0 = SubResource("mat_r_middle")
+
+[node name="waterfall_r_bottom" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.997433, 0.055706, -0.0450121, -0.0470854, 0.0364803, -0.998226, -0.0539654, 0.997781, 0.0390095, 0.345761, -0.5778, 0.115796)
+cast_shadow = 0
+mesh = SubResource("plane_tall_narrow")
+surface_material_override/0 = SubResource("mat_r_bottom")
+
+[node name="waterfall_r_bottom2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.510525, 0.859857, -0.00323316, -0.00352378, -0.0016679, -0.999994, -0.859857, 0.510533, 0.00217835, 0.386847, -0.5778, 0.0934611)
+cast_shadow = 0
+mesh = SubResource("plane_tall_narrow")
+surface_material_override/0 = SubResource("mat_r_bottom")

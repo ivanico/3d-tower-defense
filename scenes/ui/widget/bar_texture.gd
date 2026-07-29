@@ -21,6 +21,46 @@ extends RefCounted
 ##   rim    — `rim_only` capsule, drawn last so it frames the whole bar
 
 
+## Rasterises the flat, vertically-shaded tile used by the nav bar.
+##
+## Generated rather than a StyleBoxFlat because **StyleBoxFlat cannot do gradients
+## at all** — it is one solid `bg_color` — and the reference art's whole look is
+## the vertical shading. Two pixels wide: the caller stretches it horizontally
+## through a NinePatchRect, so the top highlight stays crisp while the rest scales
+## to whatever the tile is currently sized to.
+##
+## The tile carries no side edges. Seams between tiles are drawn separately by
+## nav_bar, because edges baked in here would also appear on the OUTER sides of
+## the first and last tile, and the bar has to run edge to edge.
+##
+## The shading is two bands, matching the reference:
+##   y < split      — gradient from `top` down to `split_color`
+##   y >= split     — flat `bottom`
+## `split = 1.0` collapses that to one continuous gradient over the whole height,
+## which is what the selected tile uses. `highlight_h` rows at the very top are
+## overwritten with `highlight` — the thin bright line that makes it read as shiny.
+static func make_tile(height: int, top: Color, split_color: Color, bottom: Color,
+		split: float, highlight: Color, highlight_h: int) -> ImageTexture:
+	var w := 2
+	var h: int = maxi(height, 2)
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+
+	# At split = 1.0 this lands on h, so every row takes the gradient branch.
+	var split_y: int = clampi(int(round(float(h) * clampf(split, 0.0, 1.0))), 1, h)
+	var last: float = maxf(float(split_y - 1), 1.0)
+
+	for y in h:
+		var row: Color = bottom
+		if y < split_y:
+			row = top.lerp(split_color, float(y) / last)
+		if y < highlight_h:
+			row = highlight
+		for x in w:
+			img.set_pixel(x, y, row)
+
+	return ImageTexture.create_from_image(img)
+
+
 ## Rasterises a vertical-gradient rounded rectangle.
 ##
 ## `radius` is in pixels and is capped at half the shorter side, so anything at or above

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=3 format=3]
+
+; Placeholder occupying garage grid slot 5. Fill in real art, stats and
+; star_level_scenes, then set unlocked = true — the grid picks it up with no
+; code or scene change. See autoloads/tower_registry.gd.
+
+[ext_resource type="Script" uid="uid://bhj88b4e7miwt" path="res://resources/towers/tower_definition.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bdusiyj4dxftf" path="res://assets/ui/garage/icon_tower_ancient.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+tower_id = "locked_05"
+tower_name = "Coming Soon"
+icon = ExtResource("2")
+unlocked = false
+sort_order = 4
+base_hp = 1000.0
+base_damage = 20.0
+base_fire_rate = 1.0
+base_range = 8.0
+base_armor = 0.0

@@ -280,6 +280,28 @@ star levels, spell ranks, materials, energy, premium currency, selected tower.
 
 **Location**: `res://autoloads/spell_registry.gd` · **Autoload order**: 5
 
+The directory scan itself lives in **`res://scripts/resource_dir.gd`**
+(`ResourceDir.load_all(path)`), shared with `TowerRegistry` — **do not copy that
+loop into a registry.** It is `preload()`ed rather than reached for as a global
+`class_name`, for the usual global-class-cache reason.
+
+---
+
+### `TowerRegistry.gd`
+**What it does**: Loads every `TowerDefinition` `.tres` from `resources/towers/`
+at startup via the same `ResourceDir` scan, sorted by `sort_order` — that
+ordering is what the garage grid shows, and it is explicit so renaming a resource
+cannot silently reshuffle the grid. Exposes `get_by_id()`, `get_unlocked()`,
+`is_playable(id)` (exists as content **and** owned by the player), and
+`get_preview_model(id, star)`.
+
+`get_preview_model()` resolves the raw `.glb` by ID convention
+(`assets/models/towers/<id>/<id>_lvl<star>.glb`). It exists specifically so the
+garage never reaches for `star_level_scenes` — those are gameplay scenes and
+`tower.gd._ready()` calls `GameState.start_run()`.
+
+**Location**: `res://autoloads/tower_registry.gd` · **Autoload order**: 6
+
 ---
 
 ### `WaveManager.gd` (run-scoped manager Node — NOT an autoload)
@@ -559,17 +581,69 @@ the blue panel. `cost_amount` is fed from `Constants.ENERGY_COST_PER_RUN`.
 Note `_apply()` carries an `_applying` re-entry guard — locking the aspect writes
 back to `button_height`, whose setter re-enters `_apply()` and would recurse
 until the stack blew),
-`nav_button` (TextureButton + hidden `Badge` TextureRect =
-`ui_notification_badge.png`; icon set per instance via `texture_normal`),
-`nav_bar` (`class_name NavBar`, `@tool` HBoxContainer instancing three
-`nav_button`s. **Order is Garage · Worldmap · Codex — Worldmap is deliberately in
-the MIDDLE**, because the world map is what the game opens on, so it is the home
-position. `nav_bar.gd`'s `Nav` enum indexes that same order; keep them in step if
-you reorder. Screens set `nav_bar.selected = NavBar.Nav.X` and the bar does the
-rest: the selected entry is drawn at `selected_size` instead of `normal_size` and
-is disabled so a screen cannot navigate to itself. **Do not set `disabled` on the
-buttons from a screen** — that is what `selected` replaced. Screens still connect
-`pressed` on the other two. Icons still carry `<Button>/Badge.visible`),
+`nav_button` (`@tool` Button drawn as a shaded tile. Background is **two stacked
+NinePatchRects** — the unselected look under the selected one — cross-faded by
+`bg_blend`. Not a StyleBoxFlat, because that has a single `bg_color` and cannot do
+a gradient at all, and the vertical shading is the whole look. Both patches are
+forced to `TEXTURE_FILTER_NEAREST`: the tile texture is six pixels wide and its
+centre column stretches across the entire tile, so under the default linear filter
+the dark edge colour bleeds hundreds of pixels inward and the tile reads as shaded
+left-to-right. Icon, label and badge are
+**internal children built in code**, and `_validate_property` strips every
+`theme_override_*` from storage, so instancing it into a screen bakes nothing.
+Per-entry exports are only `icon_texture`, `label_text` and the badge fields;
+colour, tile size, icon scale and font are pushed in by `nav_bar` via
+`style_tile()` / `set_content()` so the three tiles cannot drift apart —
+**setting colours on an individual button does nothing, they are overwritten on
+every layout pass**),
+`nav_bar` (`@tool` Control instancing three `nav_button`s. **Order is
+Garage · Worldmap · Codex — Worldmap is deliberately in the MIDDLE**, because the
+world map is what the game opens on, so it is the home position. `nav_bar.gd`'s
+`Nav` enum indexes that same order; keep them in step if you reorder. Screens set
+`nav_bar.selected` and the bar does the rest: the selected tile is wider by
+`selected_extra_width`, shaded tan instead of grey, shows its `label_text`, and is
+disabled so a screen cannot navigate to itself. **Do not set `disabled` on the
+buttons from a screen** — that is what `selected` replaced.
+
+It is a plain Control rather than an HBoxContainer because a container will not
+let one child be wider or taller than its siblings, and that difference is the
+entire design. Tiles are laid out flush and sized to add up to exactly the inner
+width, so `selected_extra_width` only redistributes space and never leaves a seam.
+A `Panel` added with `INTERNAL_MODE_FRONT` paints the frame behind them, showing
+through `frame_side` / `frame_top` / `frame_bottom` — three knobs rather than one
+because the bar runs edge to edge (`frame_side = 0`) while its bottom border is
+far thicker than its top. Seams are `ColorRect`s added with `INTERNAL_MODE_BACK`
+so they paint OVER the tiles, one per internal boundary. They are deliberately not
+baked into the tile texture: an edge baked there would also run down the outer
+sides of the first and last tile, which breaks edge-to-edge.
+
+Each seam is **snapped to whole device pixels** via `_device_scale()`
+(`get_viewport().get_final_transform()`), and `_apply` is re-run on
+`Viewport.size_changed` because the design space stays 1080×1920 however the
+window is resized, so `resized` never fires for it. Without the snap the two seams
+render different widths from identical numbers: 3 units is ~1.4 real pixels, and
+the two seams sit symmetrically about the bar's centre so their fractional offsets
+are mirror images and round opposite ways — one 2px, one 1px.
+
+**No artwork**; only the three icons are PNGs. The tiles come from
+`BarTexture.make_tile()`, two pixels wide and stretched horizontally. Shading is
+two bands — a gradient from `*_color_top` to `*_color_split` ending at `*_split`
+of the height, then a flat `*_color_bottom` — plus `highlight_height` rows of
+`*_highlight_color` at the very top, which is the shine. `*_split = 1.0` collapses
+that to one continuous fade, which is what the selected tile uses. **Every default
+was sampled off the reference screenshot, not guessed**: grey tiles
+`#ddd9cf → #eae8db` over flat `#dedbd4` with an `#f8f8f4` top line, selected
+`#c5966e → #edd3b8`. Tiles are square-cornered — the reference has no rounding, so
+the radius knob was removed rather than defaulted to 0.
+
+Changing `selected` at runtime tweens position, size, `icon_px`, `label_alpha`
+and `bg_blend` over `animation_time` (snapped in the editor, and snapped on
+`_ready`, so a freshly loaded screen does not animate itself in). Since each meta screen is its own
+scene, screens call **`nav_bar.navigate_to(target, path)`** rather than
+`change_scene_to_file` directly — the swap would otherwise kill the tween on its
+first frame and nothing would ever be seen. Badges are per-button:
+`badge_visible` / `badge_text` / `badge_size` / `badge_anchor` / `badge_offset`,
+using `ui_notification_badge.png`),
 `hp_bar` / `xp_bar` (TextureProgressBars driven by `value_bar.gd` — one `@tool`
 script shared by both widgets, do not duplicate it. The bar is **drawn
 procedurally**, not stretched from a texture, which replaced a bitmap approach
@@ -645,7 +719,10 @@ code, and never copy this scene per screen**. Its panel is a
 `main_scene`. Top to bottom: `top_bar` (pills fed from
 `MetaManager.energy/materials`), a big `TitleLabel` carrying the chapter name, a
 760×760 centred `chapter_node`, the `play_button`, then `nav_bar` with
-`selected = WORLDMAP`. Background is `bg_worldmap.png` full-screen.
+`selected = WORLDMAP`. The nav bar spans the **full 1080 width, flush to the
+bottom edge** (y 1730–1920) on all three meta screens — the tiles are the bar, so
+insetting it would leave the strip floating. Background is `bg_worldmap.png`
+full-screen.
 **Pressing Play** — not the artwork — spends energy and starts the run.
 The chapter's picture is data-driven: `ChapterDefinition.map_image` (new
 `@export`, set to `chapter_01_image_v2.png` in `chapter_01.tres`), the same
@@ -804,14 +881,83 @@ they break naive layouts. Three rules:
 too-wide child can never produce a sideways scrollbar again.
 
 **Tower Garage:** `bg_garage.png` BG, `top_bar` fed from `MetaManager`,
-`nav_bar` (Garage disabled) **replacing the old "Back to Map" button**, and
-one `meta_row` per owned tower — stars from `star_row`, HP/damage shown as
-`icon_stat_hp`/`icon_stat_atk` chips, cost button from
-`Constants.TOWER_STAR_COSTS`. The tower portrait is data-driven:
-`TowerDefinition.icon` (new `@export`), set to `icon_tower_ancient.png` in
-`tower_ancient_tower.tres` — tower #2 just sets its own, no code change.
-`tower_garage.gd` adds each row to the tree *before* configuring it, so the
-row's `@onready` refs are resolved.
+`nav_bar` (Garage disabled), then top to bottom a `tower_preview_3d`, the tower's
+name, a `star_row`, a stats strip (LEVEL / ATK / HP), a `GridContainer`
+of `tower_slot`s, and a Select / Upgrade action bar. **The `meta_row` list this
+screen used to be is gone** — `meta_row` is now the codex's alone.
+
+The name **deliberately overlaps the preview** and the stars sit below it, so the
+name reads across the tower's base. Sibling order is draw order, so `NameLabel`
+has to stay declared after `Preview3D` or the tower covers the text. `bg_garage.png`
+is a plain lit backdrop with **no pedestal**, so nothing in the art can intersect
+the model.
+
+The stats strip is three **`stat_pill`s on a slightly darker wash** — not a dark
+card, which read as a second UI surface floating on the background. Each pill is a
+`StyleBoxFlat` drawn in code (no art) with its icon standing proud of the left end,
+the same shape as the top bar's currency pills: both extend
+**`scenes/ui/widget/pill_base.gd`**, which owns the pill rect, the icon slot and
+every geometry knob. Icons are `garage/icon_stat_level.png` (an LV shield),
+`icon_stat_atk.png` and `icon_stat_hp.png`; each pill shows the next-star gain as a
+green `(+N)` beside the value, so an upgrade is visible before it is paid for.
+
+`tower_slot` draws **no plate and no unselected border** — the tower art fills the
+cell (`icon_fill` 0.92) as in the reference, and the gold `border_color_selected`
+is the only thing marking the pick.
+
+**Both the stats strip and the action bar run 0..1080 with square corners.** They
+are full-bleed bands, not floating cards; insetting or rounding them makes the
+screen read as panels stacked on a wallpaper. The action bar is a light band in the
+nav bar's palette holding a **flat "Selected" state label** (not a second chunky
+button competing with Upgrade) and a green Upgrade button — both plain
+`StyleBoxFlat`s defined in `tower_garage.tscn`, no art.
+
+**`tower_preview_3d` uses ONE fixed camera for every tower and every star level** —
+`camera_distance` and `look_height`, nothing measured at runtime. All five
+`ancient_tower` glb files are exported into the same normalised box (y −0.957 to
++0.953, identical to four decimals), so per-model framing had nothing to work with;
+the auto-framing that used to live here only managed to put the five towers at five
+different heights. See "Moving the tower" in `ui_tuning.md`.
+
+The grid is built from **`TowerRegistry.all_towers`**, ordered by
+`TowerDefinition.sort_order`. Adding a tower is a new `.tres` in
+`res://resources/towers/` — no code change and no scene change. Five
+`tower_locked_0N.tres` placeholders currently hold grid positions 2–6 with
+`unlocked = false`.
+
+**Two different "selected" ideas live here and must not be conflated:**
+`tower_garage.gd`'s `_viewing_id` is which cell is highlighted and shown in 3D;
+`MetaManager.selected_tower_id` is which tower actually goes into a run. Tapping a
+cell moves only the first, and the Select button commits it to the second.
+
+`TowerDefinition` gained `unlocked` (content exists yet?) and `sort_order` (grid
+position). `unlocked` is **not** player progress — that is
+`MetaManager.owned_towers`. A cell greys out when either is missing, which
+`TowerRegistry.is_playable()` answers in one call.
+
+⚠️ **The preview shows the raw `.glb`, never `star_level_scenes`.**
+`tower.gd._ready()` calls `GameState.start_run()`, so instancing a gameplay tower
+scene on the garage screen would begin a run.
+`TowerRegistry.get_preview_model()` resolves the model by ID convention
+(`assets/models/towers/<id>/<id>_lvl<star>.glb`) precisely so nobody reaches for
+`star_level_scenes` instead.
+
+Per-star **decoration** follows the same rule. The lvl5 waterfalls were seven
+inline `MeshInstance3D`s in `ancient_tower_lvl5.tscn`, so the preview could not
+show them without instancing a gameplay scene. They now live in
+`ancient_tower_lvl5_fx.tscn`, instanced by both the gameplay tower and
+`tower_preview_3d` (which finds it at
+`scenes/game_object/tower/<id>/<id>_lvl<star>/<id>_lvl<star>_fx.tscn`, or shows
+nothing if absent). One copy of the effect, and adding an effect to a future star
+level needs no code.
+
+`tower_slot` desaturates locked icons with `greyscale.gdshader` rather than a grey
+copy of the art — `modulate` can only tint or darken, never remove hue. The
+padlock reuses `ui_locked_overlay.png`.
+
+`tower_preview_3d`'s `Environment` sits on a `WorldEnvironment` node in the scene, not
+assigned to `world_3d` in code: with `own_world_3d` the viewport's `World3D` does
+not exist yet while the export setters run, and touching it errors.
 
 **Spell Codex:** same shape as the garage and the **same `meta_row` scene** —
 `bg_garage.png` reused as BG (no codex art exists yet; `bg_menu_generic.png`

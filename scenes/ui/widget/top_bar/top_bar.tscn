@@ -1,11 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=4 format=3 uid="uid://daey7ebm0ucnd"]
 
-[ext_resource type="PackedScene" path="res://scenes/ui/widget/currency_pill/currency_pill.tscn" id="1"]
-[ext_resource type="Texture2D" path="res://assets/ui/topbar/icon_currency_energy1.png" id="2"]
-[ext_resource type="Texture2D" path="res://assets/ui/topbar/icon_currency_materials1.png" id="3"]
-
-; Height 124 = the pill widget's height, which is the ICON's height, not the
-; pill's — the icon deliberately stands proud of the dark pill (see currency_pill).
+[ext_resource type="PackedScene" uid="uid://3355i6eil4wv" path="res://scenes/ui/widget/currency_pill/currency_pill.tscn" id="1"]
+[ext_resource type="Texture2D" uid="uid://cp7dcawp1hqwp" path="res://assets/ui/topbar/icon_currency_energy1.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://clnsjsmjgm6ey" path="res://assets/ui/topbar/icon_currency_materials1.png" id="3"]
 
 [node name="TopBar" type="HBoxContainer"]
 offset_right = 600.0
@@ -14,14 +11,12 @@ theme_override_constants/separation = 40
 alignment = 1
 
 [node name="EnergyPill" parent="." instance=ExtResource("1")]
-icon = ExtResource("2")
+layout_mode = 2
 amount = 5
+icon = ExtResource("2")
 
-; Uses the *1* variant of the gem: its artwork fills 83.1% x 81.2% of the canvas
-; where the plain one fills only 57.4% x 56.2%, so it needs far less scaling up.
-; icon_scale 0.82 makes the gem's drawn height 0.812 x 0.82 x 124 = 83px, matching
-; the bolt's 0.670 x 124 = 83px, so the two icons read as the same size.
 [node name="MaterialsPill" parent="." instance=ExtResource("1")]
-icon = ExtResource("3")
-icon_scale = 0.82
+layout_mode = 2
 amount = 999
+icon_scale = 0.82
+icon = ExtResource("3")

@@ -6,6 +6,22 @@
 ## FOLDER STRUCTURE (`assets/ui/`) — source of truth
 =====================================================================
 
+> **Icon capping is automatic now.** `addons/ui_icon_cap/` re-applies
+> `process/size_limit=256` to everything under `assets/ui/` whenever the
+> filesystem changes, so replacing an image cannot silently reintroduce a
+> full-size texture. Art that is drawn large is exempt by filename prefix — see
+> `EXEMPT_PREFIXES` in `addons/ui_icon_cap/plugin.gd`, and add yours there if you
+> introduce a big image. Source art is generated at ~1254×1254 but icons are never displayed
+> above ~124px, and loading them uncapped is what made the meta screens stall —
+> the spell codex alone spent 411ms per visit decoding 20 of them. Full numbers in
+> `ui_tuning.md`. Backgrounds and stretched panel/button art are deliberately NOT
+> capped.
+>
+> The rule is about **how big the thing is drawn, not the `icon_` prefix**. Four
+> files missed it for exactly that reason and are capped now: `ui_star_filled`,
+> `ui_star_empty` (the garage puts up to 35 stars on screen at once),
+> `ui_notification_badge`, and `icon_stat_level`.
+
 > Reorganized 2026-07-27. One tree: per-screen folders + shared folders
 > (the old flat `assets/ui/` and `assets/ui_spellsdraft/` are gone).
 > Many assets still have multiple candidate versions side-by-side
@@ -20,7 +36,8 @@ assets/ui/
 ├── nav/          # icon_nav_worldmap, icon_nav_garage, icon_nav_codex
 ├── world_map/    # bg_worldmap, ui_play_button, ui_chapter_node_frame,
 │                 # ui_locked_overlay, chapter_01_image
-├── garage/       # bg_garage, icon_stat_atk, icon_stat_hp, icon_tower_ancient,
+├── garage/       # bg_garage (plain lit backdrop, no pedestal), icon_stat_level,
+│                 # icon_stat_atk, icon_stat_hp, icon_tower_ancient,
 │                 # ui_star_filled, ui_star_empty
 ├── hud/          # in-run bars. NOTHING HERE IS IN USE — all 17 PNGs are dead.
 │                 # Both bars are drawn procedurally by value_bar.gd (track +

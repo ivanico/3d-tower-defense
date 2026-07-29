@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/tower_slot/tower_slot.gd" id="0"]
+
+; Deliberately bare. Icon, stars and padlock are internal children built by the
+; script — see tower_slot.gd. The garage's grid fills these in from
+; TowerRegistry, so nothing is set per instance here.
+
+[node name="TowerSlot" type="Button"]
+offset_right = 230.0
+offset_bottom = 250.0
+focus_mode = 0
+script = ExtResource("0")

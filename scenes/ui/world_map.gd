@@ -60,8 +60,10 @@ func _show_out_of_energy() -> void:
 	if is_instance_valid(self):
 		out_of_energy_label.visible = false
 
+# navigate_to plays the nav bar's select transition before swapping scene;
+# calling change_scene_to_file here directly would cut it off on frame one.
 func _on_garage_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/tower_garage.tscn")
+	nav_bar.navigate_to(NavBarScript.Nav.GARAGE, "res://scenes/ui/tower_garage.tscn")
 
 func _on_codex_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/ui/spell_codex.tscn")
+	nav_bar.navigate_to(NavBarScript.Nav.CODEX, "res://scenes/ui/spell_codex.tscn")

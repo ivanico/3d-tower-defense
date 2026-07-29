@@ -1,0 +1,52 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/stat_pill/stat_pill.gd" id="1"]
+
+; Deliberately bare. Every size, position, colour and the pill's StyleBox itself
+; are built by the script from its exported knobs — do not set them here.
+;
+; Icon is declared LAST so it paints on top of the pill: Controls draw in tree
+; order, and the icon standing proud of the pill's left end is the whole look.
+
+[node name="StatPill" type="Control"]
+offset_right = 282.0
+offset_bottom = 111.0
+mouse_filter = 2
+script = ExtResource("1")
+pill_size = Vector2i(240, 50)
+icon_size = 86
+icon_overlap = 44
+
+[node name="Title" type="Label" parent="."]
+offset_right = 250.0
+offset_bottom = 25.0
+mouse_filter = 2
+text = "ATK"
+vertical_alignment = 1
+
+[node name="Pill" type="PanelContainer" parent="."]
+offset_right = 250.0
+offset_bottom = 46.0
+mouse_filter = 2
+
+[node name="Line" type="HBoxContainer" parent="Pill"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Value" type="Label" parent="Pill/Line"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "20"
+vertical_alignment = 1
+
+[node name="Delta" type="Label" parent="Pill/Line"]
+layout_mode = 2
+text = "(+2)"
+vertical_alignment = 1
+
+[node name="Icon" type="TextureRect" parent="."]
+offset_right = 60.0
+offset_bottom = 60.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5

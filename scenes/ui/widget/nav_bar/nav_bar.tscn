@@ -1,25 +1,61 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=9 format=3 uid="uid://cvvgsoc6pxxwi"]
 
-[ext_resource type="Script" path="res://scenes/ui/widget/nav_bar/nav_bar.gd" id="0"]
-[ext_resource type="PackedScene" path="res://scenes/ui/widget/nav_button/nav_button.tscn" id="1"]
-[ext_resource type="Texture2D" path="res://assets/ui/nav/icon_nav_worldmap1.png" id="2"]
-[ext_resource type="Texture2D" path="res://assets/ui/nav/icon_nav_garage.png" id="3"]
-[ext_resource type="Texture2D" path="res://assets/ui/nav/icon_nav_codex_v2.png" id="4"]
+[ext_resource type="Script" uid="uid://cq2jfbos3ksfs" path="res://scenes/ui/widget/nav_bar/nav_bar.gd" id="0"]
+[ext_resource type="PackedScene" uid="uid://ddjwiimsu2l2l" path="res://scenes/ui/widget/nav_button/nav_button.tscn" id="1"]
+[ext_resource type="Texture2D" uid="uid://0cmo15d1qqdu" path="res://assets/ui/nav/icon_nav_worldmap1.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://cfl53arwy4pqg" path="res://assets/ui/nav/icon_nav_garage.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://vckermk52bsi" path="res://assets/ui/nav/icon_nav_codex_v2.png" id="4"]
 
-; Declaration order IS display order: Garage, Worldmap, Codex. Worldmap sits in
-; the middle on purpose — it is the screen the game opens on. nav_bar.gd's Nav
-; enum indexes this same order, so keep them in step if you ever reorder.
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kii2a"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ktsff"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bho2f"]
 
 [node name="NavBar" type="Control"]
-offset_right = 960.0
-offset_bottom = 180.0
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1080.0
+offset_bottom = 190.0
 script = ExtResource("0")
 
 [node name="GarageButton" parent="." instance=ExtResource("1")]
-texture_normal = ExtResource("3")
+layout_mode = 0
+offset_top = 2.0
+offset_bottom = 177.0
+theme_override_styles/focus = SubResource("StyleBoxEmpty_kii2a")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_kii2a")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kii2a")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_kii2a")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_kii2a")
+icon_texture = ExtResource("3")
+label_text = "Garage"
 
 [node name="WorldmapButton" parent="." instance=ExtResource("1")]
-texture_normal = ExtResource("2")
+layout_mode = 0
+offset_left = 330.0
+offset_top = 2.0
+offset_right = 750.0
+offset_bottom = 177.0
+theme_override_styles/focus = SubResource("StyleBoxEmpty_ktsff")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ktsff")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ktsff")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ktsff")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ktsff")
+disabled = true
+icon_texture = ExtResource("2")
+label_text = "Map"
 
 [node name="CodexButton" parent="." instance=ExtResource("1")]
-texture_normal = ExtResource("4")
+layout_mode = 0
+offset_left = 750.0
+offset_top = 2.0
+offset_right = 1080.0
+offset_bottom = 177.0
+theme_override_styles/focus = SubResource("StyleBoxEmpty_bho2f")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_bho2f")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_bho2f")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_bho2f")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_bho2f")
+icon_texture = ExtResource("4")
+label_text = "Codex"

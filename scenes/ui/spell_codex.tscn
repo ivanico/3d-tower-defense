@@ -47,8 +47,8 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 24
 
 [node name="NavBar" parent="." instance=ExtResource("4")]
-offset_left = 60.0
-offset_top = 1700.0
-offset_right = 1020.0
-offset_bottom = 1880.0
+offset_left = 0.0
+offset_top = 1730.0
+offset_right = 1080.0
+offset_bottom = 1920.0
 selected = 2
