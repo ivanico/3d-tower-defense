@@ -31,10 +31,10 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Icon" type="TextureRect" parent="."]
-visible = false
 custom_minimum_size = Vector2(124, 124)
 layout_mode = 0
-offset_right = 124.0
+offset_left = 17.0
+offset_right = 141.0
 offset_bottom = 124.0
 pivot_offset = Vector2(62, 62)
 expand_mode = 1
