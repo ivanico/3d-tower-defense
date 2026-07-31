@@ -1,7 +1,10 @@
 @tool
 extends EditorPlugin
 
-## Keeps every UI icon's import capped at [constant SIZE_LIMIT] pixels.
+## Keeps every UI image's import capped at a size matched to how large it's
+## actually drawn on screen — never [constant DEFAULT_SIZE_LIMIT], full native
+## resolution — and forces mipmap generation, since every image here is by
+## definition displayed smaller than its imported size.
 ##
 ## **Why this exists instead of just editing the `.import` files.** `size_limit`
 ## lives in a per-file `.import`, and Godot writes a FRESH one with
@@ -12,26 +15,32 @@ extends EditorPlugin
 ## every time the filesystem changes, so a replaced file is capped again before
 ## you can run the game.
 ##
-## The art is untouched; only the imported copy is downsampled. See
-## "Icon imports are capped" in `ui_tuning.md` for the measured cost of not doing
-## this (the spell codex spent 411ms per visit decoding 20 uncapped icons).
+## The art is untouched; only the imported copy is downsampled. See the
+## "UI image imports are size-capped" gotcha in `ui_tuning.md` for the measured
+## cost of not doing this (the spell codex spent 411ms per visit decoding 20
+## uncapped icons).
 
 ## Everything under here is treated as UI art.
 const UI_ROOT := "res://assets/ui/"
 
-## Icons are never drawn above ~124px, so 256 leaves headroom for high-DPI.
-const SIZE_LIMIT := 256
-
-## Art that is legitimately drawn large and must NOT be downsampled: full-screen
-## backgrounds and the stretched panel/button frames. Matched on the file name's
-## start, so `_v2` / `_v3` variants are covered too.
-## `ui_chapter_node_frame` is here because the world map draws it at 760px
-## (`world_map.tscn` -> ChapterImage), so 256 would visibly blur it. If you add
-## art that is drawn large, add its prefix here or it WILL get downsampled.
-const EXEMPT_PREFIXES: PackedStringArray = [
-	"bg_", "chapter_", "ui_panel", "ui_button", "ui_card_bg",
-	"ui_play_button", "ui_topbar_pill_bg", "ui_chapter_node_frame",
+## Ordered rule table: the first entry whose prefix matches the file name wins.
+## Sizes are the audited max on-screen size for that category with ~2x headroom
+## for high-DPI phones. Add a prefix here (or widen an existing entry) when new
+## art is legitimately drawn larger than [constant DEFAULT_SIZE_LIMIT] — anything
+## NOT listed still gets capped (at the default), it just may need a wider rule
+## if it looks soft.
+const SIZE_RULES: Array[Dictionary] = [
+	{"prefixes": ["ui_panel"], "size_limit": 1536},
+	{"prefixes": ["ui_button", "ui_play_button", "ui_topbar_pill_bg"], "size_limit": 768},
+	{"prefixes": ["ui_card_bg", "ui_chapter_node_frame"], "size_limit": 512},
+	{"prefixes": ["bg_", "chapter_"], "size_limit": 1920},
 ]
+
+## Everything that doesn't match a rule above — icons, and any future/unrecognized
+## art (e.g. a new "store_" screen) — falls back to this. Icons are never drawn
+## above ~124px, so 256 leaves headroom for high-DPI; anything uncategorized gets
+## the same safe default rather than shipping uncapped.
+const DEFAULT_SIZE_LIMIT := 256
 
 const IMAGE_EXTENSIONS: PackedStringArray = ["png", "jpg", "jpeg", "webp"]
 
@@ -72,7 +81,7 @@ func _on_filesystem_changed() -> void:
 	_working = true
 	var changed := _enforce_in(UI_ROOT)
 	if not changed.is_empty():
-		print("UI Icon Import Cap: capped %d image(s) at %dpx" % [changed.size(), SIZE_LIMIT])
+		print("UI Icon Import Cap: capped %d image(s)" % changed.size())
 		for path in changed:
 			print("    ", path)
 		# Reimporting from inside the signal trips Godot's "Do not use progress
@@ -95,25 +104,35 @@ func _enforce_in(directory_path: String) -> PackedStringArray:
 		if directory.current_is_dir():
 			changed.append_array(_enforce_in(full_path))
 		elif entry.get_extension().to_lower() in IMAGE_EXTENSIONS:
-			if not _is_exempt(entry) and _apply_cap(full_path):
+			if _apply_cap(full_path, _size_limit_for(entry)):
 				changed.append(full_path)
 		entry = directory.get_next()
 	directory.list_dir_end()
 	return changed
 
 
-func _is_exempt(file_name: String) -> bool:
-	for prefix in EXEMPT_PREFIXES:
-		if file_name.begins_with(prefix):
-			return true
-	return false
+## Every file resolves to a cap — the first matching rule in [constant SIZE_RULES],
+## or [constant DEFAULT_SIZE_LIMIT] if nothing matches. Nothing ships uncapped.
+func _size_limit_for(file_name: String) -> int:
+	for rule in SIZE_RULES:
+		for prefix in rule["prefixes"]:
+			if file_name.begins_with(prefix):
+				return rule["size_limit"]
+	return DEFAULT_SIZE_LIMIT
 
 
-## Rewrites only the one line, by hand rather than through ConfigFile: an
+## Rewrites only the relevant lines, by hand rather than through ConfigFile: an
 ## `.import` also carries `[remap]`, `[deps]` and a top-level `uid`, and round
 ## -tripping all of that through a config writer risks mangling a file the engine
 ## depends on. Returns true when the file actually needed changing.
-func _apply_cap(image_path: String) -> bool:
+##
+## Forces `mipmaps/generate=true` alongside the size cap: every image this
+## plugin touches is, by definition, displayed smaller than its imported size
+## (that's the whole point of the cap), and downscaling detailed art with no
+## mip chain is a GPU minification-aliasing bug — fine detail (outlines, small
+## highlights) turns to visible noise. Godot's importer defaults this to false,
+## so it would silently regress the same way `size_limit` used to.
+func _apply_cap(image_path: String, size_limit: int) -> bool:
 	var import_path := image_path + ".import"
 	if not FileAccess.file_exists(import_path):
 		return false
@@ -121,24 +140,39 @@ func _apply_cap(image_path: String) -> bool:
 	if text.is_empty():
 		return false
 
-	var wanted := "process/size_limit=%d" % SIZE_LIMIT
-	if text.contains(wanted):
+	var wanted_lines := {
+		"process/size_limit=": "process/size_limit=%d" % size_limit,
+		"mipmaps/generate=": "mipmaps/generate=true",
+	}
+
+	var already_correct := true
+	for wanted_line in wanted_lines.values():
+		if not text.contains(wanted_line):
+			already_correct = false
+			break
+	if already_correct:
 		return false
 
 	var lines := text.split("\n")
 	var output := PackedStringArray()
-	var written := false
+	var written := {}
 	for line in lines:
-		if line.begins_with("process/size_limit="):
-			output.append(wanted)
-			written = true
-		else:
+		var replaced := false
+		for prefix in wanted_lines:
+			if line.begins_with(prefix):
+				output.append(wanted_lines[prefix])
+				written[prefix] = true
+				replaced = true
+				break
+		if not replaced:
 			output.append(line)
-			# No such key yet (a freshly imported file): add it under [params].
-			if not written and line.strip_edges() == "[params]":
-				output.append(wanted)
-				written = true
-	if not written:
+			# No such key yet (a freshly imported file): add missing ones under [params].
+			if line.strip_edges() == "[params]":
+				for prefix in wanted_lines:
+					if not written.has(prefix):
+						output.append(wanted_lines[prefix])
+						written[prefix] = true
+	if written.size() != wanted_lines.size():
 		return false
 
 	var file := FileAccess.open(import_path, FileAccess.WRITE)

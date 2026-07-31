@@ -6,16 +6,18 @@
 ## FOLDER STRUCTURE (`assets/ui/`) — source of truth
 =====================================================================
 
-> **Icon capping is automatic now.** `addons/ui_icon_cap/` re-applies
-> `process/size_limit=256` to everything under `assets/ui/` whenever the
-> filesystem changes, so replacing an image cannot silently reintroduce a
-> full-size texture. Art that is drawn large is exempt by filename prefix — see
-> `EXEMPT_PREFIXES` in `addons/ui_icon_cap/plugin.gd`, and add yours there if you
-> introduce a big image. Source art is generated at ~1254×1254 but icons are never displayed
-> above ~124px, and loading them uncapped is what made the meta screens stall —
-> the spell codex alone spent 411ms per visit decoding 20 of them. Full numbers in
-> `ui_tuning.md`. Backgrounds and stretched panel/button art are deliberately NOT
-> capped.
+> **Size-capping is automatic now, for every category, not just icons.**
+> `addons/ui_icon_cap/` re-applies a size-appropriate `process/size_limit` to
+> everything under `assets/ui/` whenever the filesystem changes, so replacing
+> an image cannot silently reintroduce a full-size texture. The cap depends on
+> the filename via the `SIZE_RULES` table at the top of
+> `addons/ui_icon_cap/plugin.gd` (panels/buttons/cards/backgrounds each get a
+> cap matched to how large they're actually drawn); anything unrecognized still
+> falls back to the 256px icon default rather than shipping uncapped. Source art
+> is generated at ~1254×1254 but icons are never displayed above ~124px, and
+> loading them uncapped is what made the meta screens stall — the spell codex
+> alone spent 411ms per visit decoding 20 of them. Full numbers and the rule
+> table are in `ui_tuning.md`.
 >
 > The rule is about **how big the thing is drawn, not the `icon_` prefix**. Four
 > files missed it for exactly that reason and are capped now: `ui_star_filled`,
@@ -36,6 +38,7 @@ assets/ui/
 ├── nav/          # icon_nav_worldmap, icon_nav_garage, icon_nav_codex
 ├── world_map/    # bg_worldmap, ui_play_button, ui_chapter_node_frame,
 │                 # ui_locked_overlay, chapter_01_image
+├── codex/        # bg_codex (spell codex background)
 ├── garage/       # bg_garage (plain lit backdrop, no pedestal), icon_stat_level,
 │                 # icon_stat_atk, icon_stat_hp, icon_tower_ancient,
 │                 # ui_star_filled, ui_star_empty
@@ -60,10 +63,9 @@ assets/ui/
                   # rare/epic, icon_mat_scroll_<school> ×5, icon_mat_tower_rare
 ```
 
-> `codex/` folder doesn't exist yet — create it when its first asset
-> (bg_menu_generic) is made. `icon_spell_orb_thorn.png` is blue lightning-orb
-> art in a nature-green frame (was "lightning orb.png") — swap it out if a
-> Lightning school ever ships and nature gets a real thorn orb icon.
+> `icon_spell_orb_thorn.png` is blue lightning-orb art in a nature-green frame
+> (was "lightning orb.png") — swap it out if a Lightning school ever ships and
+> nature gets a real thorn orb icon.
 
 =====================================================================
 ## DONE
@@ -78,6 +80,9 @@ NAVIGATION
 - [x] icon_nav_worldmap.png
 - [x] icon_nav_garage.png
 - [x] icon_nav_codex.png
+
+SPELL CODEX
+- [x] bg_codex.png
 
 WORLD MAP
 - [x] ui_play_button.png
@@ -150,8 +155,6 @@ C. REWARDS & MATERIALS — all 16 exist in `rewards/`
 - [ ] icon_tower_default.png  (portrait for the garage selection grid, +1 per
                               future tower. icon_tower_ancient.png already
                               covers tower #1 via TowerDefinition.icon)
-- [ ] bg_menu_generic.png     (reusable backdrop for codex/other menus — the
-                              codex currently borrows bg_garage.png)
 - [ ] bg_victory.png          (optional)
 - [ ] bg_defeat.png           (optional)
 

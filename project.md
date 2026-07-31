@@ -136,6 +136,13 @@ how to scale from 3 spells to 25, or 1 tower to 5, without re-architecting.
 - **Materials/shaders**: keep simple — `StandardMaterial3D` with baked-in cel/toon
   shading via a shared toon shader (see `assets.md` Section on shading) rather than
   hand-painted textures. Keeps the Meshy → Godot pipeline fast and consistent.
+- **UI art auto-downsizing**: any image dropped into `assets/ui/` (icons,
+  buttons, panels, cards, backgrounds — including future screens like a store)
+  is automatically capped to a size appropriate for how large it's actually
+  drawn on a phone screen, at import time. Source art is never resized or
+  touched; only the imported copy is. Nothing to remember per-image — see the
+  "UI image imports are size-capped" gotcha in `ui_tuning.md` for the mechanism
+  and the rule table.
 
 ---
 

@@ -175,13 +175,15 @@ enum Nav { GARAGE, WORLDMAP, CODEX }
 
 @export_group("Icons")
 ## Icon edge length on the two entries you are NOT on.
-@export var normal_icon_size: int = 104:
+@export var normal_icon_size: int = 120:
 	set(value):
 		normal_icon_size = maxi(value, 8)
 		_apply()
 
-## Icon edge length on the entry you ARE on.
-@export var selected_icon_size: int = 124:
+## Icon edge length on the entry you ARE on. Deliberately much larger than
+## [member normal_icon_size] and bigger than the tile itself is tall — the
+## selected icon is meant to poke out above the tile, not fit inside it.
+@export var selected_icon_size: int = 210:
 	set(value):
 		selected_icon_size = maxi(value, 8)
 		_apply()
@@ -205,22 +207,35 @@ enum Nav { GARAGE, WORLDMAP, CODEX }
 		label_font_size = maxi(value, 4)
 		_apply()
 
-## Both tiles are light, so both label colours are dark — but the tan tile takes a
-## slightly warmer one.
-@export var label_color: Color = Color("4a4038"):
+@export var label_color: Color = Color("ffffff"):
 	set(value):
 		label_color = value
 		_apply()
 
-@export var label_color_selected: Color = Color("4a3627"):
+@export var label_color_selected: Color = Color("ffffff"):
 	set(value):
 		label_color_selected = value
 		_apply()
 
-## Gap between the bottom of the icon and the top of the word.
-@export var label_gap: int = 4:
+## Gap between the bottom of the icon's BOUNDING BOX and the top of the word.
+## Negative by default: every nav icon PNG has ~15-20% transparent padding
+## baked around the drawn artwork (measured directly — not the same on every
+## icon), so a gap of 0 between bounding boxes still leaves a large visible
+## empty gap between the actual drawing and the label. This pulls the label up
+## to compensate, using the average padding across the three icons.
+@export var label_gap: int = -36:
 	set(value):
 		label_gap = value
+		_apply()
+
+## Distance from the tile's bottom edge to the bottom of the label (or, on an
+## unselected tile with no label, this is unused — see `nav_button.gd`).
+## The label is anchored to the tile's bottom, NOT centred with the icon, so
+## growing `selected_icon_size` only pushes the icon further up and out of the
+## tile instead of dragging the label down with it.
+@export var label_bottom_margin: int = 12:
+	set(value):
+		label_bottom_margin = maxi(value, 0)
 		_apply()
 
 ## Free nudge for the labels, in pixels. Positive y moves them DOWN.
@@ -333,7 +348,8 @@ func _apply(animated: bool = false) -> void:
 
 		button.set_tile_art(normal_texture, selected_texture, highlight_height)
 		button.set_content(icon_offset, show_label, label_gap, label_font_size,
-				label_color_selected if is_selected else label_color, label_offset)
+				label_color_selected if is_selected else label_color, label_offset,
+				label_bottom_margin)
 		button.disabled = is_selected
 
 		if do_animate:

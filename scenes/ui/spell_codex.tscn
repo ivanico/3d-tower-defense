@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://bf7kithkm6sb2"]
 
 [ext_resource type="Script" uid="uid://3hfauhvlu881" path="res://scenes/ui/spell_codex.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/ui/garage/bg_garage.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/codex/bg_codex.png" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/top_bar/top_bar.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/nav_bar/nav_bar.tscn" id="4"]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d2f7upyl56ctn"
-path="res://.godot/imported/ui_card_bg_epic_v2.png-61b1cdf456f4cfc6a6c39b97e9bdbed8.ctex"
+uid="uid://upshjs8gu7c3"
+path="res://.godot/imported/bg_codex.png-451259e04c2ad4386396d5cc1afd4f0e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/draft/ui_card_bg_epic_v2.png"
-dest_files=["res://.godot/imported/ui_card_bg_epic_v2.png-61b1cdf456f4cfc6a6c39b97e9bdbed8.ctex"]
+source_file="res://assets/ui/codex/bg_codex.png"
+dest_files=["res://.godot/imported/bg_codex.png-451259e04c2ad4386396d5cc1afd4f0e.ctex"]
 
 [params]
 
@@ -30,5 +30,5 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=512
+process/size_limit=1920
 detect_3d/compress_to=1

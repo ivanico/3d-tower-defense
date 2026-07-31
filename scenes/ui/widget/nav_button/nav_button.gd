@@ -108,6 +108,7 @@ var _label_visible: bool = false
 var _label_gap: int = 4
 var _label_font_size: int = 34
 var _label_offset: Vector2 = Vector2.ZERO
+var _label_bottom_margin: int = 12
 
 
 func _init() -> void:
@@ -148,7 +149,11 @@ func _build_children() -> void:
 	_label = Label.new()
 	_label.name = "Label"
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	# TOP, not CENTER: the label's box is taller than the glyphs themselves, and
+	# centering left dead space above the text no matter how small label_gap was
+	# set to — the text needs to hug the TOP of its box to actually sit close
+	# under the icon.
+	_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.text = label_text
 	add_child(_label, false, Node.INTERNAL_MODE_BACK)
@@ -174,12 +179,14 @@ func _build_children() -> void:
 ## place; only `show_label` differs, and only because the reference shows the word
 ## on the entry you are on.
 func set_content(icon_offset: Vector2, show_label: bool, gap: int,
-		font_size: int, font_color: Color, label_offset: Vector2) -> void:
+		font_size: int, font_color: Color, label_offset: Vector2,
+		label_bottom_margin: int) -> void:
 	_icon_offset = icon_offset
 	_label_visible = show_label
 	_label_gap = gap
 	_label_font_size = font_size
 	_label_offset = label_offset
+	_label_bottom_margin = label_bottom_margin
 	if _label != null:
 		_label.add_theme_font_size_override("font_size", font_size)
 		_label.add_theme_color_override("font_color", font_color)
@@ -226,17 +233,26 @@ func _layout() -> void:
 		patch.size = size
 
 	var show_label: bool = _label_visible and label_text != ""
-	var label_h: float = float(_label_font_size) * 1.25 if show_label else 0.0
-	var block_h: float = icon_px + (_label_gap + label_h if show_label else 0.0)
-	var top: float = (size.y - block_h) * 0.5
-
 	_icon.size = Vector2(icon_px, icon_px)
-	_icon.position = Vector2((size.x - icon_px) * 0.5, top) + _icon_offset
-
 	_label.visible = show_label
+
 	if show_label:
+		# The ICON is anchored to the tile's bottom edge first and does NOT
+		# depend on label_gap — this is what keeps its overflow amount fixed no
+		# matter how the gap is tuned. The LABEL is then positioned relative to
+		# the icon's bottom using label_gap (usually negative — see its comment
+		# — to compensate for the icon art's own transparent padding), so
+		# tuning the gap moves the label, never the icon.
+		var label_h: float = float(_label_font_size) * 1.05
+		var icon_bottom: float = size.y - _label_bottom_margin - label_h
+		_icon.position = Vector2((size.x - icon_px) * 0.5, icon_bottom - icon_px) + _icon_offset
+		var label_top: float = icon_bottom + _label_gap
 		_label.size = Vector2(size.x, label_h)
-		_label.position = Vector2(0.0, top + icon_px + _label_gap) + _label_offset
+		_label.position = Vector2(0.0, label_top) + _label_offset
+	else:
+		# No label to anchor against — just centre the icon in the tile.
+		var top: float = (size.y - icon_px) * 0.5
+		_icon.position = Vector2((size.x - icon_px) * 0.5, top) + _icon_offset
 
 	_badge.visible = badge_visible
 	if badge_visible:

@@ -501,7 +501,7 @@ overrides for ordinary text.
 
 ## Gotchas that will otherwise waste your time
 
-### Icon imports are capped at 256px — and a plugin keeps them that way
+### UI image imports are size-capped — and a plugin keeps them that way
 
 Every UI icon is authored at ~1254x1254 but never shown above ~124px, so each one
 imports at `process/size_limit=256`. The source PNGs are untouched; only the
@@ -516,18 +516,57 @@ This is not cosmetic. At full size, loading the codex's 20 spell icons cost
 | Tower garage | 228ms | 109ms |
 | World map | 282ms | 185ms |
 
-**You do not have to remember to set this.** `addons/ui_icon_cap/` is an editor
-plugin that re-applies the cap to everything under `assets/ui/` every time the
-filesystem changes. `size_limit` lives in a per-file `.import`, and Godot writes a
-fresh one with `size_limit=0` whenever an image is added or replaced — so
-**delete an icon, drop a new one in with the same name, and the cap comes back by
-itself**. That is exactly how `ui_star_filled`, `ui_star_empty`,
-`ui_notification_badge` and `icon_stat_level` once shipped at full size.
+**You do not have to remember to set this, and it's not just icons.**
+`addons/ui_icon_cap/` is an editor plugin that re-applies a size cap to
+*everything* under `assets/ui/` every time the filesystem changes — no image
+category ships at full native resolution. `size_limit` lives in a per-file
+`.import`, and Godot writes a fresh one with `size_limit=0` whenever an image is
+added or replaced — so **delete an image, drop a new one in with the same name,
+and the cap comes back by itself**. That is exactly how `ui_star_filled`,
+`ui_star_empty`, `ui_notification_badge` and `icon_stat_level` once shipped at
+full size.
 
-Art that is genuinely drawn large is exempt, by filename prefix, in
-`EXEMPT_PREFIXES` at the top of `addons/ui_icon_cap/plugin.gd`:
-`bg_`, `chapter_`, `ui_panel`, `ui_button`, `ui_card_bg`, `ui_play_button`,
-`ui_topbar_pill_bg`, `ui_chapter_node_frame`.
+The cap size depends on the filename, via the ordered `SIZE_RULES` table at the
+top of `addons/ui_icon_cap/plugin.gd` — first matching prefix wins:
+
+| Category | Prefixes | Cap |
+|---|---|---|
+| Panels | `ui_panel` | 1536 |
+| Buttons / pills | `ui_button`, `ui_play_button`, `ui_topbar_pill_bg` | 768 |
+| Cards / frames | `ui_card_bg`, `ui_chapter_node_frame` | 512 |
+| Full-screen backgrounds | `bg_`, `chapter_` | 1920 |
+| Everything else (icons, and any new/unrecognized art) | — | 256 (`DEFAULT_SIZE_LIMIT`) |
+
+New art you've never named before (e.g. a future `store_` screen) automatically
+falls into the 256 default instead of shipping uncapped — nothing needs to be
+added for it to be safe. If a specific new image looks soft because it's
+genuinely meant to be drawn large, add its prefix to `SIZE_RULES` (or widen an
+existing entry) — that's the only manual step this system ever needs.
+
+**The same plugin also forces `mipmaps/generate=true` on every image it caps.**
+Godot's importer defaults this to `false`, and every image here is by
+definition displayed smaller than its imported size (that's the whole point of
+the cap above) — downscaling detailed art with no mip chain is a GPU
+minification-aliasing bug, not cosmetic softness: fine detail (outlines, small
+highlights, texture) turns to visible noise. Same non-destructive mechanism as
+the size cap: only the `.import` is touched, and it re-applies on every
+filesystem change so a replaced file can't silently lose it either.
+
+**Generating the mipmaps is not enough on its own — Godot also has to be told
+to sample them.** A `CanvasItem`'s `texture_filter` defaults to
+`TEXTURE_FILTER_PARENT_NODE`, which resolves to the project-wide
+`rendering/textures/canvas_textures/default_texture_filter` setting in
+`project.godot`. That setting has its own separate default (`1` = plain
+`Linear`), which ignores mip levels entirely regardless of whether the
+imported texture has them. So mipmaps existed but were never actually used
+until this was also set to `2` (`Linear With Mipmaps`) in `project.godot`'s
+`[rendering]` section — that's the line that actually fixed the visible
+noise on detailed icons (e.g. the nav bar's map icon — dotted path, compass
+rose, paper grain — which looked noisier up close than simpler reference art
+even though the source PNG itself was fine at full resolution). The nav tile
+background (`nav_button.gd`'s `_make_background()`) explicitly overrides
+`texture_filter` to `NEAREST` per-node for an unrelated, intentional reason
+(see its comment) — that override is unaffected by the project default.
 
 ⚠️ **If you add art that is drawn big, add its prefix to that list**, or the
 plugin will downsample it. `ui_chapter_node_frame` is on the list because the
