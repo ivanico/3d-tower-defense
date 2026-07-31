@@ -67,8 +67,7 @@ enum Nav { GARAGE, WORLDMAP, CODEX }
 		frame_top = maxi(value, 0)
 		_apply()
 
-## The reference's frame is much thicker along the bottom than the top.
-@export var frame_bottom: int = 13:
+@export var frame_bottom: int = 2:
 	set(value):
 		frame_bottom = maxi(value, 0)
 		_apply()
