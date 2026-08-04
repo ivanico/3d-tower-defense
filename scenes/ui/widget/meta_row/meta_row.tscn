@@ -116,6 +116,7 @@ custom_minimum_size = Vector2(280, 154)
 offset_right = 280.0
 offset_bottom = 154.0
 size_flags_horizontal = 4
+shadow_text = false
 theme_override_constants/icon_max_width = 28
 theme_override_font_sizes/font_size = 26
 text = "Upgrade"

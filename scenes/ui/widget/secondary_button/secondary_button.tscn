@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/ui/common/ui_button_secondary_v3.png" id="1"]
+[ext_resource type="Script" path="res://scenes/ui/widget/shadow_button/shadow_button.gd" id="2"]
 
 [sub_resource type="StyleBoxTexture" id="1"]
 content_margin_left = 40.0
@@ -20,6 +21,7 @@ modulate_color = Color(0.8, 0.8, 0.8, 1)
 [sub_resource type="StyleBoxEmpty" id="3"]
 
 [node name="SecondaryButton" type="Button"]
+script = ExtResource("2")
 custom_minimum_size = Vector2(400, 150)
 offset_right = 400.0
 offset_bottom = 150.0

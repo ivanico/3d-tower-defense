@@ -1,16 +1,19 @@
-[gd_resource type="Theme" format=3]
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://bnjrv4a8gjatl"]
 
-; Project-wide UI theme. Registered as gui/theme/custom in project.godot, so
-; every Control inherits these unless it sets a theme_override_* itself.
-;
-; Fonts: none yet — this uses the engine default face at a size that suits the
-; 1080x1920 portrait target. Dropping a .ttf into assets/fonts/ and assigning it
-; to `default_font` here restyles the entire game at once (ui_assets.md lists the
-; intended faces). Do NOT add per-node font size overrides for ordinary text;
-; change it here so it stays consistent.
+[ext_resource type="FontFile" uid="uid://bi6to5gdm3xef" path="res://assets/fonts/Baloo_2/static/Baloo2-ExtraBold.ttf" id="1"]
+[ext_resource type="FontFile" uid="uid://dah258uhteri2" path="res://assets/fonts/Nunito/static/Nunito-Regular.ttf" id="2"]
 
 [resource]
+default_font = ExtResource("1")
 default_font_size = 30
+BodyLabel/base_type = &"Label"
+BodyLabel/fonts/font = ExtResource("2")
+Button/colors/font_outline_color = Color(0.08, 0.05, 0.04, 1)
+Button/constants/outline_size = 7
 Label/colors/font_color = Color(1, 1, 1, 1)
-Label/colors/font_outline_color = Color(0.04, 0.05, 0.09, 1)
-Label/constants/outline_size = 5
+Label/colors/font_outline_color = Color(0.08, 0.05, 0.04, 1)
+Label/colors/font_shadow_color = Color(0, 0, 0, 0.45)
+Label/constants/outline_size = 7
+Label/constants/shadow_offset_x = 0
+Label/constants/shadow_offset_y = 4
+Label/constants/shadow_outline_size = 2

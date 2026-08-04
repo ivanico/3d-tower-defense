@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/draft_card.gd" id="1"]
+[ext_resource type="Script" path="res://scenes/ui/widget/shadow_button/shadow_button.gd" id="2"]
 
 [node name="DraftCard" type="PanelContainer"]
 script = ExtResource("1")
@@ -24,9 +25,11 @@ autowrap_mode = 3
 theme_override_font_sizes/font_size = 16
 
 [node name="DescLabel" type="Label" parent="VBoxContainer"]
+theme_type_variation = &"BodyLabel"
 size_flags_vertical = 3
 autowrap_mode = 3
 theme_override_font_sizes/font_size = 12
 
 [node name="SelectButton" type="Button" parent="VBoxContainer"]
+script = ExtResource("2")
 text = "Choose"

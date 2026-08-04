@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://j2rxmydlilkf" path="res://assets/ui/garage/icon_stat_atk.png" id="10"]
 [ext_resource type="Texture2D" uid="uid://dxa2ue1244y5o" path="res://assets/ui/garage/icon_stat_hp.png" id="11"]
 [ext_resource type="Texture2D" uid="uid://bdusiyj4dxftf" path="res://assets/ui/garage/icon_tower_ancient.png" id="12"]
+[ext_resource type="Script" path="res://scenes/ui/widget/shadow_button/shadow_button.gd" id="13"]
 
 [sub_resource type="StyleBoxFlat" id="strip"]
 bg_color = Color(0.18, 0.1, 0.3, 0.38)
@@ -167,7 +168,6 @@ offset_top = 770.0
 offset_right = 1020.0
 offset_bottom = 850.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0.25, 0.1, 0.3, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 60
 text = "Ancient Tower"
@@ -317,6 +317,7 @@ offset_bottom = 1730.0
 theme_override_styles/panel = SubResource("actionbar")
 
 [node name="UpgradeButton" type="Button" parent="ActionBar"]
+script = ExtResource("13")
 layout_mode = 0
 offset_left = 310.0
 offset_top = 17.0
@@ -325,10 +326,8 @@ offset_bottom = 113.0
 focus_mode = 0
 theme_override_colors/font_disabled_color = Color(0.898, 0.894, 0.882, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0.11, 0.28, 0.05, 1)
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
-theme_override_constants/outline_size = 8
 theme_override_font_sizes/font_size = 46
 theme_override_styles/focus = SubResource("up_normal")
 theme_override_styles/disabled = SubResource("up_disabled")
