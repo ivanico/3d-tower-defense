@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://tiggx5dhb7uj"]
+[gd_scene load_steps=26 format=3 uid="uid://tiggx5dhb7uj"]
 
 [ext_resource type="Script" uid="uid://bn6xf3kg1jeno" path="res://scenes/ui/tower_garage.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://f17epup68u0o" path="res://assets/ui/garage/bg_garage.png" id="2"]
@@ -12,22 +12,10 @@
 [ext_resource type="Texture2D" uid="uid://j2rxmydlilkf" path="res://assets/ui/garage/icon_stat_atk.png" id="10"]
 [ext_resource type="Texture2D" uid="uid://dxa2ue1244y5o" path="res://assets/ui/garage/icon_stat_hp.png" id="11"]
 [ext_resource type="Texture2D" uid="uid://bdusiyj4dxftf" path="res://assets/ui/garage/icon_tower_ancient.png" id="12"]
-[ext_resource type="Script" path="res://scenes/ui/widget/shadow_button/shadow_button.gd" id="13"]
+[ext_resource type="Script" uid="uid://bt28xfxalqbqd" path="res://scenes/ui/widget/shadow_button/shadow_button.gd" id="13"]
 
 [sub_resource type="StyleBoxFlat" id="strip"]
 bg_color = Color(0.18, 0.1, 0.3, 0.38)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cbtiw"]
-bg_color = Color(0, 0, 0, 0)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0, 0, 0, 0)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d7c7v"]
 bg_color = Color(0, 0, 0, 0)
@@ -78,6 +66,18 @@ corner_radius_bottom_right = 18
 corner_radius_bottom_left = 18
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btfwk"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p7vbk"]
 bg_color = Color(0, 0, 0, 0)
 border_width_left = 4
 border_width_top = 4
@@ -235,30 +235,17 @@ columns = 4
 [node name="Slot1" parent="TowerGrid" instance=ExtResource("7")]
 custom_minimum_size = Vector2(245, 245)
 layout_mode = 2
-theme_override_styles/focus = SubResource("StyleBoxFlat_cbtiw")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_cbtiw")
-theme_override_styles/hover = SubResource("StyleBoxFlat_cbtiw")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_cbtiw")
-theme_override_styles/normal = SubResource("StyleBoxFlat_cbtiw")
+theme_override_styles/focus = SubResource("StyleBoxFlat_d7c7v")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_d7c7v")
+theme_override_styles/hover = SubResource("StyleBoxFlat_d7c7v")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_d7c7v")
+theme_override_styles/normal = SubResource("StyleBoxFlat_d7c7v")
 icon_texture = ExtResource("12")
 selected = true
 stars = 5
 star_margin_bottom = 14
 
 [node name="Slot2" parent="TowerGrid" instance=ExtResource("7")]
-custom_minimum_size = Vector2(245, 245)
-layout_mode = 2
-theme_override_styles/focus = SubResource("StyleBoxFlat_d7c7v")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_d7c7v")
-theme_override_styles/hover = SubResource("StyleBoxFlat_d7c7v")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_d7c7v")
-theme_override_styles/normal = SubResource("StyleBoxFlat_d7c7v")
-disabled = true
-icon_texture = ExtResource("12")
-locked = true
-star_margin_bottom = 14
-
-[node name="Slot3" parent="TowerGrid" instance=ExtResource("7")]
 custom_minimum_size = Vector2(245, 245)
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxFlat_6lxvj")
@@ -271,7 +258,7 @@ icon_texture = ExtResource("12")
 locked = true
 star_margin_bottom = 14
 
-[node name="Slot4" parent="TowerGrid" instance=ExtResource("7")]
+[node name="Slot3" parent="TowerGrid" instance=ExtResource("7")]
 custom_minimum_size = Vector2(245, 245)
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxFlat_lg13o")
@@ -284,7 +271,7 @@ icon_texture = ExtResource("12")
 locked = true
 star_margin_bottom = 14
 
-[node name="Slot5" parent="TowerGrid" instance=ExtResource("7")]
+[node name="Slot4" parent="TowerGrid" instance=ExtResource("7")]
 custom_minimum_size = Vector2(245, 245)
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxFlat_s71xg")
@@ -297,7 +284,7 @@ icon_texture = ExtResource("12")
 locked = true
 star_margin_bottom = 14
 
-[node name="Slot6" parent="TowerGrid" instance=ExtResource("7")]
+[node name="Slot5" parent="TowerGrid" instance=ExtResource("7")]
 custom_minimum_size = Vector2(245, 245)
 layout_mode = 2
 theme_override_styles/focus = SubResource("StyleBoxFlat_btfwk")
@@ -310,6 +297,19 @@ icon_texture = ExtResource("12")
 locked = true
 star_margin_bottom = 14
 
+[node name="Slot6" parent="TowerGrid" instance=ExtResource("7")]
+custom_minimum_size = Vector2(245, 245)
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxFlat_p7vbk")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_p7vbk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_p7vbk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_p7vbk")
+theme_override_styles/normal = SubResource("StyleBoxFlat_p7vbk")
+disabled = true
+icon_texture = ExtResource("12")
+locked = true
+star_margin_bottom = 14
+
 [node name="ActionBar" type="Panel" parent="."]
 offset_top = 1600.0
 offset_right = 1080.0
@@ -317,7 +317,7 @@ offset_bottom = 1730.0
 theme_override_styles/panel = SubResource("actionbar")
 
 [node name="UpgradeButton" type="Button" parent="ActionBar"]
-script = ExtResource("13")
+custom_minimum_size = Vector2(185, 83)
 layout_mode = 0
 offset_left = 310.0
 offset_top = 17.0
@@ -334,7 +334,7 @@ theme_override_styles/disabled = SubResource("up_disabled")
 theme_override_styles/hover = SubResource("up_normal")
 theme_override_styles/pressed = SubResource("up_pressed")
 theme_override_styles/normal = SubResource("up_normal")
-text = "Upgrade"
+script = ExtResource("13")
 
 [node name="Shine" type="Panel" parent="ActionBar/UpgradeButton"]
 layout_mode = 0

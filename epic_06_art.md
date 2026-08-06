@@ -7,9 +7,9 @@
 > ground) with real Meshy-generated models, and add real animations to
 > every model including `ancient_tower_lvl1`/`chap1_enemy_01` — which already
 > have a real static-pose mesh from Epic 02 Task 02-00, but have never
-> played an animation. Correct scale and tuned real-time lighting/shadows
-> across everything. No `CapsuleMesh`/`BoxMesh`/`PlaneMesh` placeholders
-> remain on gameplay objects, and no model is still unanimated.
+> played an animation. Correct scale across everything. No
+> `CapsuleMesh`/`BoxMesh`/`PlaneMesh` placeholders remain on gameplay
+> objects, and no model is still unanimated.
 > Completed epic delivers: the game looks like a finished 3D product, with
 > the Archero-style camera/lighting actually paying off.
 >
@@ -143,34 +143,26 @@ siblings), `res://scenes/component/move_to_target_component.gd`,
 
 ---
 
-## Task 06-04 — Lighting & Shadow Tuning
+## Task 06-04 — Lighting & Shadow Tuning [NOT REQUIRED]
 
 **File**: `res://scenes/main/game_world.tscn`
 **Ref**: `assets.md` Section 1, `project.md` Tech Stack
 
-- [ ] Tune the `DirectionalLight3D` angle and the `WorldEnvironment`'s
-	  ambient light so real character models (not primitives) read clearly
-	  at the fixed camera angle — shadows should be visible and correctly
-	  shaped under the new models, not washed out by ambient light or too
-	  dark to read silhouettes.
-- [ ] Confirm shadow quality settings are reasonable for Mobile-renderer
-	  real-time shadows (this is a first-pass tuning check; the full
-	  mobile-performance budget pass is `epic_08_polish.md`'s job — don't
-	  over-invest in shadow resolution here if it costs frame time, just get
-	  it *correct-looking*, defer *fast* to Epic 08).
-- [ ] Confirm the rim-light/toon-shader look (from `assets.md` Section 1)
-	  reads correctly with real-time shadows now active — these two systems
-	  (toon shading + real shadows) need to look good together, not fight
-	  each other (e.g. a shadow that completely flattens the toon rim-light
-	  effect would be a visual regression to flag and fix here).
+**Decision (made during implementation): skipped, not deferred.** Tuning the
+`WorldEnvironment` ambient light and `DirectionalLight3D` shadow strength per
+this task's original spec made the game look washed-out and bad in practice —
+the flat, evenly-lit current look (`background_mode = 2`, no sky/ambient/
+tonemap) reads better with the toon-flat models than a "correctly" tuned
+real-time shadow pass does. `game_world.tscn`'s `WorldEnvironment` stays as-is
+intentionally. Nothing here needs revisiting unless the base art style
+changes.
 
-**Acceptance criteria**:
-- [ ] Real models cast and receive shadows correctly under the fixed camera
-	  view, with no obvious washing-out or unreadable-silhouette problems.
-- [ ] A side-by-side before/after screenshot (primitive placeholders vs real
-	  models) shows a clear visual upgrade with working shadows in both —
-	  this is the direct regression check against the original 2D version's
-	  shadow problems.
+~~- Tune the `DirectionalLight3D` angle and the `WorldEnvironment`'s ambient
+	light so real character models read clearly at the fixed camera angle.~~
+~~- Confirm shadow quality settings are reasonable for Mobile-renderer
+	real-time shadows.~~
+~~- Confirm the rim-light/toon-shader look reads correctly with real-time
+	shadows now active.~~
 
 ---
 

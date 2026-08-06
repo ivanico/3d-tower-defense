@@ -66,6 +66,9 @@ const ENEMY_ATTACK_ANIM_PAUSE_RATIO:     float = 0.15
 # 1.0 = clip's native authored speed; e.g. 1.0 / 3.0 plays it 3x slower.
 const TOWER_IDLE_ANIM_SPEED_SCALE:       float = 1.0 / 3.0
 
+# Hit flash (Epic 06) — see HitFlashComponent
+const HIT_FLASH_DURATION_SEC: float = 0.25
+
 # Wave composition (Epic 04)
 const WAVE_ENEMY_COUNT_BASE:             int   = 3
 const WAVE_ENEMY_COUNT_GROWTH_RATE:      float = 1.5    # count = BASE * RATE^(wave-1), rounded, capped at MAX

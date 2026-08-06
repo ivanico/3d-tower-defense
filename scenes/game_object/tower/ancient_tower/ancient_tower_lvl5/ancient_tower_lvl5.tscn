@@ -35,6 +35,7 @@ shape = SubResource("Shape_body")
 [node name="TargetingComponent" parent="." instance=ExtResource("Comp_targeting")]
 
 [node name="HitFlashComponent" parent="." instance=ExtResource("Comp_flash")]
+enabled = false
 
 [node name="HealthBar3D" parent="." instance=ExtResource("Widget_hpbar")]
 
