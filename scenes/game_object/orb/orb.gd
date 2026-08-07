@@ -22,11 +22,33 @@ var hit_interval: float = Constants.ORB_HIT_INTERVAL
 var _cooldowns: Dictionary = {}  # enemy instance_id -> seconds until re-hit allowed
 var _model: Node3D = null
 
+# Enemies currently overlapping `DetectionArea`, kept in sync by its
+# body_entered/body_exited signals instead of asking `get_tree()` for every
+# enemy in the game on every physics frame (perf.md/the FPS-drop audit:
+# orbs are persistent -- unlike bolts they never despawn -- so this ran
+# forever, every frame, once per orb, against the full enemy list; that's
+# O(active_orbs x active_enemies) EVERY tick and was the single biggest
+# contributor to FPS drops in mob-heavy waves). `DetectionArea`'s radius
+# (3.0, see orb.tscn) is deliberately much bigger than `hit_radius` so this
+# list is always a safe superset -- it only narrows WHICH enemies get the
+# exact `hit_radius` distance check below, it never changes the check
+# itself, so which enemies actually get hit is unchanged.
+var _nearby_enemies: Array[Node3D] = []
+
 func _ready() -> void:
 	if model_scene != null:
 		_model = model_scene.instantiate()
 		add_child(_model)
 		_model.scale = model_scale
+	$DetectionArea.body_entered.connect(_on_body_entered)
+	$DetectionArea.body_exited.connect(_on_body_exited)
+
+func _on_body_entered(body: Node3D) -> void:
+	if body.is_in_group("enemies") and not _nearby_enemies.has(body):
+		_nearby_enemies.append(body)
+
+func _on_body_exited(body: Node3D) -> void:
+	_nearby_enemies.erase(body)
 
 func setup(spell_def: SpellDefinition) -> void:
 	spell = spell_def
@@ -43,7 +65,7 @@ func _physics_process(delta: float) -> void:
 		_cooldowns[key] -= delta
 		if _cooldowns[key] <= 0.0:
 			_cooldowns.erase(key)
-	for enemy in get_tree().get_nodes_in_group("enemies"):
+	for enemy in _nearby_enemies:
 		if not is_instance_valid(enemy):
 			continue
 		if global_position.distance_to(enemy.global_position + AIM_HEIGHT) > hit_radius:

@@ -158,7 +158,7 @@ C. REWARDS & MATERIALS — all 16 exist in `rewards/`
 - [ ] bg_victory.png          (optional)
 - [ ] bg_defeat.png           (optional)
 
-Not needed any more: the HUD bar art. `value_bar.gd` and `health_bar_3d.gd`
+Not needed any more: the HUD bar art. `value_bar.gd` and `value_bar_3d.gd`
 draw their bars from `BarTexture.make_capsule()`, so track / fill / rim / radius
 are inspector knobs, not files to repaint.
 

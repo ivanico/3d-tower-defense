@@ -3,7 +3,7 @@ extends CanvasLayer
 ## In-run HUD: pause button, wave name, level readout and the XP bar.
 ##
 ## The tower's health is NOT here any more — it is the floating bar over the tower
-## (scenes/ui/widget/health_bar_3d/), which connects to GameState.hp_changed itself.
+## (scenes/ui/widget/value_bar_3d/), which connects to GameState.hp_changed itself.
 
 @onready var wave_label: Label = $WaveLabel
 @onready var level_label: Label = $LevelLabel

@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
 [ext_resource type="PackedScene" path="res://scenes/component/move_to_target_component.tscn" id="Comp_mover"]
 [ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/game_object/enemy/enemy.gd" id="Script_enemy"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/value_bar_3d/value_bar_3d.tscn" id="Widget_hpbar"]
+[ext_resource type="Resource" path="res://resources/ui/enemy_bar_style.tres" id="EnemyBarStyle"]
 
 [sub_resource type="Animation" id="Animation_nhyqd"]
 length = 0.001
@@ -160,6 +162,12 @@ transform = Transform3D(0.63, 0, 0, 0, 0.63, 0, 0, 0, 0.63, 0, 0, 0)
 shape = SubResource("SphereShape3D_body")
 
 [node name="HealthComponent" parent="." instance=ExtResource("Comp_health")]
+
+[node name="HealthBar3D" parent="." instance=ExtResource("Widget_hpbar")]
+style = ExtResource("EnemyBarStyle")
+follow_game_state = false
+show_value = false
+height_offset = 1.05
 
 [node name="StatusEffectComponent" parent="." instance=ExtResource("Comp_status")]
 

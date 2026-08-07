@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Bar3DStyle" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/value_bar_3d/bar_3d_style.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+bar_size = Vector2i(320, 72)
+pixel_size = 0.0022
+color_top = Color(1, 0.35, 0.3, 1)
+color_bottom = Color(0.75, 0.08, 0.08, 1)
+color_split = 0.3
+track_color_top = Color(0.22, 0.26, 0.31, 0.6)
+track_color_bottom = Color(0.11, 0.16, 0.21, 0.6)
+track_highlight_color = Color(0.7, 0.8, 0.9, 0.8)
+track_highlight_height = 9
+rim_color = Color(0, 0, 0, 1)
+rim_width = 5
+corner_radius = 9

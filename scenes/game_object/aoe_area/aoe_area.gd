@@ -23,11 +23,23 @@ static var _decal_materials: Dictionary = {}
 
 var spell: SpellDefinition = null
 
+# Margin added to the collision cylinder beyond spell.aoe_radius, so it's
+# always a safe superset of the exact flat-radius check in _tick_damage --
+# this shape only narrows WHICH enemies get that check, never changes it.
+const DETECTION_MARGIN := 0.5
+
 var _age: float = 0.0
 var _tick_accum: float = 0.0
 var _shard_accum: float = 0.0
 var _next_shard_in: float = 0.0
 var _active: bool = false
+
+# Enemies currently overlapping `collision`. Kept in sync by body_entered/
+# body_exited instead of scanning `get_tree()`'s full enemy list every damage
+# tick -- lower frequency than the other projectile scripts (once per
+# spell.tick_interval, not every physics frame) but overlapping zones stack,
+# so still worth avoiding the full scan (see the FPS-drop audit).
+var _nearby_enemies: Array[Node3D] = []
 
 @onready var decal: MeshInstance3D = $Decal
 @onready var shards_root: Node3D = $ShardsRoot
@@ -36,6 +48,15 @@ var _active: bool = false
 func _ready() -> void:
 	# Own shape instance per zone — never mutate a shared shape resource.
 	collision.shape = CylinderShape3D.new()
+	body_entered.connect(_on_body_entered)
+	body_exited.connect(_on_body_exited)
+
+func _on_body_entered(body: Node3D) -> void:
+	if body.is_in_group("enemies") and not _nearby_enemies.has(body):
+		_nearby_enemies.append(body)
+
+func _on_body_exited(body: Node3D) -> void:
+	_nearby_enemies.erase(body)
 
 func initialize(pos: Vector3, spell_def: SpellDefinition) -> void:
 	spell = spell_def
@@ -47,10 +68,17 @@ func initialize(pos: Vector3, spell_def: SpellDefinition) -> void:
 	decal.scale = Vector3(spell.aoe_radius, 1.0, spell.aoe_radius)
 	decal.material_override = _get_decal_material(spell.damage_type)
 	var shape := collision.shape as CylinderShape3D
-	shape.radius = spell.aoe_radius
+	shape.radius = spell.aoe_radius + DETECTION_MARGIN
 	shape.height = 2.0
 	_active = true
-	_tick_damage()
+	# The cast-moment tick fires in this same call, before Godot's physics
+	# server has had a chance to process the shape/position change above and
+	# populate `_nearby_enemies` via body_entered -- that list would read
+	# empty here even if enemies are already standing in the zone. Not a
+	# per-frame cost (once per cast), so the full scan is fine right here;
+	# `_nearby_enemies` takes over for every recurring tick below, which IS
+	# per-frame-adjacent and is what the FPS-drop audit targeted.
+	_tick_damage(get_tree().get_nodes_in_group("enemies"))
 
 func _physics_process(delta: float) -> void:
 	if not _active:
@@ -62,7 +90,7 @@ func _physics_process(delta: float) -> void:
 	_tick_accum += delta
 	if _tick_accum >= spell.tick_interval:
 		_tick_accum -= spell.tick_interval
-		_tick_damage()
+		_tick_damage(_nearby_enemies)
 	if _age <= spell.duration - SHARD_SPAWN_CUTOFF:
 		_shard_accum += delta
 		if _shard_accum >= _next_shard_in:
@@ -70,8 +98,8 @@ func _physics_process(delta: float) -> void:
 			_next_shard_in = randf_range(0.5, 1.5) * spell.shard_spawn_interval
 			_spawn_shard()
 
-func _tick_damage() -> void:
-	for enemy in get_tree().get_nodes_in_group("enemies"):
+func _tick_damage(enemies: Array) -> void:
+	for enemy in enemies:
 		if not is_instance_valid(enemy):
 			continue
 		var flat := Vector2(enemy.global_position.x - global_position.x, enemy.global_position.z - global_position.z)
@@ -154,6 +182,7 @@ func reset() -> void:
 	_active = false
 	spell = null
 	_age = 0.0
+	_nearby_enemies.clear()
 	_clear_shards()
 
 static func _get_decal_material(damage_type: int) -> StandardMaterial3D:

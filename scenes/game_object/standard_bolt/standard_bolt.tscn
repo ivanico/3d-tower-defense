@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/game_object/standard_bolt/standard_bolt.gd" id="Script_proj"]
 
 [sub_resource type="SphereShape3D" id="Shape_proj"]
-radius = 0.15
+radius = 1.5
 
 [node name="StandardBolt" type="Area3D"]
 script = ExtResource("Script_proj")

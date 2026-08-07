@@ -81,39 +81,49 @@ not affected by the 3D rebuild) — same approach as the original design:
 
 ---
 
-## Task 08-03 — Enemy HP Bar Polish (3D)
+## Task 08-03 — Enemy HP Bar Polish (3D) [DONE, with two deviations from the original spec below]
 
-**File**: `res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tscn`
+**Files**: every `res://scenes/game_object/chap1/chap1_enemy_0*/`,
+`chap1_boss_0*/`, `res://scenes/ui/widget/value_bar_3d/`,
+`res://resources/ui/*.tres`
 
-> **The widget already exists** — `scenes/ui/widget/health_bar_3d/` was built for
-> the tower during the HUD pass and is deliberately generic. Instance it under the
-> enemy, set `follow_game_state = false`, and call `set_hp(current, max)` from the
-> enemy's `HealthComponent`. **Do not write a second bar.** It already resolves the
-> "pick whichever renders cleanly" question below: four billboarded `Sprite3D`/
-> `Label3D` layers with `BILLBOARD_ENABLED`, partial fill via `region_rect`, and no
-> `SubViewport`. What is still open here is the per-enemy work: height tuning for
-> each model, the colour thresholds, the damage tween, and the boss HUD bar.
+> **The widget already existed and was reused, not duplicated** —
+> `scenes/ui/widget/value_bar_3d/` (renamed from `health_bar_3d/` as part of
+> this task, since it was never actually health-specific) was built for the
+> tower during the HUD pass and is deliberately generic. Every chapter-1
+> enemy/boss now instances it, `follow_game_state = false`, and it
+> auto-discovers its own sibling `HealthComponent` and wires itself — no
+> per-unit script needed (same discovery pattern `hit_flash_component.gd`
+> uses). The shared red/translucent look lives in two `Bar3DStyle` Resources
+> (`resources/ui/enemy_bar_style.tres`, `boss_bar_style.tres`) instead of
+> being copy-pasted into every scene — see `value_bar_3d.gd`'s doc comment
+> for the full design, including the number-outline debugging history (MSDF
+> font requirement, why native `outline_size` can't be used, why the outline
+> copies must offset along the camera's true screen-perpendicular plane and
+> not naive world axes).
 
-- [ ] Replace Epic 02's simple HP bar approach with a clean billboarded
-	  version: a small `Node3D` positioned above the enemy's head (height
-	  tuned per the model's actual size from Epic 06), containing either two
-	  `Sprite3D`/`MeshInstance3D` bars (background + fill, both billboarded)
-	  or a `Label3D`-adjacent simple bar — pick whichever renders cleanly;
-	  avoid a full `SubViewport`-based UI-in-3D solution unless the simpler
-	  options look bad (that approach costs more render overhead and isn't
-	  justified at this scale).
-- [ ] Fill color: green >50%, yellow 25–50%, red <25%.
-- [ ] Tween fill width smoothly on damage (0.15s).
-- [ ] Boss: a separate, larger always-visible `ProgressBar` in the HUD
-	  `CanvasLayer` (2D, top-center of screen) rather than a 3D billboard —
-	  bosses are visually large enough that a screen-space bar reads better
-	  than a billboard that might be off-frame at the boss's scale.
+- [x] Billboarded bar above each enemy/boss's head, height tuned per model.
+- [ ] ~~Fill color: green >50%, yellow 25–50%, red <25%.~~ **Not built** —
+	  the reference art this session worked from uses a fixed red fill
+	  regardless of HP%, not a threshold-based color shift. Revisit if a
+	  color-shift look is wanted later; `Bar3DStyle`/`value_bar_3d.gd` would
+	  need a new `set_value()`-driven color lerp, not currently there.
+- [ ] ~~Tween fill width smoothly on damage (0.15s).~~ **Not built** — the
+	  fill snaps instantly (`_refresh()` sets `region_rect` directly, no
+	  tween). Would be a small, self-contained addition if wanted.
+- [x] **Boss, deliberately DIFFERENT from the original spec**: bosses use the
+	  SAME 3D billboard system as regular enemies (a larger `Bar3DStyle`
+	  preset), not a separate always-visible 2D HUD `ProgressBar`. This was a
+	  session decision matching the actual reference art (which shows every
+	  unit, boss included, with an in-world floating bar) rather than the
+	  original guess that a boss might be too large to frame reliably.
 
 **Acceptance criteria**:
-- [ ] Regular enemy HP bars correctly billboard toward the camera and show
-	  the right color/fill at all HP levels.
-- [ ] Boss HP bar appears in the HUD as a screen-space element, updates
-	  correctly on every hit.
+- [x] Regular enemy HP bars correctly billboard toward the camera and show
+	  the correct fill at all HP levels (colour is fixed red, not
+	  threshold-based — see deviation above).
+- [x] Boss HP bar updates correctly on every hit (as a 3D billboard, not a
+	  HUD screen-space element — see deviation above).
 
 ---
 

@@ -28,6 +28,19 @@ var _model: Node3D = null
 
 @onready var collision: CollisionShape3D = $CollisionShape3D
 
+# Margin added to the collision box beyond the precise hitbox_width/length
+# below, so it's always a safe superset of what the exact longitudinal/
+# lateral check counts as a hit -- this shape only narrows WHICH enemies get
+# that exact check (via body_entered/body_exited, see _nearby_enemies),
+# it never changes the check itself.
+const DETECTION_MARGIN := 1.0
+
+# Enemies currently overlapping `collision`. Kept in sync by body_entered/
+# body_exited instead of scanning `get_tree()`'s full enemy list every
+# physics frame for this lance's entire ~30m flight (Constants.LANCE_MAX_
+# TRAVEL) -- see the FPS-drop audit.
+var _nearby_enemies: Array[Node3D] = []
+
 func _ready() -> void:
 	if model_scene != null:
 		_model = model_scene.instantiate()
@@ -36,6 +49,15 @@ func _ready() -> void:
 		_model.scale = model_scale
 	# Own shape instance per lance — never mutate a shared shape resource.
 	collision.shape = BoxShape3D.new()
+	body_entered.connect(_on_body_entered)
+	body_exited.connect(_on_body_exited)
+
+func _on_body_entered(body: Node3D) -> void:
+	if body.is_in_group("enemies") and not _nearby_enemies.has(body):
+		_nearby_enemies.append(body)
+
+func _on_body_exited(body: Node3D) -> void:
+	_nearby_enemies.erase(body)
 
 func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition) -> void:
 	global_position = start_pos
@@ -52,7 +74,9 @@ func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition)
 	damage_type = spell.damage_type
 	speed = spell.projectile_speed
 	max_travel = spell.max_travel_distance
-	(collision.shape as BoxShape3D).size = Vector3(hitbox_width, hitbox_width, hitbox_length)
+	(collision.shape as BoxShape3D).size = Vector3(
+			hitbox_width + DETECTION_MARGIN, hitbox_width + DETECTION_MARGIN,
+			hitbox_length + DETECTION_MARGIN)
 	look_at(global_position + _direction, Vector3.UP)
 	_apply_school_tint()
 	_hit_enemies.clear()
@@ -78,7 +102,7 @@ func _physics_process(delta: float) -> void:
 		ObjectPool.release(self)
 
 func _check_hits() -> void:
-	for enemy in get_tree().get_nodes_in_group("enemies"):
+	for enemy in _nearby_enemies:
 		if not is_instance_valid(enemy) or _hit_enemies.has(enemy):
 			continue
 		# Segment check in the ground plane: within half the lance's length
@@ -101,3 +125,4 @@ func reset() -> void:
 	_direction = Vector3.ZERO
 	_traveled = 0.0
 	_hit_enemies.clear()
+	_nearby_enemies.clear()

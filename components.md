@@ -658,16 +658,19 @@ round ends. Inspector properties: `bar_size` (px), `color_top`/`color_bottom`
 `rim_width` (px, 0 = no rim), `corner_radius` (px). `scale` is forced to 1 —
 **never scale these bars**. `hud.gd` drives `value` 0–100, unchanged.
 **`hp_bar` is retired from the in-run HUD** — the tower's health is now
-`health_bar_3d` floating over the tower. The scene is kept as the ready-made
+`value_bar_3d` floating over the tower. The scene is kept as the ready-made
 red screen-space variant if a 2D health readout is ever wanted back. All the
 bar PNGs (`*_bg_*`, `*_fill_*`, `*_pill*`) are unused — the bars have been
 fully procedural since the art was retired),
 `bar_texture.gd` (**not a widget** — one static `make_capsule()` that rasterises
-the rounded-rect capsule. Shared by BOTH `value_bar.gd` and `health_bar_3d.gd` so
-the 2D and 3D bars cannot drift apart. It lives at `scenes/ui/widget/` root rather
-than in a widget folder, same as `value_bar.gd`, because it belongs to no single
-widget. It is `@tool` because both its callers are. **Consumers `preload()` it and
-deliberately do NOT use a global `class_name`** — see the warning below),
+the rounded-rect capsule, plus a `split` param for a two-band gradient (glossy
+top band, flat below — see `value_bar.gd::color_split`) and a `highlight_color`/
+`highlight_height` param for a thin bright line blended onto either layer.
+Shared by BOTH `value_bar.gd` and `value_bar_3d.gd` so the 2D and 3D bars cannot
+drift apart. It lives at `scenes/ui/widget/` root rather than in a widget folder,
+same as `value_bar.gd`, because it belongs to no single widget. It is `@tool`
+because both its callers are. **Consumers `preload()` it and deliberately do
+NOT use a global `class_name`** — see the warning below),
 `pause_button` (`@tool` Button, top-left in-run. **Drawn, not art** — there is
 no pause-glyph PNG, and a StyleBoxFlat panel plus two Panel bars stays crisp
 where a 1200px generated icon would have to be shrunk. Knobs: `button_size`,
@@ -675,26 +678,76 @@ where a 1200px generated icon would have to be shrunk. Knobs: `button_size`,
 `glyph_color`, `glyph_bar_size`, `glyph_gap`, `glyph_corner_radius`. It only
 emits `pressed` — **it deliberately does not touch `get_tree().paused`**, see
 the pause note below),
-`health_bar_3d` (`@tool` Node3D — the floating bar over a unit. Three
-billboarded layers: Track → Fill → Value (`Label3D` showing the number). Art
+`value_bar_3d` (`@tool` Node3D — a GENERIC floating value bar over a unit, not
+health-specific by name or design (only one convenience on it is HP-flavoured,
+see below) — used today for the tower's HP and every chapter-1 enemy/boss's HP,
+and equally reusable for a future XP/mana/shield bar in 3D space. Billboarded
+layers, back to front by `render_priority`: Track → Fill → Value's outline
+copies → Value (`Label3D` showing the number, optional via `show_value`). Art
 comes from `BarTexture.make_capsule()`, so it matches the HUD bar automatically.
-**The outline is baked into the Track and the Fill is inset inside it by
-`rim_width`** — it is deliberately NOT a separate rim quad on top. It was, and
-it failed: four billboarded sprites all sit at the same depth, `render_priority`
-did not reliably hold the rim above the fill, and the green covered the outline
-along the flat top and bottom while the rounded caps still showed it. Insetting
-makes the outline geometrically unreachable regardless of sort order. Keep it
-that way. `billboard = BILLBOARD_ENABLED`, **not**
-`BILLBOARD_FIXED_Y` — the camera is locked at 60° pitch, which would leave a
+**The bar's own outline is baked into the Track and the Fill is inset inside it
+by `rim_width`** — it is deliberately NOT a separate rim quad on top; that was
+tried and failed (billboarded sprites all sit at the same depth, `render_priority`
+did not reliably hold a separate rim above the fill). Insetting makes the outline
+geometrically unreachable regardless of sort order. Keep it that way.
+`billboard = BILLBOARD_ENABLED`, **not** `BILLBOARD_FIXED_Y` — the camera is a
+fixed pitched perspective camera (see `camera_rig.gd`), which would leave a
 fixed-Y bar tilted. The fill does not regenerate its image per hit: it reveals
 part of the drawn capsule via `region_rect` and shifts `offset` to stay pinned
 left — two floats per update. No `SubViewport`, per the vfx-audio skill.
+
+**The number's outline is a separate, harder problem than the bar's**, solved
+after several false starts, all worth knowing before touching `_value`/
+`_value_outlines`: (1) Label3D ignores the project's `Theme`, so the font must
+be preloaded and assigned explicitly (`VALUE_FONT`) or it silently falls back
+to Godot's generic font. (2) that font's `.import` needed
+`multichannel_signed_distance_field` turned on — without MSDF, thin diagonal
+strokes (the "1" glyph, specifically) render with a broken gap once Label3D
+scales the glyph through 3D space, even though the identical font is fine in a
+fixed-size 2D Label. (3) Label3D's own `outline_size` is separately broken
+**when combined with MSDF** in this Godot build — any outline at all turns the
+whole glyph solid black, at every `msdf_pixel_range` tried — so `outline_size`
+is never used; `outline_size = 0` always. The outline look instead comes from
+`_value_outlines`: flat-colour copies of the same text at the SAME `font_size`
+(scaling the whole string, tried first, drifts the letter spacing apart on
+multi-digit numbers and reads as smeared shadows, not an outline), each nudged
+along `SCREEN_RIGHT`/`SCREEN_UP` — vectors computed to lie truly in the fixed
+camera's view-perpendicular plane. Naive world `(0,1,0)`/`(0,-1,0)` offsets are
+NOT perpendicular to a pitched camera's view direction, so an "up" copy sits
+measurably closer to the camera than the white text and "down" sits farther —
+genuinely different depths, not just visually adjacent — which made transparent
+-quad sort order between the layers ambiguous and camera-distance-dependent,
+surfacing as an intermittent white blob over the number depending on unit
+position. `SCREEN_RIGHT`/`SCREEN_UP` fixed it by keeping every layer genuinely
+coplanar. (Also tried and reverted: 8 offset directions instead of 4 — more
+overlapping layers, same risk, no benefit; `ALPHA_CUT_DISCARD` — moves the quad
+from the transparent queue, which respects `render_priority`, into the opaque
+queue, which uses hardware depth-test instead, and with no explicit Z
+separation between layers that just traded one sorting bug for a worse one.)
+
 `follow_game_state = true` makes it subscribe to `GameState.hp_changed` and
-self-prime on its own, which is why the tower scenes needed no script change.
-**Enemies reuse this** (epic_08-03): instance it, set `follow_game_state =
-false`, call `set_hp()`. It is instanced into all five
-`ancient_tower_lvlN.tscn` — tune it **inside `health_bar_3d.tscn`** and all
-five update at once; `height_offset` is the knob for how high it floats),
+self-prime on its own, which is why the tower scenes needed no script change —
+this is the one HP-flavoured convenience the component has. Everything else
+that's `false` (every enemy/boss) instead auto-discovers a sibling
+`HealthComponent` the same way `hit_flash_component.gd` does and wires itself
+to `health_changed`, no per-unit script needed either; a future non-HP bar
+with no such sibling just gets a harmless no-op there and calls the public
+`set_value(current, max_value)` from whatever drives it instead (same as the
+2D XP bar, driven by `GameState.xp_bar_updated`, not a component).
+
+**Look is reusable across scenes via `Bar3DStyle`** (`bar_3d_style.gd`, a
+plain `Resource`) instead of copy-pasting the same ~12 property values into
+every scene that wants a given look: assign `style` and it's used INSTEAD OF
+the matching individual export (assigning it never mutates those exports, so
+the Inspector doesn't show misleading "manually set" values). Two presets ship
+in `resources/ui/`: `enemy_bar_style.tres` and `boss_bar_style.tres` (same red/
+translucent look, different size) — every chapter-1 enemy/boss references one
+of these with a single `style = ExtResource(...)` line instead of inline
+values, so changing the look is a ONE-file edit. The tower keeps tuning its
+own bar inline (no style assigned) since only it wants the green look.
+`height_offset`, `show_value`, and `follow_game_state` are deliberately NOT
+part of `Bar3DStyle` — they're genuinely per-instance (each unit's own model
+height, whether it shows a number, how it gets its value), not "look".),
 `chapter_node` (`@tool` Control — **display only, not a Button any more**. Just
 the chapter artwork plus a hidden `ui_locked_overlay.png`; exports
 `chapter_image`/`locked`. The decorative frame was dropped, the play bar moved out
@@ -758,7 +811,7 @@ Everything is a plain number in the Godot inspector. Open
 Current layout, top to bottom, on the 1080×1920 portrait target:
 `PauseButton` (96×96 at 32,32) · `WaveLabel` (centred, y 36) ·
 `XPBar` (740×52 at 170,186) with `LevelLabel` **straddling its top edge** ·
-`TagRowWidget` (y 268). There is no HP bar here — see `health_bar_3d`.
+`TagRowWidget` (y 268). There is no HP bar here — see `value_bar_3d`.
 
 > **Anything overlapping the bar must be a LATER sibling than it.** 2D Controls
 > have no depth — they paint in scene-tree order, so a later child draws on top.
@@ -767,7 +820,7 @@ Current layout, top to bottom, on the 1080×1920 portrait target:
 > `LevelLabel` sits *after* `XPBar` precisely because it straddles it. Listed
 > before, the bar painted straight over the text.
 > (The 3D bar solves the same problem differently — `Sprite3D`/`Label3D` do have
-> depth, so `health_bar_3d` orders its four layers with `render_priority`
+> depth, so `value_bar_3d` orders its four layers with `render_priority`
 > 0→3 instead, and the number is 3 so it lands on top.)
 
 | What you want to change | Where | How |
@@ -784,17 +837,17 @@ Current layout, top to bottom, on the 1080×1920 portrait target:
 | **Where the text sits** | `WaveLabel` / `LevelLabel` → Offset **Top / Bottom** | Both span the full 1080 width with `horizontal_alignment = Center`, so only the Y offsets matter — the text self-centres horizontally at any width. |
 | **Lv text straddling the bar** | `LevelLabel` → Offset Top **and** Bottom set to the *same* number, `grow_vertical = Both` | The text then centres on that Y line and grows evenly either side, so its top half hangs above the bar and its bottom half covers the bar's upper part — the reference look. Set both to the **bar's top edge** (`186` for a bar at y 186). Move the bar and this number has to move with it. |
 | **Pause button** look | `HUD/PauseButton` → Button Size, Panel Color, Corner Radius, Border…, Glyph… | Whole button is drawn from these; no art file to swap. Keep it at or above 80×80 for touch. |
-| **Floating HP bar** | `health_bar_3d.tscn` → Bar Size, Pixel Size, Height Offset, colours | Tune it in the WIDGET scene, not per tower — all five star levels instance the same scene. `Editor Preview Fill` lets you judge a part-full bar without running the game. |
-| **Floating bar's on-screen size** | `health_bar_3d.tscn` → **Pixel Size** | World size is `bar_size × pixel_size`. `bar_size` is texture resolution, not screen size — changing it alone rescales the bar. |
-| **Floating bar's outline** | `health_bar_3d.tscn` → **Rim Width** | The outline is geometrically identical on all four sides (`rim_width × pixel_size` world units each way). What decides how it *looks* is where that width lands on the screen pixel grid. The bar is ~10px tall in the editor preview, so `rim_width` maps to roughly `rim_width × 0.146` screen px. **Aim for the middle of a pixel bucket, not the edge of one:** `7` → 1.02px → a clean 1px line all round (current, matches the reference art). `10` → 1.47px → sits exactly on the 1/2 boundary and comes out **1px vertically, 2px horizontally** — visibly lopsided. `14` → 2.04px → even, but chunky. If you change it, verify by rendering a frame and counting pixels; the texture is symmetric at every value, so inspecting it proves nothing. |
-| **HP number straddling its bar** | `health_bar_3d.tscn` → **Value Raise** | In bar heights: `0` centres the number on the bar, **`0.5` centres it on the top edge** (current, matches the reference), `1.0` clears the bar. Expressed in bar heights so it survives changes to `bar_size` / `pixel_size`. |
+| **Floating HP bar** | `value_bar_3d.tscn` → Bar Size, Pixel Size, Height Offset, colours | Tune it in the WIDGET scene, not per tower — all five star levels instance the same scene. `Editor Preview Fill` lets you judge a part-full bar without running the game. |
+| **Floating bar's on-screen size** | `value_bar_3d.tscn` → **Pixel Size** | World size is `bar_size × pixel_size`. `bar_size` is texture resolution, not screen size — changing it alone rescales the bar. |
+| **Floating bar's outline** | `value_bar_3d.tscn` → **Rim Width** | The outline is geometrically identical on all four sides (`rim_width × pixel_size` world units each way). What decides how it *looks* is where that width lands on the screen pixel grid. The bar is ~10px tall in the editor preview, so `rim_width` maps to roughly `rim_width × 0.146` screen px. **Aim for the middle of a pixel bucket, not the edge of one:** `7` → 1.02px → a clean 1px line all round (current, matches the reference art). `10` → 1.47px → sits exactly on the 1/2 boundary and comes out **1px vertically, 2px horizontally** — visibly lopsided. `14` → 2.04px → even, but chunky. If you change it, verify by rendering a frame and counting pixels; the texture is symmetric at every value, so inspecting it proves nothing. |
+| **HP number straddling its bar** | `value_bar_3d.tscn` → **Value Raise** | In bar heights: `0` centres the number on the bar, **`0.5` centres it on the top edge** (current, matches the reference), `1.0` clears the bar. Expressed in bar heights so it survives changes to `bar_size` / `pixel_size`. |
 
 **Never set `scale` on these bars.** Scaling a bar non-uniformly is what
 flattened the round caps into stretched ovals; `value_bar.gd` keeps scale at
 1 and redraws the capsule instead. Change `bar_size`, not scale.
 
 **Do not add generated properties back into the .tscn.** `value_bar.gd`,
-`pause_button.gd` and `health_bar_3d.gd` are `@tool` scripts that build their
+`pause_button.gd` and `value_bar_3d.gd` are `@tool` scripts that build their
 own textures and styleboxes. Left alone, the editor serialises those into
 whatever scene instances the widget, and the stale baked copy then silently
 wins over the widget's own settings — that is how `game_world.tscn` reached
@@ -845,7 +898,7 @@ and **only the editor rebuilds that file**. Consequences that have already bitte
 
 So the UI widgets here are consumed by **`const X := preload("res://…gd")`**, which
 resolves at load time with no cache involved (`NavBarScript` in the three meta
-screens, `BarTexture` in `value_bar.gd` / `health_bar_3d.gd`). Node references are
+screens, `BarTexture` in `value_bar.gd` / `value_bar_3d.gd`). Node references are
 typed to their **base** class (`Control`, `HBoxContainer`, `Button`) — the widget
 methods resolve dynamically at runtime, exactly as they did before.
 

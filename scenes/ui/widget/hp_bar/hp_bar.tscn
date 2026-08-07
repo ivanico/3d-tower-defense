@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/widget/value_bar.gd" id="1"]
 
 ; Retired from the in-run HUD — the tower's health is now the floating 3D bar
-; (scenes/ui/widget/health_bar_3d/). Kept because it is the ready-made red
+; (scenes/ui/widget/value_bar_3d/). Kept because it is the ready-made red
 ; screen-space variant of value_bar.gd if a 2D health readout is ever wanted back.
 
 [node name="HpBar" type="TextureProgressBar"]

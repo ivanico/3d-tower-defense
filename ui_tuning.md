@@ -162,7 +162,7 @@ The three menu screens are broken down piece by piece above. The rest:
 | Pause button | `scenes/ui/widget/pause_button/` |
 | HP / XP bar (2D, in the HUD) | `scenes/ui/widget/hp_bar/`, `scenes/ui/widget/xp_bar/` |
 | ↳ their shared script | `scenes/ui/widget/value_bar.gd` |
-| Floating HP bar over the tower (3D) | `scenes/ui/widget/health_bar_3d/` |
+| Floating HP bar over the tower (3D) | `scenes/ui/widget/value_bar_3d/` |
 | ↳ shared bar drawing code | `scenes/ui/widget/bar_texture.gd` |
 | Star row (garage) | `scenes/ui/widget/star_row/` |
 | Tower grid cell (garage) | `scenes/ui/widget/tower_slot/` |
@@ -441,7 +441,7 @@ outline.
 caps into ovals — change `bar_size` instead. A partly-full bar has a flat right
 edge; that is correct and matches the reference art.
 
-### Floating HP bar over the tower — `scenes/ui/widget/health_bar_3d/health_bar_3d.tscn`
+### Floating HP bar over the tower — `scenes/ui/widget/value_bar_3d/value_bar_3d.tscn`
 
 Tune it **here** and all five tower star-levels update at once.
 

@@ -1,6 +1,14 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/game_object/orb/orb.gd" id="1"]
 
+[sub_resource type="SphereShape3D" id="Shape_detect"]
+radius = 3.0
+
 [node name="Orb" type="Node3D"]
 script = ExtResource("1")
+
+[node name="DetectionArea" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DetectionArea"]
+shape = SubResource("Shape_detect")
