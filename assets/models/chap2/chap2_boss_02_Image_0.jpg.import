@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://dmc2b7px312eg"
+path.s3tc="res://.godot/imported/chap2_boss_02_Image_0.jpg-4dc06c0184369413dd63a765221b9e00.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "3dcc5d39ed78be1caed4e8f513c09013"
+}
+
+[deps]
+
+source_file="res://assets/models/chap2/chap2_boss_02_Image_0.jpg"
+dest_files=["res://.godot/imported/chap2_boss_02_Image_0.jpg-4dc06c0184369413dd63a765221b9e00.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0
