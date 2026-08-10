@@ -69,6 +69,18 @@ const TOWER_IDLE_ANIM_SPEED_SCALE:       float = 1.0 / 3.0
 # Hit flash (Epic 06) — see HitFlashComponent
 const HIT_FLASH_DURATION_SEC: float = 0.25
 
+# Floating damage numbers (Epic 08 Task 08-01) — see DamageNumber3D
+const DAMAGE_NUMBER_POOL_SIZE:      int   = 30
+const DAMAGE_NUMBER_MAX_VISIBLE:    int   = 10
+const DAMAGE_NUMBER_CRIT_MULT:      float = 1.5   # final_dmg > base_dmg * this = crit
+const DAMAGE_NUMBER_CRIT_SCALE:     float = 1.4
+const DAMAGE_NUMBER_RISE_HEIGHT:    float = 1.5   # world units risen over the tween
+const DAMAGE_NUMBER_RISE_DURATION:  float = 0.8   # seconds
+const DAMAGE_NUMBER_FADE_DELAY:     float = 0.4   # seconds before fade starts
+const DAMAGE_NUMBER_FADE_DURATION:  float = 0.4   # seconds the fade itself takes
+const DAMAGE_NUMBER_SPAWN_HEIGHT:   float = 0.5   # spawn offset above hit_world_pos
+const DAMAGE_NUMBER_SCATTER_RADIUS: float = 0.3   # random X/Z spawn scatter
+
 # Wave composition (Epic 04)
 const WAVE_ENEMY_COUNT_BASE:             int   = 3
 const WAVE_ENEMY_COUNT_GROWTH_RATE:      float = 1.5    # count = BASE * RATE^(wave-1), rounded, capped at MAX

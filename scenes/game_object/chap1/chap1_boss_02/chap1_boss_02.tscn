@@ -38,9 +38,9 @@ shape = SubResource("SphereShape3D_body")
 [node name="HealthComponent" parent="." instance=ExtResource("Comp_health")]
 
 [node name="HealthBar3D" parent="." instance=ExtResource("Widget_hpbar")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
 style = ExtResource("BossBarStyle")
-height_offset = 2.5
+height_offset = 2.3
 show_value = false
 follow_game_state = false
 

@@ -118,7 +118,7 @@ func _check_hits() -> void:
 		_hit_enemies.append(enemy)
 		var hurtbox := enemy.find_child("HurtboxComponent") as HurtboxComponent
 		if hurtbox:
-			hurtbox.apply_hit(damage, damage_type)
+			hurtbox.apply_hit(damage, damage_type, enemy.global_position + Vector3(0, 0.6, 0))
 
 func reset() -> void:
 	_initialized = false

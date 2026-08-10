@@ -164,6 +164,8 @@ The three menu screens are broken down piece by piece above. The rest:
 | ↳ their shared script | `scenes/ui/widget/value_bar.gd` |
 | Floating HP bar over the tower (3D) | `scenes/ui/widget/value_bar_3d/` |
 | ↳ shared bar drawing code | `scenes/ui/widget/bar_texture.gd` |
+| ↳ shared number/text renderer (also used by damage numbers) | `scenes/ui/widget/outlined_label_3d/` |
+| Floating damage numbers (3D, Epic 08) | `scenes/ui/widget/damage_number_3d/` |
 | Star row (garage) | `scenes/ui/widget/star_row/` |
 | Tower grid cell (garage) | `scenes/ui/widget/tower_slot/` |
 | ↳ its desaturate shader | `scenes/ui/widget/tower_slot/greyscale.gdshader` |
@@ -449,14 +451,59 @@ Tune it **here** and all five tower star-levels update at once.
 |---|---|
 | `bar_size` `[480, 68]` | Texture resolution, **not** screen size. |
 | `pixel_size` `[0.003]` | World units per texture pixel. **This is the on-screen size knob.** |
-| `height_offset` `[2.8]` | How high it floats above the tower. |
+| `height_offset` `[2.8]` | How high it floats above the tower. Per-instance — enemy/boss/tower scenes each set their own (see below), never `style`. |
 | `rim_width` `[7]` | The outline. See the sub-pixel warning below. |
 | `corner_radius` `[12]`, colours, `track_*` | Same meaning as the 2D bar. |
-| `show_value`, `value_font_size` `[48]` | The number on the bar. |
+| `show_value`, `value_font_size` `[80]` | The number on the bar. |
 | `value_raise` `[0.5]` | In bar heights: 0 centres the number on the bar, 0.5 centres it on the top edge, 1.0 clears the bar. |
+| `value_outline_color` `[black]`, `value_outline_thickness` `[0.09]` | The ring drawn around the number. Thickness is a fraction of `value_font_size`. Alpha 0 turns the outline off. |
+| `value_shadow_color` `[black, 60% alpha]`, `value_shadow_offset` `[0.19]` | Drop shadow beneath the number, matching the 2D HUD's "Lv.X" look. Offset is a fraction of `value_font_size`. Alpha 0 turns the shadow off. |
 | `always_on_top` `[off]` | Draw through geometry. Only if the bar gets clipped. |
 | `editor_preview_fill` `[0.7]` | **Editor only.** Lets you judge a part-full bar without running the game. |
 | `follow_game_state` `[on]` | Tracks the tower's HP by itself. Enemies set this off and call `set_hp()`. |
+
+**`height_offset` is the one knob NOT shared here** — each enemy/boss/tower
+scene's own `HealthBar3D` node sets it individually (it depends on that
+unit's own model height), so raising/lowering the bar for one enemy type
+means opening that unit's own scene, not this one. Everything else in the
+table above IS shared from this one file, same as the rest of this section.
+
+### Outlined 3D label — `scenes/ui/widget/outlined_label_3d/outlined_label_3d.tscn`
+
+The actual text/outline/shadow renderer behind the HP bar's number above
+**and** the floating damage numbers below — one place, so they can never
+drift apart. You will rarely open this file directly; `value_bar_3d.tscn`
+and `damage_number_3d.tscn` each expose their own `value_*` / plain-named
+passthrough knobs that forward into it. Open it directly only if you want a
+third consumer, or to change the underlying mechanism itself.
+
+| Knob | What it does |
+|---|---|
+| `font` | The typeface. Swap this to give one consumer a different font without touching the others. |
+| `font_size`, `text_color` | The main number/text. |
+| `outline_color`, `outline_thickness` | Same outline mechanism as the HP bar's `value_outline_*`. |
+| `shadow_color`, `shadow_offset` | Same shadow mechanism as the HP bar's `value_shadow_*`. |
+| `opacity` | Fades text + outline + shadow together. Used by `damage_number_3d.gd`'s despawn tween — `Node3D` has no native `modulate` to animate instead. |
+| `base_render_priority` | Layering against other billboards it's stacked with (e.g. the HP bar's Track/Fill). Leave at `0` for a standalone label. |
+
+### Floating damage numbers — `scenes/ui/widget/damage_number_3d/damage_number_3d.tscn`
+
+Pops up over an enemy when it's hit (Epic 08 Task 08-01). Pooled via
+`ObjectPool`, one `OutlinedLabel3D` inside for the shadow+outline look.
+
+| Knob | What it does |
+|---|---|
+| `font_size` `[140]` | **Size of the number.** World size is `font_size × pixel_size` — went 48 → 64 → 140 to actually read at a glance in gameplay. |
+| `pixel_size` `[0.003]` | The other half of that equation. Raise this instead of `font_size` for a bigger number that's just as crisp. |
+| `always_on_top` `[off]` | Draw through geometry, if a number clips behind a model at some camera angles. |
+
+Everything else (rise height/duration, fade timing, crit scale, spawn
+scatter, the pool size, the 10-visible cap) is in `autoloads/constants.gd`
+under **"Floating damage numbers (Epic 08 Task 08-01)"** — not exported
+knobs, since they're gameplay tuning rather than a look, matching how
+`Constants.gd` holds every other numeric-tuning value in the project (see
+that file's own header comment). Color comes from `Constants.SCHOOL_COLORS`,
+the same table the school orbs/tints already use — not a knob here either.
 
 ---
 
@@ -489,6 +536,15 @@ removes the second tone entirely.
 
 **Make a bar's outline thicker** → `rim_width`. For the 3D bar read the sub-pixel
 warning first.
+
+**Make the HP bar's number bigger, or add/remove its shadow/outline** →
+`value_font_size` / `value_outline_*` / `value_shadow_*` on
+`value_bar_3d.tscn`. Alpha 0 on either colour turns that effect off.
+
+**Make the damage numbers bigger** → `font_size` (or `pixel_size` for the
+same effect) on `damage_number_3d.tscn`. Everything about their timing
+(rise, fade, crit scale) is in `Constants.gd`, not here — see the widget's
+own section above.
 
 **Swap a piece of art** → each texture is referenced in exactly ONE widget scene,
 so change it there and it updates everywhere. `ui_assets.md` lists what exists.

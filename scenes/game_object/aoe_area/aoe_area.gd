@@ -109,7 +109,7 @@ func _tick_damage(enemies: Array) -> void:
 		if hurtbox:
 			# Computed at tick time so mid-run upgrades apply to live zones.
 			var dmg: float = spell.damage * GameState.tower_damage_multiplier * GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(spell.spell_id)
-			hurtbox.apply_hit(dmg, spell.damage_type)
+			hurtbox.apply_hit(dmg, spell.damage_type, enemy.global_position + Vector3(0, 0.6, 0))
 
 func _spawn_shard() -> void:
 	var shard := shard_model_scene.instantiate()

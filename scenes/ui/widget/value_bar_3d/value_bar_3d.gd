@@ -4,71 +4,13 @@ extends Node3D
 ## Preloaded, not a global class name — see the note in bar_texture.gd.
 const BarTexture := preload("res://scenes/ui/widget/bar_texture.gd")
 
-## Label3D is a Node3D, not a Control -- it never participates in the project's
-## Theme (`ui_theme.tres`), so left unset it falls back to Godot's generic
-## built-in font instead of the project's actual typeface. Every 2D Label (like
-## "Lv.X") looks different from this number for that reason alone, regardless
-## of matching size/outline/shadow.
-##
-## The font asset's `multichannel_signed_distance_field` import flag went
-## true -> false -> true -> false over the course of debugging this number, so
-## the final state is worth explaining plainly:
-## 1. An early version of the fake-outline below worked by rendering a SCALED-UP
-##    duplicate of the text behind the real one. Non-MSDF glyphs didn't reliably
-##    hold together on thin diagonal strokes once scaled that way -- the "1"
-##    rendered with a broken gap in its stroke, on every outline/embolden value
-##    tested. Enabling MSDF fixed that gap.
-## 2. That scaled-copy approach was later replaced with same-size, fixed-offset
-##    copies instead (see `_value_outlines` below) -- scaling also scaled
-##    letter-spacing, which drifted the black copy's letters out from behind
-##    the white ones on multi-digit numbers. Fixed offsets don't have that
-##    problem, which quietly made MSDF unnecessary again: nothing here scales
-##    glyphs anymore, so plain (non-MSDF) glyphs hold together fine.
-## 3. MSDF was left on anyway until a white "hourglass" artifact kept appearing
-##    over the number in real gameplay, intermittently, only on certain HP
-##    values. Isolated per-digit renders (setting `_value.text` to single
-##    digits and digit pairs in a minimal test scene) isolated it exactly: the
-##    glyph "8" alone, at this weight/size, generates a corrupted MSDF distance
-##    field in this Godot build -- its two counters (the enclosed white regions
-##    top and bottom of the pinch) render solid white/filled instead of hollow,
-##    every single time, deterministically, regardless of neighbouring digits
-##    or camera/timing. Raising `msdf_pixel_range`/`msdf_size` did not fix it.
-##    Disabling MSDF did, confirmed on "8" alone, "1" alone (see point 1/2 above
-##    -- no regression), and the exact multi-digit values that broke in real
-##    play ("1289", "1178"). MSDF is off (`multichannel_signed_distance_field
-##    =false` on the .import file) for that reason -- this is a real Godot
-##    engine/font limitation, not a project bug, and non-MSDF is correct here
-##    now that nothing scales glyphs.
-## 4. Label3D's native `outline_size` is separately broken when combined with
-##    MSDF in this Godot build -- ANY outline_size > 0 renders the entire glyph
-##    solid black (fill included). Moot now that MSDF is off, but `outline_size`
-##    still isn't used here regardless -- see `_value_outlines` below for how
-##    the outline look is actually achieved instead.
-const VALUE_FONT := preload("res://assets/fonts/Baloo_2/static/Baloo2-ExtraBold.ttf")
-
-## A SEPARATE white-blob-shaped artifact, easy to confuse with the MSDF "8"
-## bug documented above -- both looked like a white shape swallowing part of
-## the number, but this one is a depth-sorting problem, unrelated to any
-## specific glyph. Root cause: this project's camera is a FIXED PERSPECTIVE
-## camera pitched down at the scene
-## (`camera_rig.gd`: position `(0, camera_height, camera_distance)`,
-## `look_at(Vector3.ZERO, Vector3.UP)`) -- its view direction has both a -Y
-## and a -Z component. World-space `Vector2(0, 1)`/`(0, -1)` ("up"/"down") are
-## NOT perpendicular to that view direction -- they carry a real depth
-## component, so an outline copy offset that way sits measurably closer to or
-## farther from the camera than the white text, not just visually adjacent.
-## That makes transparent-quad depth sorting between the near-coincident
-## layers genuinely ambiguous, and the exact ambiguity depends on camera
-## distance -- which changes as the unit walks -- which is why it only broke
-## intermittently instead of every time. `SCREEN_RIGHT`/`SCREEN_UP` are
-## computed to lie truly in this fixed camera's view-perpendicular plane
-## instead of naive world axes, so every outline copy is genuinely coplanar
-## with the white text, not just visually close.
-const SCREEN_RIGHT := Vector3(1.0, 0.0, 0.0)
-const SCREEN_UP := Vector3(0.0, 0.70710678, -0.70710678)
-const OUTLINE_DIRS: Array[Vector3] = [
-	SCREEN_RIGHT, -SCREEN_RIGHT, SCREEN_UP, -SCREEN_UP,
-]
+## The number's outlined-text rendering (font, faked outline via offset
+## copies, the MSDF/depth-sort debugging history behind all of it) lives in
+## `outlined_label_3d.gd` now, not here — it was extracted out of this script
+## so a second consumer (the planned `DamageNumber3D`, see
+## `epic_08_polish.md` Task 08-01) can reuse it instead of duplicating it.
+## See that script's doc comment for the full history if touching `_value`.
+const OutlinedLabel3D := preload("res://scenes/ui/widget/outlined_label_3d/outlined_label_3d.tscn")
 
 ## Generic floating value bar that hovers over a unit and always faces the
 ## camera -- NOT specific to health. Used for the tower's HP today, and for
@@ -250,7 +192,7 @@ const OUTLINE_DIRS: Array[Vector3] = [
 		value_raise = value
 		_rebuild()
 
-## Colour of the faked outline (see `_value_outlines` below). Alpha 0 turns it off.
+## Colour of the faked outline (see `outlined_label_3d.gd`). Alpha 0 turns it off.
 @export var value_outline_color: Color = Color(0.0, 0.0, 0.0, 1.0):
 	set(value):
 		value_outline_color = value
@@ -267,6 +209,21 @@ const OUTLINE_DIRS: Array[Vector3] = [
 @export_range(0.0, 0.25) var value_outline_thickness: float = 0.09:
 	set(value):
 		value_outline_thickness = maxf(value, 0.0)
+		_rebuild()
+
+## Colour of the number's drop shadow -- matches the look of the 2D HUD's
+## "Lv.X" label (`LevelLabel` in `game_world.tscn`) by default, so the number
+## reads the same whether it's on the 2D XP bar or this 3D bar. Alpha 0 turns
+## it off.
+@export var value_shadow_color: Color = Color(0.0, 0.0, 0.0, 0.6):
+	set(value):
+		value_shadow_color = value
+		_rebuild()
+
+## How far the number's shadow drops, as a fraction of `value_font_size`.
+@export_range(0.0, 0.5) var value_shadow_offset: float = 0.19:
+	set(value):
+		value_shadow_offset = maxf(value, 0.0)
 		_rebuild()
 
 ## Draw on top of everything, even when geometry would cover the bar. Leave this
@@ -291,8 +248,11 @@ const OUTLINE_DIRS: Array[Vector3] = [
 
 var _track: Sprite3D
 var _fill: Sprite3D
-var _value_outlines: Array[Label3D] = []
-var _value: Label3D
+# Untyped on purpose: an OutlinedLabel3D instance (outlined_label_3d.gd has no
+# class_name, per bar_texture.gd's note on why -- its custom exports like
+# `font_size`/`text_color` aren't part of the Node3D base type, so a static
+# `Node3D` type here would make property access below fail to resolve).
+var _value
 
 var _current: float = 0.0
 var _max: float = 0.0
@@ -347,9 +307,13 @@ func _build_layers() -> void:
 		return
 	_track = _add_sprite("Track", 0)
 	_fill = _add_sprite("Fill", 1)
-	for i in OUTLINE_DIRS.size():
-		_value_outlines.append(_add_label("ValueOutline%d" % i, 2))
-	_value = _add_label("Value", 3)
+	_value = OutlinedLabel3D.instantiate()
+	_value.name = "Value"
+	# Track=0, Fill=1; the label's outline copies use base_render_priority (2)
+	# and its main copy uses base_render_priority + 1 (3) -- same ordering
+	# this bar used before the label was extracted into its own component.
+	_value.base_render_priority = 2
+	add_child(_value, false, Node.INTERNAL_MODE_BACK)
 
 
 ## Size of the fill capsule: the bar inset by `rim_width` on every side, so the
@@ -408,33 +372,6 @@ func _add_sprite(node_name: String, priority: int) -> Sprite3D:
 	return s
 
 
-func _add_label(node_name: String, priority: int) -> Label3D:
-	var l := Label3D.new()
-	l.name = node_name
-	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	l.render_priority = priority
-	# Label3D's outline is a SEPARATE render pass with its own priority, which
-	# defaults to -1 regardless of `render_priority` -- confirmed via a direct
-	# check of a fresh Label3D's defaults. Left unset, the outline (-1) sorts
-	# behind the Track/Fill sprites (0/1), so wherever the number overlaps the
-	# bar (it does, by design -- see `value_raise`) the outline renders hidden
-	# underneath it. Matching it to `render_priority` keeps outline and fill
-	# sorted together, both above the bar.
-	l.outline_render_priority = priority
-	l.font = VALUE_FONT
-	# ALPHA_CUT_DISCARD was tried here and made things worse: it moves the quad
-	# from the transparent render queue (which respects `render_priority`, and
-	# is what keeps Value drawing on top of its outline copies) into the OPAQUE
-	# queue, which uses hardware depth-test instead. With several near-
-	# coincident billboards and no explicit Z separation, that turned into
-	# visible depth-fighting between the black and white layers -- confirmed by
-	# rendering it. Left at the default (ALPHA_CUT_DISABLED) on purpose.
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	add_child(l, false, Node.INTERNAL_MODE_BACK)
-	return l
-
-
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
@@ -465,11 +402,12 @@ func _rebuild() -> void:
 
 	_value.visible = show_value
 	_value.font_size = value_font_size
-	# outline_size is deliberately 0 -- see the class doc's point 2. No native
-	# outline is used at all; `_value_outlines` below fakes the look instead.
-	_value.modulate = Color.WHITE
-	_value.outline_size = 0
-	_value.no_depth_test = always_on_top
+	_value.text_color = Color.WHITE
+	_value.outline_color = value_outline_color
+	_value.outline_thickness = value_outline_thickness
+	_value.shadow_color = value_shadow_color
+	_value.shadow_offset = value_shadow_offset
+	_value.always_on_top = always_on_top
 	# The label is NOT supersampled the way the bar art is — Label3D rasterises its
 	# own glyphs at `font_size`, so it stays crisp on its own. It only needs the
 	# same world scale as the bar, hence plain `pixel_size`. `value_font_size` is
@@ -478,23 +416,6 @@ func _rebuild() -> void:
 	# Lift it toward the bar's top edge. Expressed in bar heights so the offset
 	# tracks bar_size and pixel_size instead of going stale when either changes.
 	_value.position.y = _eff_bar_size().y * _eff_pixel_size() * value_raise
-
-	# The fake outline: black copies of the SAME text at the SAME font_size (no
-	# scaling, so no letter-spacing drift), each nudged a fixed distance along a
-	# true screen-perpendicular direction (see `SCREEN_RIGHT`/`SCREEN_UP` doc)
-	# behind the white copy. Together they build up a solid outline silhouette
-	# hugging each glyph, with no dependence on the broken native outline_size,
-	# and no depth-component drift that could make them sort unpredictably.
-	var offset_dist := value_font_size * value_outline_thickness * _eff_pixel_size()
-	for i in OUTLINE_DIRS.size():
-		var o := _value_outlines[i]
-		o.visible = show_value
-		o.font_size = value_font_size
-		o.outline_size = 0
-		o.modulate = value_outline_color
-		o.no_depth_test = always_on_top
-		o.pixel_size = _eff_pixel_size()
-		o.position = _value.position + OUTLINE_DIRS[i] * offset_dist
 
 	_refresh()
 
@@ -521,8 +442,7 @@ func _refresh() -> void:
 
 	if show_value:
 		# In the editor there is no run, so show a stand-in number at the preview
-		# fraction just to check the text fits inside the capsule.
+		# fraction just to check the text fits inside the capsule. OutlinedLabel3D
+		# mirrors its own outline copies internally, so setting `text` here is enough.
 		_value.text = str(int(round(2000.0 * fraction))) if in_editor \
 				else str(int(round(_current)))
-		for o in _value_outlines:
-			o.text = _value.text

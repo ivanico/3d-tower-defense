@@ -1,12 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://bams3a7gi1gqd"]
 
-[ext_resource type="Script" path="res://scenes/ui/widget/value_bar_3d/value_bar_3d.gd" id="1"]
-
-; Intentionally a single node. The visual layers (Track / Fill / Rim / Value /
-; its outline copies) are INTERNAL children the script builds at runtime, so
-; Godot never serialises their generated textures as instance overrides into
-; every scene that instances this. Everything is tuned through the exported
-; knobs on this root node, or through a shared `Bar3DStyle` (`style`).
+[ext_resource type="Script" uid="uid://b68bycue33gs0" path="res://scenes/ui/widget/value_bar_3d/value_bar_3d.gd" id="1"]
 
 [node name="ValueBar3D" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
 script = ExtResource("1")

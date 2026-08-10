@@ -167,7 +167,7 @@ shape = SubResource("SphereShape3D_body")
 style = ExtResource("EnemyBarStyle")
 follow_game_state = false
 show_value = false
-height_offset = 1.1
+height_offset = 0.9
 
 [node name="StatusEffectComponent" parent="." instance=ExtResource("Comp_status")]
 

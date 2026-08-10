@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/outlined_label_3d/outlined_label_3d.gd" id="1"]
+
+; Intentionally a single node -- same reasoning as value_bar_3d.tscn: the
+; actual Label3D children (main text + outline copies) are INTERNAL children
+; built at runtime by the script, never serialized into instancing scenes.
+
+[node name="OutlinedLabel3D" type="Node3D"]
+script = ExtResource("1")

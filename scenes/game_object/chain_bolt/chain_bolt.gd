@@ -82,7 +82,7 @@ func _hit_current_target() -> void:
 	var hurtbox := victim.find_child("HurtboxComponent") as HurtboxComponent
 	if hurtbox:
 		var falloff := pow(damage_falloff_per_bounce, _hit_enemies.size())
-		hurtbox.apply_hit(damage * falloff, damage_type)
+		hurtbox.apply_hit(damage * falloff, damage_type, victim.global_position + Vector3(0, 0.6, 0))
 	_hit_enemies.append(victim)
 	if _hit_enemies.size() > max_bounces:
 		_despawn()

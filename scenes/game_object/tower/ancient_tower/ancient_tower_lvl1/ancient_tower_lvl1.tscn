@@ -2,10 +2,10 @@
 
 [ext_resource type="PackedScene" uid="uid://do7j7thegl4fa" path="res://assets/models/towers/ancient_tower/ancient_tower_lvl1.glb" id="2_model"]
 [ext_resource type="PackedScene" path="res://scenes/component/hit_flash_component.tscn" id="Comp_flash"]
-[ext_resource type="PackedScene" path="res://scenes/component/health_component.tscn" id="Comp_health"]
+[ext_resource type="PackedScene" uid="uid://ds0gb6fxku8hl" path="res://scenes/component/health_component.tscn" id="Comp_health"]
 [ext_resource type="PackedScene" path="res://scenes/component/targeting_component.tscn" id="Comp_targeting"]
 [ext_resource type="Script" uid="uid://cjdt6pivkugg1" path="res://scenes/game_object/tower/tower.gd" id="Script_tower"]
-[ext_resource type="PackedScene" path="res://scenes/ui/widget/value_bar_3d/value_bar_3d.tscn" id="Widget_hpbar"]
+[ext_resource type="PackedScene" uid="uid://bams3a7gi1gqd" path="res://scenes/ui/widget/value_bar_3d/value_bar_3d.tscn" id="Widget_hpbar"]
 
 [sub_resource type="BoxShape3D" id="Shape_body"]
 size = Vector3(1, 1.6, 1)
@@ -13,7 +13,7 @@ size = Vector3(1, 1.6, 1)
 [sub_resource type="SphereShape3D" id="Shape_range"]
 radius = 10.0
 
-[node name="Tower" type="CharacterBody3D"]
+[node name="Tower2" type="CharacterBody3D"]
 script = ExtResource("Script_tower")
 
 [node name="ancient_tower_lvl1" parent="." instance=ExtResource("2_model")]
