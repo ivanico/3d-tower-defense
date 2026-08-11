@@ -101,7 +101,15 @@ func _get_spawn_position() -> Vector3:
 		while radius < SPAWN_RADIUS_MAX and camera.is_position_in_frustum(dir * radius + Vector3(0.0, SPAWN_HEIGHT, 0.0)):
 			radius += SPAWN_RADIUS_STEP
 		radius = minf(radius + SPAWN_OFFSCREEN_MARGIN, SPAWN_RADIUS_MAX)
-	return dir * radius + Vector3(0.0, SPAWN_HEIGHT, 0.0)
+	var point := dir * radius
+	# SPAWN_RADIUS_MAX (26.0) exceeds the arena floor's X half-extent (20) --
+	# without this clamp, angles near the X axis can place the point past the
+	# physical floor edge and the enemy falls through forever. Clamp
+	# independent of the frustum-radius math above, which was never
+	# floor-aware to begin with.
+	point.x = clampf(point.x, -Constants.ARENA_FLOOR_HALF_EXTENTS.x, Constants.ARENA_FLOOR_HALF_EXTENTS.x)
+	point.z = clampf(point.z, -Constants.ARENA_FLOOR_HALF_EXTENTS.y, Constants.ARENA_FLOOR_HALF_EXTENTS.y)
+	return point + Vector3(0.0, SPAWN_HEIGHT, 0.0)
 
 func _on_enemy_died(enemy: Node, _position: Vector3) -> void:
 	var had := _active_enemies.has(enemy)

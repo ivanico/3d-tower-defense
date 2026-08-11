@@ -11,6 +11,12 @@ enum MaterialType   { STANDARD }
 
 const TOTAL_WAVES:              int   = 12
 const WAVE_DURATION_MAX:        float = 60.0
+# Real floor is 40x57 (chap1_arena.tscn PlaneMesh/BoxShape3D -> half-extents
+# X=20, Z=28.5); shrunk slightly for a safety margin. WaveManager clamps
+# every spawn point to this so an enemy can never land past the physical
+# floor's edge and fall through forever (was un-killable/un-targetable once
+# off-frustum, stalling the wave until WAVE_DURATION_MAX force-cleared it).
+const ARENA_FLOOR_HALF_EXTENTS: Vector2 = Vector2(19.5, 28.0)
 const DRAFT_CARDS_SHOWN:        int   = 3
 const ENEMY_HP_SCALE:           float = 1.12
 const ENEMY_DMG_SCALE:          float = 1.08
@@ -74,10 +80,9 @@ const DAMAGE_NUMBER_POOL_SIZE:      int   = 30
 const DAMAGE_NUMBER_MAX_VISIBLE:    int   = 10
 const DAMAGE_NUMBER_CRIT_MULT:      float = 1.5   # final_dmg > base_dmg * this = crit
 const DAMAGE_NUMBER_CRIT_SCALE:     float = 1.4
-const DAMAGE_NUMBER_RISE_HEIGHT:    float = 1.5   # world units risen over the tween
-const DAMAGE_NUMBER_RISE_DURATION:  float = 0.8   # seconds
+const DAMAGE_NUMBER_SCALE_IN_DURATION: float = 0.15 # seconds, scale 0 -> full size on spawn
 const DAMAGE_NUMBER_FADE_DELAY:     float = 0.4   # seconds before fade starts
-const DAMAGE_NUMBER_FADE_DURATION:  float = 0.4   # seconds the fade itself takes
+const DAMAGE_NUMBER_FADE_DURATION:  float = 0.2   # seconds the fade itself takes
 const DAMAGE_NUMBER_SPAWN_HEIGHT:   float = 0.5   # spawn offset above hit_world_pos
 const DAMAGE_NUMBER_SCATTER_RADIUS: float = 0.3   # random X/Z spawn scatter
 

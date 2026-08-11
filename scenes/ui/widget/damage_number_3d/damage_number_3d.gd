@@ -64,7 +64,13 @@ func spawn(value: float, dtype: int, is_crit: bool, world_pos: Vector3) -> void:
 	_label.text = ("★" + shown) if is_crit else shown
 	_label.text_color = CombatUtils.get_damage_color(dtype)
 	_label.opacity = 1.0
-	scale = _base_scale * (Constants.DAMAGE_NUMBER_CRIT_SCALE if is_crit else 1.0)
+
+	# Intro is a scale pop-in (0 -> full size), not a rising position anymore
+	# -- the number now spawns and stays put at world_pos, no longer travels
+	# upward. TRANS_BACK/EASE_OUT gives it a small overshoot-then-settle
+	# "pop" instead of a flat linear grow.
+	var target_scale := _base_scale * (Constants.DAMAGE_NUMBER_CRIT_SCALE if is_crit else 1.0)
+	scale = Vector3.ZERO
 
 	global_position = world_pos + Vector3(
 			randf_range(-Constants.DAMAGE_NUMBER_SCATTER_RADIUS, Constants.DAMAGE_NUMBER_SCATTER_RADIUS),
@@ -73,8 +79,11 @@ func spawn(value: float, dtype: int, is_crit: bool, world_pos: Vector3) -> void:
 
 	_visible_count += 1
 	var tween := create_tween()
-	tween.tween_property(self, "position:y", position.y + Constants.DAMAGE_NUMBER_RISE_HEIGHT,
-			Constants.DAMAGE_NUMBER_RISE_DURATION)
+	tween.tween_property(self, "scale", target_scale, Constants.DAMAGE_NUMBER_SCALE_IN_DURATION) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Fade timing unchanged -- still starts DAMAGE_NUMBER_FADE_DELAY in and
+	# runs DAMAGE_NUMBER_FADE_DURATION, so the total lifetime (and therefore
+	# when this releases back to the pool) is exactly what it was before.
 	tween.parallel().tween_property(_label, "opacity", 0.0, Constants.DAMAGE_NUMBER_FADE_DURATION) \
 			.set_delay(Constants.DAMAGE_NUMBER_FADE_DELAY)
 	tween.finished.connect(_on_tween_finished)

@@ -36,6 +36,70 @@ static func get_school_material(damage_type: int) -> StandardMaterial3D:
 		_school_materials[damage_type] = mat
 	return _school_materials[damage_type]
 
+# Elemental surface look for spell VFX (SchoolVFXComponent) -- one shared
+# ShaderMaterial per school, same batching-friendly caching as
+# get_school_material() above, just a livelier shader instead of a flat
+# tint. Uniform values live here (not the component) so they sit next to
+# the other per-school data (get_damage_color, get_school_material) this
+# file already owns; SchoolVFXComponent's own PRESETS dict is for its
+# particle setup only, which isn't a material concern.
+const SCHOOL_SHADER_PRESETS: Dictionary = {
+	Constants.DamageType.FIRE: {
+		"noise_scroll": Vector2(0.15, 0.8), "noise_scale": 6.0, "noise_strength": 0.5,
+		"fresnel_power": 2.0, "fresnel_strength": 0.5, "pulse_speed": 3.0, "pulse_strength": 0.25,
+	},
+	Constants.DamageType.FROST: {
+		"noise_scroll": Vector2(0.05, 0.05), "noise_scale": 10.0, "noise_strength": 0.3,
+		"fresnel_power": 3.5, "fresnel_strength": 0.9, "pulse_speed": 1.0, "pulse_strength": 0.1,
+	},
+	Constants.DamageType.VOID: {
+		"noise_scroll": Vector2(-0.2, 0.1), "noise_scale": 4.0, "noise_strength": 0.7,
+		"fresnel_power": 1.5, "fresnel_strength": 1.1, "pulse_speed": 1.5, "pulse_strength": 0.3,
+	},
+	Constants.DamageType.POISON: {
+		"noise_scroll": Vector2(0.1, 0.4), "noise_scale": 8.0, "noise_strength": 0.45,
+		"fresnel_power": 2.5, "fresnel_strength": 0.4, "pulse_speed": 2.0, "pulse_strength": 0.2,
+	},
+	Constants.DamageType.NATURE: {
+		"noise_scroll": Vector2(0.08, 0.12), "noise_scale": 5.0, "noise_strength": 0.3,
+		"fresnel_power": 2.0, "fresnel_strength": 0.5, "pulse_speed": 1.2, "pulse_strength": 0.15,
+	},
+}
+const SCHOOL_SURFACE_SHADER := preload("res://scenes/component/school_surface.gdshader")
+static var _school_shader_materials: Dictionary = {}
+
+static func get_school_shader_material(damage_type: int) -> ShaderMaterial:
+	if not _school_shader_materials.has(damage_type):
+		var preset: Dictionary = SCHOOL_SHADER_PRESETS.get(damage_type, SCHOOL_SHADER_PRESETS[Constants.DamageType.VOID])
+		var color := get_damage_color(damage_type)
+		var mat := ShaderMaterial.new()
+		mat.shader = SCHOOL_SURFACE_SHADER
+		mat.set_shader_parameter("albedo_color", color)
+		mat.set_shader_parameter("emission_color", color)
+		mat.set_shader_parameter("emission_energy", 1.5)
+		for key in preset:
+			mat.set_shader_parameter(key, preset[key])
+		_school_shader_materials[damage_type] = mat
+	return _school_shader_materials[damage_type]
+
+# Global particle budget (skills/godot3d-vfx-audio/SKILL.md) -- one counter
+# for every ad-hoc/continuous VFX particle system in the game, not
+# per-effect-type, so a burst of orbs + hit sparks + death bursts all draw
+# from the same ceiling instead of separately blowing the mobile frame
+# budget. Reserve on spawn, release on despawn; skip low-priority dressing
+# (never gameplay-critical VFX) when over budget instead of erroring.
+const MAX_PARTICLE_BUDGET: int = 150
+static var _active_particle_budget: int = 0
+
+static func try_reserve_particles(count: int, is_priority: bool = false) -> bool:
+	if _active_particle_budget + count > MAX_PARTICLE_BUDGET and not is_priority:
+		return false
+	_active_particle_budget += count
+	return true
+
+static func release_particles(count: int) -> void:
+	_active_particle_budget = maxi(0, _active_particle_budget - count)
+
 # School perk on-hit application (spells.md Section 2) — the one generic
 # match on DamageType, used by every archetype's hit path. `resist_mult` is
 # 1.0 normally, SCHOOL_RESIST_MULT when the target resists this school.

@@ -1,3 +1,4 @@
+@tool
 extends Node3D
 
 ## Orb archetype (spells.md Task S-03): a persistent body sitting on a
@@ -5,6 +6,12 @@ extends Node3D
 ## a per-enemy re-hit interval so standing in the orbit path takes ticks,
 ## not one hit per physics frame. School perk applies per hit via the
 ## shared HurtboxComponent.apply_hit funnel.
+##
+## `@tool` + `preview_school` below exist ONLY so you can open this scene
+## directly in the editor and see the school VFX (shader + particles/trail)
+## live in the 3D viewport, without running the game -- same idea as
+## `tower_preview_3d.tscn`. It has zero effect during actual gameplay:
+## `setup()` overrides it the moment a real orb is cast.
 
 const AIM_HEIGHT := Vector3(0, 0.6, 0)
 
@@ -15,6 +22,14 @@ const AIM_HEIGHT := Vector3(0, 0.6, 0)
 # adjacent rings never visually overlap.
 @export var model_scale: Vector3 = Vector3.ONE * 0.5
 @export var hit_radius: float = 0.7
+
+## EDITOR ONLY -- open this scene in the editor and change this to see that
+## school's shader + particle/trail look on the actual mesh, live.
+@export_enum("Fire", "Frost", "Void", "Poison", "Nature") var preview_school: int = 0:
+	set(value):
+		preview_school = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_apply_preview()
 
 var spell: SpellDefinition = null
 var hit_interval: float = Constants.ORB_HIT_INTERVAL
@@ -40,8 +55,15 @@ func _ready() -> void:
 		_model = model_scene.instantiate()
 		add_child(_model)
 		_model.scale = model_scale
+	if Engine.is_editor_hint():
+		_apply_preview()
+		return
 	$DetectionArea.body_entered.connect(_on_body_entered)
 	$DetectionArea.body_exited.connect(_on_body_exited)
+
+func _apply_preview() -> void:
+	if _model != null:
+		$SchoolVFXComponent.configure(preview_school, _model)
 
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("enemies") and not _nearby_enemies.has(body):
@@ -54,9 +76,10 @@ func setup(spell_def: SpellDefinition) -> void:
 	spell = spell_def
 	hit_interval = spell_def.orb_hit_interval
 	if _model != null:
-		var mat := CombatUtils.get_school_material(spell_def.damage_type)
-		for mi in _model.find_children("*", "MeshInstance3D", true, false):
-			mi.material_override = mat
+		# SchoolVFXComponent applies the elemental shader (replacing the old
+		# flat CombatUtils.get_school_material() tint) to every MeshInstance3D
+		# under _model, plus the ambient particle/trail dressing -- one call.
+		$SchoolVFXComponent.configure(spell_def.damage_type, _model)
 
 func _physics_process(delta: float) -> void:
 	if spell == null:
