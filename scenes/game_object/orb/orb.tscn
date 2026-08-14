@@ -1,13 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://4qdw58y48pwx"]
+[gd_scene load_steps=5 format=3 uid="uid://4qdw58y48pwx"]
 
 [ext_resource type="Script" uid="uid://c5rluoq4t2ua3" path="res://scenes/game_object/orb/orb.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/component/school_vfx_component.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://dl3oce4bxubiv" path="res://assets/models/spells/spell_orb.glb" id="3"]
 
 [sub_resource type="SphereShape3D" id="Shape_detect"]
 radius = 3.0
 
 [node name="Orb" type="Node3D"]
 script = ExtResource("1")
+preview_school = 1
 
 [node name="DetectionArea" type="Area3D" parent="."]
 
@@ -15,3 +17,5 @@ script = ExtResource("1")
 shape = SubResource("Shape_detect")
 
 [node name="SchoolVFXComponent" parent="." instance=ExtResource("2")]
+
+[node name="Model" parent="." instance=ExtResource("3")]

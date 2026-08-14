@@ -45,12 +45,53 @@ static func get_school_material(damage_type: int) -> StandardMaterial3D:
 # particle setup only, which isn't a material concern.
 const SCHOOL_SHADER_PRESETS: Dictionary = {
 	Constants.DamageType.FIRE: {
-		"noise_scroll": Vector2(0.15, 0.8), "noise_scale": 6.0, "noise_strength": 0.5,
+		# noise_scale dropped 6.0 -> 2.5: at the orb's actual size and the
+		# real gameplay camera's distance (much further than the close-up
+		# editor preview), 6.0 produced patches too small to read as
+		# distinct color regions -- they blurred into one averaged tint.
+		# Fewer, bigger blotches are legible from further away.
+		"noise_scroll": Vector2(0.15, 0.8), "noise_scale": 2.5, "noise_strength": 0.5,
 		"fresnel_power": 2.0, "fresnel_strength": 0.5, "pulse_speed": 3.0, "pulse_strength": 0.25,
+		# The scrolling noise field constantly moves across the whole sphere
+		# (noise_scroll above) -- blending toward a bright highlight wherever
+		# it currently brightens means different patches of the WHOLE
+		# surface continuously cycle between the two colors as it plays, not
+		# just pulse brighter/dimmer. This is the actual "flame ball" look;
+		# every other school leaves tone_strength at the shader's 0.0
+		# default (a pure no-op).
+		# Base is the standard orange (get_damage_color(FIRE) below, same as
+		# every other UI/damage-number/etc. reference to this school -- keep
+		# that recognizable "old orange" as the anchor color, not swapped
+		# out). Second tone pushed darker/more saturated (was 0.7,0.12,0.04)
+		# and strength raised so the red patches are unmistakable instead of
+		# a faint tint on the orange.
+		"tone_color": Color(0.5, 0.04, 0.01), "tone_strength": 0.8,
 	},
 	Constants.DamageType.FROST: {
+		# fresnel_power lowered (2.2 -> 1.4) so the blue band covers more of
+		# the visible sphere instead of a thin ring right at the silhouette.
 		"noise_scroll": Vector2(0.05, 0.05), "noise_scale": 10.0, "noise_strength": 0.3,
-		"fresnel_power": 3.5, "fresnel_strength": 0.9, "pulse_speed": 1.0, "pulse_strength": 0.1,
+		# fresnel_power dropped further (1.4 -> 0.8) so blue covers a real
+		# outer band around the ball, not just a thin line right at the
+		# silhouette edge -- matches the trail's visual weight instead of
+		# being barely there. fresnel_strength raised too, so the rim
+		# actually glows blue instead of just tinting slightly.
+		"fresnel_power": 0.8, "fresnel_strength": 0.9, "pulse_speed": 1.0, "pulse_strength": 0.1,
+		# Base (center of the sphere, facing the camera) is near-white; the
+		# rim shifts to blue as tone_source=1 blends by raw fresnel/view
+		# angle instead of the animated noise Fire uses -- a fixed
+		# white-middle, blue-edge look that doesn't drift or scroll.
+		# tone_color started as the original ice-blue (get_damage_color(FROST)
+		# / Constants.SCHOOL_COLORS[FROST]) then darkened a bit further per
+		# feedback -- only affects this shader's rim, not the school's color
+		# everywhere else (UI, damage numbers, etc. still read the original).
+		"albedo_color": Color(0.95, 0.97, 1.0), "emission_color": Color(0.95, 0.97, 1.0),
+		"tone_color": Color(0.22, 0.5, 0.85), "tone_strength": 1.0, "tone_source": 1,
+		# Two clear regions, not a gradient -- threshold picked so roughly the
+		# inner ~70% (by visible area, not just radius) stays white and the
+		# outer ~30% band is blue, with just enough softness to anti-alias
+		# the edge instead of a jagged hard line.
+		"tone_use_threshold": true, "tone_threshold": 0.53, "tone_softness": 0.12,
 	},
 	Constants.DamageType.VOID: {
 		"noise_scroll": Vector2(-0.2, 0.1), "noise_scale": 4.0, "noise_strength": 0.7,
@@ -69,7 +110,18 @@ const SCHOOL_SURFACE_SHADER := preload("res://scenes/component/school_surface.gd
 static var _school_shader_materials: Dictionary = {}
 
 static func get_school_shader_material(damage_type: int) -> ShaderMaterial:
-	if not _school_shader_materials.has(damage_type):
+	# Skip the cache entirely in-editor: this dict is a `static var`, which
+	# lives for the whole life of the Godot editor PROCESS, not per scene-
+	# open or per script-reload. Once orb.tscn's preview builds a school's
+	# material the first time in a given editor session, every subsequent
+	# edit to SCHOOL_SHADER_PRESETS above -- however correct -- silently has
+	# NO effect on that already-open preview, because this check finds the
+	# stale entry and returns it unchanged instead of rebuilding. That was
+	# the real cause behind "I changed the values but nothing changed" here.
+	# Rebuilding every call in-editor costs nothing that matters (a handful
+	# of set_shader_parameter calls, only while actually tuning); real
+	# gameplay still caches normally.
+	if Engine.is_editor_hint() or not _school_shader_materials.has(damage_type):
 		var preset: Dictionary = SCHOOL_SHADER_PRESETS.get(damage_type, SCHOOL_SHADER_PRESETS[Constants.DamageType.VOID])
 		var color := get_damage_color(damage_type)
 		var mat := ShaderMaterial.new()

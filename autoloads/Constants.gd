@@ -151,7 +151,7 @@ const ORB_ANGLE_SEQUENCE: Array[float] = [0.0, 180.0, 90.0, 270.0, 45.0, 225.0, 
 # spells can be owned at once with no orb-vs-orb overlap. Mirrored into each
 # .tres's orbit_radius (the .tres value is what the game reads).
 const ORB_ORBIT_RADII: Dictionary = {
-	DamageType.FIRE:   1.6,
+	DamageType.FIRE:   1.2,
 	DamageType.FROST:  2.0,
 	DamageType.VOID:   2.4,
 	DamageType.POISON: 2.8,
@@ -160,6 +160,23 @@ const ORB_ORBIT_RADII: Dictionary = {
 const ORB_ORBIT_SPEED_DEG:      float = 90.0  # degrees/sec, shared by a ring
 const ORB_HIT_INTERVAL:         float = 0.5   # seconds between re-hits on one enemy
 const ORB_HEIGHT:               float = 0.6   # orb hover height above ground
+# Per-school hit radius (mirrored into each orb .tres's `hit_radius`, which is
+# what the game reads — same pattern as ORB_ORBIT_RADII above). Sized so an
+# orbiting orb's closest possible approach to a melee-engaged enemy still
+# lands a hit: enemies stop and attack the tower with their body as close as
+# ~0.85m from the tower's center (smallest MeleeRangeArea, chap1_enemy_02,
+# against the tower's collision box) — worked out by hand from the two
+# colliders' sizes, not tuned by eye. Needed hit_radius = orbit_radius - 0.85,
+# rounded up ~0.05m for margin. Before this, only Fire's small ring ever
+# reached melee-range enemies at all; Frost/Void/Poison/Nature orbited too far
+# out to ever touch anything actually attacking the tower.
+const ORB_HIT_RADII: Dictionary = {
+	DamageType.FIRE:   0.4,
+	DamageType.FROST:  1.2,
+	DamageType.VOID:   1.6,
+	DamageType.POISON: 2.0,
+	DamageType.NATURE: 2.4,
+}
 
 # AoE Area archetype (spells.md Task S-04)
 const AOE_AREA_DURATION:        float = 4.0   # zone lifetime, seconds

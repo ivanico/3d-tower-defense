@@ -26,6 +26,9 @@ script = ExtResource("Script_enemy")
 [node name="chap1_boss_01" parent="." instance=ExtResource("1_glb")]
 transform = Transform3D(-1.1, 0, 0, 0, 1.1, 0, 0, 0, -1.1, 0, 0, 0)
 
+[node name="Armature" parent="chap1_boss_01" index="0"]
+transform = Transform3D(1, 0, 1.74846e-07, 0, 1, 0, -1.74846e-07, 0, 1, 0, 0, 0)
+
 [node name="Skeleton3D" parent="chap1_boss_01/Armature" index="0"]
 bones/0/rotation = Quaternion(-0.0854414, 0.213057, 0.854568, -0.465854)
 bones/1/rotation = Quaternion(0.170247, -0.194763, -0.403917, 0.877459)

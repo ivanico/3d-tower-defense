@@ -24,6 +24,7 @@ extends Resource
 @export var orbit_radius: float = 2.0
 @export var orbit_speed: float = Constants.ORB_ORBIT_SPEED_DEG
 @export var orb_hit_interval: float = Constants.ORB_HIT_INTERVAL
+@export var hit_radius: float = 0.7  # see Constants.ORB_HIT_RADII for the per-school values actually used
 # AoE Area archetype fields (spells.md Task S-04) — ignored by other archetypes.
 @export var duration: float = Constants.AOE_AREA_DURATION
 @export var tick_interval: float = Constants.AOE_AREA_TICK_INTERVAL

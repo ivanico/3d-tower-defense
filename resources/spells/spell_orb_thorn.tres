@@ -21,3 +21,4 @@ stack_max = 8
 orbit_radius = 3.2
 orbit_speed = 90.0
 orb_hit_interval = 0.5
+hit_radius = 2.4
