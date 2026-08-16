@@ -60,14 +60,36 @@ const PRESETS: Dictionary = {
 	Constants.DamageType.VOID: {
 		"direction": Vector3(0, 0.3, 0), "spread": 60.0, "gravity": Vector3.ZERO,
 		"velocity": 0.1, "lifetime": 1.5, "amount": 6,
+		# Black hole accretion disk -- see _build_ring(). Generic optional
+		# preset key (not Void-specific code), same pattern as "color_ramp"/
+		# "particle_color" above.
+		"has_ring": true,
+		# No ambient aura for Void -- a black hole doesn't shed particles off
+		# its own surface; the ring below is its only ambient dressing.
+		"no_aura": true,
 	},
 	Constants.DamageType.POISON: {
 		"direction": Vector3(0, 1, 0), "spread": 15.0, "gravity": Vector3(0, 0.3, 0),
 		"velocity": 0.25, "lifetime": 0.9, "amount": 8,
+		# Darker green -- must match combat_utils.gd's
+		# SCHOOL_SHADER_PRESETS[POISON].tone_color (the sphere's own rim
+		# color) exactly; the two dicts are separate files/architectures on
+		# purpose (see this file's own top doc comment), so this is
+		# authored twice deliberately, not shared via a helper.
+		"particle_color": Color(0.1, 0.3, 0.06),
+		# Spawns only from the upper hemisphere (Y >= 0 in local space,
+		# never below the sphere's own equator) instead of wrapping the
+		# whole surface like Fire/every other school -- see
+		# _hemisphere_points() and its use in _build_particles().
+		"emission_top_only": true,
 	},
 	Constants.DamageType.NATURE: {
 		"direction": Vector3(0, 0.4, 0), "spread": 40.0, "gravity": Vector3(0, -0.1, 0),
 		"velocity": 0.2, "lifetime": 1.0, "amount": 8,
+		# No ambient aura -- same "no_aura" opt-out as Void, per feedback
+		# that the drifting particle dressing reads as "things coming out
+		# of the orb" and isn't wanted here either.
+		"no_aura": true,
 	},
 }
 
@@ -103,6 +125,9 @@ var _trail_ages: Array[float] = []
 var _trail_elapsed: float = 0.0
 var _trail_update_timer: float = 0.0
 
+var _ring_mesh: MeshInstance3D
+const RING_SPIN_SPEED: float = 0.3  # radians/sec, local Y -- subtle, not a spinning top
+
 
 ## `search_root` is optional -- auto-discovers the parent's own subtree the
 ## same way `hit_flash_component.gd` does, if not given explicitly. Applies
@@ -135,12 +160,18 @@ func configure(damage_type: int, search_root: Node3D = null) -> void:
 	var mesh_radius := _get_mesh_radius(meshes)
 
 	var preset: Dictionary = PRESETS.get(damage_type, PRESETS[Constants.DamageType.VOID])
-	_aura = _build_particles(preset.amount, preset.lifetime, preset, mesh_radius)
 	_build_trail(mesh_radius)
+	if preset.get("has_ring", false):
+		_build_ring(mesh_radius)
 
-	if CombatUtils.try_reserve_particles(preset.amount):
-		_reserved_particles = preset.amount
-		_aura.emitting = true
+	# "no_aura" opts a school out of the ambient particle dressing entirely
+	# (e.g. Void -- a black hole doesn't shed particles, the ring is its own
+	# ambient effect) -- generic preset key, same as "has_ring" above.
+	if not preset.get("no_aura", false):
+		_aura = _build_particles(preset.amount, preset.lifetime, preset, mesh_radius)
+		if CombatUtils.try_reserve_particles(preset.amount):
+			_reserved_particles = preset.amount
+			_aura.emitting = true
 	# else: shader dressing above still applies -- only the particle
 	# dressing is skipped when the global budget is already spent. The trail
 	# mesh isn't a GPUParticles3D and doesn't draw from this budget -- it's
@@ -187,9 +218,44 @@ func _teardown_particles() -> void:
 		remove_child(_trail_mesh)
 		_trail_mesh.queue_free()
 		_trail_mesh = null
+	if _ring_mesh != null:
+		remove_child(_ring_mesh)
+		_ring_mesh.queue_free()
+		_ring_mesh = null
 	_trail_positions.clear()
 	_trail_ages.clear()
 	_trail_elapsed = 0.0
+
+
+## Spawn points confined to a sphere's upper hemisphere (Y >= 0 in local
+## space), for EMISSION_SHAPE_POINTS -- used by "emission_top_only" schools
+## (currently just Poison) so their ambient particles never appear below
+## the sphere's own equator. Samples a uniform random direction on the
+## FULL sphere, then flips the sign of Y whenever it's negative: folding a
+## symmetric full-sphere sample onto its upper half like this preserves a
+## correct, evenly-spread distribution with no rejection-sampling loop
+## needed, and guarantees every resulting point has y >= 0.
+static func _hemisphere_points(radius: float, count: int = 24) -> PackedVector3Array:
+	var points := PackedVector3Array()
+	for i in count:
+		var dir := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+		if dir.y < 0.0:
+			dir.y = -dir.y
+		points.append(dir * radius)
+	return points
+
+
+## GPU-processed ParticleProcessMaterial (unlike CPUParticles3D) has no
+## direct PackedVector3Array property for EMISSION_SHAPE_POINTS -- point
+## positions must be encoded into a texture instead (`emission_point_texture`,
+## one point per pixel, read back on the GPU), same technique the editor's
+## own "Load Emission Points" mesh-to-particles tool uses internally.
+static func _points_to_texture(points: PackedVector3Array) -> ImageTexture:
+	var img := Image.create(points.size(), 1, false, Image.FORMAT_RGBF)
+	for i in points.size():
+		var p := points[i]
+		img.set_pixel(i, 0, Color(p.x, p.y, p.z))
+	return ImageTexture.create_from_image(img)
 
 
 ## Ambient aura: particles spawn spread across the mesh's whole surface
@@ -235,8 +301,19 @@ func _build_particles(amount: int, lifetime: float, preset: Dictionary, mesh_rad
 	p.draw_pass_1 = quad
 
 	var proc := ParticleProcessMaterial.new()
-	proc.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE_SURFACE
-	proc.emission_sphere_radius = mesh_radius
+	# "emission_top_only" confines spawn points to the upper hemisphere
+	# (Poison) instead of the whole surface (every other school's default,
+	# e.g. Fire's deliberate all-sides wrap) -- direction/spread/gravity
+	# below are unaffected, so this only changes WHERE particles spawn, not
+	# how they move afterward.
+	if preset.get("emission_top_only", false):
+		proc.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINTS
+		var hemisphere_points := _hemisphere_points(mesh_radius)
+		proc.emission_point_count = hemisphere_points.size()
+		proc.emission_point_texture = _points_to_texture(hemisphere_points)
+	else:
+		proc.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE_SURFACE
+		proc.emission_sphere_radius = mesh_radius
 	proc.direction = preset.direction
 	proc.spread = preset.spread
 	proc.gravity = preset.gravity
@@ -291,6 +368,61 @@ func _build_trail(mesh_radius: float) -> void:
 	_trail_elapsed = 0.0
 
 
+## Flat "accretion disk" ring encircling the mesh -- a real black hole's
+## defining visual, and a fragment shader alone can't conjure geometry a
+## mesh doesn't have (same reasoning the file-level doc comment above gives
+## for particles+trail). Built once per configure(), gated on the
+## "has_ring" preset key. Lies flat in the local XZ plane (horizontal) --
+## this project's camera is a fixed angle, so a flat ring reads as a tilted
+## ellipse from it without needing per-frame camera-facing math, same
+## "flat, ground-parallel" shortcut the trail below already relies on for
+## the same reason. Colored via CombatUtils.get_damage_color() -- the exact
+## same bright color the sphere's own rim uses, by construction, not a
+## separately-authored ring color.
+func _build_ring(mesh_radius: float) -> void:
+	var mesh_inst := MeshInstance3D.new()
+	mesh_inst.name = "Ring"
+
+	var inner_radius: float = mesh_radius  # touches the sphere's own silhouette, no gap
+	var outer_radius: float = mesh_radius * 2.0
+	var segments := 32
+
+	var verts := PackedVector3Array()
+	var colors := PackedColorArray()
+	var color := CombatUtils.get_damage_color(_damage_type)
+	var outer_color := color
+	outer_color.a = 0.0  # fades out toward the outer edge, same per-vertex-alpha technique the trail uses below
+	for i in segments + 1:
+		var angle: float = TAU * float(i) / float(segments)
+		var dir := Vector3(cos(angle), 0.0, sin(angle))
+		verts.append(dir * inner_radius)
+		colors.append(color)
+		verts.append(dir * outer_radius)
+		colors.append(outer_color)
+
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_COLOR] = colors
+	var arr_mesh := ArrayMesh.new()
+	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLE_STRIP, arrays)
+	mesh_inst.mesh = arr_mesh
+
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.vertex_color_use_as_albedo = true  # per-vertex alpha is how the outer edge fades out
+	mat.albedo_color = color
+	mat.emission_enabled = true
+	mat.emission = color
+	mat.emission_energy_multiplier = 2.0
+	mesh_inst.material_override = mat
+
+	add_child(mesh_inst)
+	_ring_mesh = mesh_inst
+
+
 ## Records this node's current world position on a throttled timer
 ## (TRAIL_UPDATE_INTERVAL, not every physics frame), drops anything older
 ## than TRAIL_LIFETIME, and rebuilds the trail as a flat triangle-strip
@@ -300,6 +432,8 @@ func _build_trail(mesh_radius: float) -> void:
 ## harmless when stationary since duplicate points at the same spot just
 ## collapse to a zero-length sliver.
 func _physics_process(delta: float) -> void:
+	if _ring_mesh != null:
+		_ring_mesh.rotate_y(delta * RING_SPIN_SPEED)
 	if _trail_mesh == null:
 		return
 	_trail_update_timer += delta

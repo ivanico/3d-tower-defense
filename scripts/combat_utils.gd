@@ -36,6 +36,36 @@ static func get_school_material(damage_type: int) -> StandardMaterial3D:
 		_school_materials[damage_type] = mat
 	return _school_materials[damage_type]
 
+# Shared "two-tone" banding mechanics reused by every school using the
+# lighter-middle/darker-outside look (Frost's originally-approved numbers,
+# now the shared template). get_school_shader_material() below applies
+# these automatically to any school whose preset declares a "tone_color"
+# key (Fire, Frost, Poison currently), before that school's own preset is
+# applied on top -- so a school opts in just by adding tone_color (+ its
+# own noise/pulse character), not by repeating every banding value. Void
+# also has a tone_color but re-specifies every one of these same keys
+# itself (its "black hole" look inverts which region is dark, none of
+# these numbers match this template), so applying the defaults first for
+# Void is harmless -- immediately overwritten by its own preset right
+# after. Nature has no tone_color yet, so it correctly skips this and
+# stays the shader's true no-op default (tone_strength 0) until it's
+# actually styled.
+# Deliberately a plain const, NOT built via a merge-helper function call:
+# an earlier version made SCHOOL_SHADER_PRESETS itself a `static var`
+# whose initializer called a small merge function -- that compiled and
+# passed headless tests (a fresh process every run), but broke in the
+# actual editor after a script hot-reload (auto_reload_scripts_on_external_
+# change, already a known quirk here -- see project memory), leaving the
+# dict empty and every school colorless. `const` is always fully resolved
+# before any code runs, with no such timing dependency, so the merge is
+# done at material-build time instead (see get_school_shader_material()),
+# keeping every preset dict below a plain literal.
+const DEFAULT_TWO_TONE_PRESET: Dictionary = {
+	"tone_source": 1, "tone_strength": 1.0, "tone_use_threshold": true,
+	"tone_threshold": 0.53, "tone_softness": 0.12,
+	"fresnel_power": 0.8, "fresnel_strength": 0.9,
+}
+
 # Elemental surface look for spell VFX (SchoolVFXComponent) -- one shared
 # ShaderMaterial per school, same batching-friendly caching as
 # get_school_material() above, just a livelier shader instead of a flat
@@ -51,59 +81,65 @@ const SCHOOL_SHADER_PRESETS: Dictionary = {
 		# distinct color regions -- they blurred into one averaged tint.
 		# Fewer, bigger blotches are legible from further away.
 		"noise_scroll": Vector2(0.15, 0.8), "noise_scale": 2.5, "noise_strength": 0.5,
-		"fresnel_power": 2.0, "fresnel_strength": 0.5, "pulse_speed": 3.0, "pulse_strength": 0.25,
-		# The scrolling noise field constantly moves across the whole sphere
-		# (noise_scroll above) -- blending toward a bright highlight wherever
-		# it currently brightens means different patches of the WHOLE
-		# surface continuously cycle between the two colors as it plays, not
-		# just pulse brighter/dimmer. This is the actual "flame ball" look;
-		# every other school leaves tone_strength at the shader's 0.0
-		# default (a pure no-op).
-		# Base is the standard orange (get_damage_color(FIRE) below, same as
-		# every other UI/damage-number/etc. reference to this school -- keep
-		# that recognizable "old orange" as the anchor color, not swapped
-		# out). Second tone pushed darker/more saturated (was 0.7,0.12,0.04)
-		# and strength raised so the red patches are unmistakable instead of
-		# a faint tint on the orange.
-		"tone_color": Color(0.5, 0.04, 0.01), "tone_strength": 0.8,
+		"pulse_speed": 3.0, "pulse_strength": 0.25,
+		# Base is the standard orange (get_damage_color(FIRE), same as every
+		# other UI/damage-number/etc. reference to this school -- keep that
+		# recognizable "old orange" as the anchor color, not swapped out) at
+		# the center; darker/more saturated red at the rim, same style as
+		# every other two-tone school now.
+		"tone_color": Color(0.5, 0.04, 0.01),
 	},
 	Constants.DamageType.FROST: {
-		# fresnel_power lowered (2.2 -> 1.4) so the blue band covers more of
-		# the visible sphere instead of a thin ring right at the silhouette.
 		"noise_scroll": Vector2(0.05, 0.05), "noise_scale": 10.0, "noise_strength": 0.3,
-		# fresnel_power dropped further (1.4 -> 0.8) so blue covers a real
-		# outer band around the ball, not just a thin line right at the
-		# silhouette edge -- matches the trail's visual weight instead of
-		# being barely there. fresnel_strength raised too, so the rim
-		# actually glows blue instead of just tinting slightly.
-		"fresnel_power": 0.8, "fresnel_strength": 0.9, "pulse_speed": 1.0, "pulse_strength": 0.1,
+		"pulse_speed": 1.0, "pulse_strength": 0.1,
 		# Base (center of the sphere, facing the camera) is near-white; the
-		# rim shifts to blue as tone_source=1 blends by raw fresnel/view
-		# angle instead of the animated noise Fire uses -- a fixed
-		# white-middle, blue-edge look that doesn't drift or scroll.
-		# tone_color started as the original ice-blue (get_damage_color(FROST)
-		# / Constants.SCHOOL_COLORS[FROST]) then darkened a bit further per
-		# feedback -- only affects this shader's rim, not the school's color
-		# everywhere else (UI, damage numbers, etc. still read the original).
+		# rim shifts to blue -- a fixed white-middle, blue-edge look that
+		# doesn't drift or scroll.
 		"albedo_color": Color(0.95, 0.97, 1.0), "emission_color": Color(0.95, 0.97, 1.0),
-		"tone_color": Color(0.22, 0.5, 0.85), "tone_strength": 1.0, "tone_source": 1,
-		# Two clear regions, not a gradient -- threshold picked so roughly the
-		# inner ~70% (by visible area, not just radius) stays white and the
-		# outer ~30% band is blue, with just enough softness to anti-alias
-		# the edge instead of a jagged hard line.
-		"tone_use_threshold": true, "tone_threshold": 0.53, "tone_softness": 0.12,
+		"tone_color": Color(0.22, 0.5, 0.85),
 	},
 	Constants.DamageType.VOID: {
-		"noise_scroll": Vector2(-0.2, 0.1), "noise_scale": 4.0, "noise_strength": 0.7,
-		"fresnel_power": 1.5, "fresnel_strength": 1.1, "pulse_speed": 1.5, "pulse_strength": 0.3,
+		"noise_scroll": Vector2(-0.2, 0.1), "noise_scale": 4.0, "noise_strength": 0.4,
+		"fresnel_power": 1.6, "fresnel_strength": 0.6, "pulse_speed": 1.0, "pulse_strength": 0.15,
+		# Black hole look: dark "event horizon" center, bright purple limb at
+		# the rim -- same tone_source=1 (fresnel/static) + threshold-band
+		# technique as everyone else, just with the two colors' roles swapped
+		# (everyone else: current color center/darker rim; Void: dark-purple
+		# center/bright-purple rim). Base (center, facing camera) is a dark,
+		# saturated variant of the purple, not plain black, so it still reads
+		# as "void" rather than an unlit hole in the mesh.
+		"albedo_color": Color(0.12, 0.02, 0.18), "emission_color": Color(0.12, 0.02, 0.18),
+		# tone_color is the exact current purple (get_damage_color(VOID) /
+		# Constants.SCHOOL_COLORS[VOID]) -- unchanged everywhere else (UI,
+		# damage numbers) -- shown at the rim as tone_strength mixes in.
+		"tone_color": Color(0.8, 0.3, 1.0), "tone_strength": 1.0, "tone_source": 1,
+		# Tighter band than the two-tone default's ~70/30 split -- mostly-dark
+		# sphere with only a thin bright limb reads more "black hole," less
+		# "two-tone ball."
+		"tone_use_threshold": true, "tone_threshold": 0.65, "tone_softness": 0.12,
 	},
 	Constants.DamageType.POISON: {
 		"noise_scroll": Vector2(0.1, 0.4), "noise_scale": 8.0, "noise_strength": 0.45,
-		"fresnel_power": 2.5, "fresnel_strength": 0.4, "pulse_speed": 2.0, "pulse_strength": 0.2,
+		"pulse_speed": 2.0, "pulse_strength": 0.2,
+		# Center stays the flat current green (no albedo_color/emission_color
+		# override needed -- get_school_shader_material() already defaults
+		# those to get_damage_color(POISON) before this preset applies), rim
+		# shifts to a darker, more saturated green.
+		"tone_color": Color(0.1, 0.3, 0.06),
 	},
 	Constants.DamageType.NATURE: {
 		"noise_scroll": Vector2(0.08, 0.12), "noise_scale": 5.0, "noise_strength": 0.3,
-		"fresnel_power": 2.0, "fresnel_strength": 0.5, "pulse_speed": 1.2, "pulse_strength": 0.15,
+		"pulse_speed": 1.2, "pulse_strength": 0.15,
+		# Center overridden to a more saturated green (flat
+		# get_damage_color(NATURE) is fairly yellow/gold-heavy -- fine as
+		# the UI/damage-number color everywhere else, but too gold to read
+		# as "green" here) -- same technique as Frost's near-white
+		# override, just this shader's center, not the school's color
+		# everywhere else. Rim shifts to a woody thorn-brown -- same
+		# two-tone banding style as every other styled school now (opts in
+		# automatically via tone_color, see DEFAULT_TWO_TONE_PRESET above).
+		"albedo_color": Color(0.45, 0.82, 0.15), "emission_color": Color(0.45, 0.82, 0.15),
+		"tone_color": Color(0.35, 0.22, 0.08),
 	},
 }
 const SCHOOL_SURFACE_SHADER := preload("res://scenes/component/school_surface.gdshader")
@@ -129,6 +165,13 @@ static func get_school_shader_material(damage_type: int) -> ShaderMaterial:
 		mat.set_shader_parameter("albedo_color", color)
 		mat.set_shader_parameter("emission_color", color)
 		mat.set_shader_parameter("emission_energy", 1.5)
+		# Schools with a tone_color opt into the shared two-tone banding
+		# mechanics automatically (applied before the school's own preset
+		# so per-school values -- Void's full override, Frost's albedo
+		# override, everyone's tone_color -- always win applying second).
+		if preset.has("tone_color"):
+			for key in DEFAULT_TWO_TONE_PRESET:
+				mat.set_shader_parameter(key, DEFAULT_TWO_TONE_PRESET[key])
 		for key in preset:
 			mat.set_shader_parameter(key, preset[key])
 		_school_shader_materials[damage_type] = mat
