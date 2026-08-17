@@ -39,6 +39,16 @@ func acquire(scene: PackedScene) -> Node:
 func release(node: Node) -> void:
 	node.visible = false
 	_set_collision_shapes(node, false)
+	# Generic duck-typed hook, not every pooled scene implements it (e.g.
+	# DamageNumber3D doesn't) -- `visible = false` above stops a node from
+	# being DRAWN, but nothing about hiding a node stops things like a
+	# GPUParticles3D from continuing to simulate every frame in the
+	# background. spell_projectile_base.gd's `_on_pool_released()` uses this
+	# to tear its particle dressing down immediately instead of leaving it
+	# running, invisible, until this same instance happens to get reused --
+	# see that function's own doc comment.
+	if node.has_method("_on_pool_released"):
+		node._on_pool_released()
 	for key in _pools:
 		var pool = _pools[key]
 		if pool["in_use"].has(node):

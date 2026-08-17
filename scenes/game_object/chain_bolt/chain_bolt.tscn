@@ -8,6 +8,9 @@
 
 [node name="ChainBolt" type="Area3D"]
 script = ExtResource("1")
+preview_allow_ring = true
+preview_ring_filled = true
+preview_school = 4
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("Shape_chain")

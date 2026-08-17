@@ -108,15 +108,21 @@ const SCHOOL_SHADER_PRESETS: Dictionary = {
 		# center/bright-purple rim). Base (center, facing camera) is a dark,
 		# saturated variant of the purple, not plain black, so it still reads
 		# as "void" rather than an unlit hole in the mesh.
-		"albedo_color": Color(0.12, 0.02, 0.18), "emission_color": Color(0.12, 0.02, 0.18),
+		# Darker than the original 0.12/0.02/0.18 -- per feedback the center
+		# needed to read more clearly "dark" now that the bright band below
+		# covers more of the surface (contrast between the two matters more
+		# than either one alone).
+		"albedo_color": Color(0.05, 0.01, 0.09), "emission_color": Color(0.05, 0.01, 0.09),
 		# tone_color is the exact current purple (get_damage_color(VOID) /
 		# Constants.SCHOOL_COLORS[VOID]) -- unchanged everywhere else (UI,
 		# damage numbers) -- shown at the rim as tone_strength mixes in.
 		"tone_color": Color(0.8, 0.3, 1.0), "tone_strength": 1.0, "tone_source": 1,
-		# Tighter band than the two-tone default's ~70/30 split -- mostly-dark
-		# sphere with only a thin bright limb reads more "black hole," less
-		# "two-tone ball."
-		"tone_use_threshold": true, "tone_threshold": 0.65, "tone_softness": 0.12,
+		# tone_threshold lowered from the original 0.65 -- per feedback the
+		# bright band was too thin (only right at the silhouette edge);
+		# raw_fresnel crosses this threshold further from the edge now, so
+		# more of the sphere's surface reads as the lighter outer tone
+		# without changing tone_color itself or the dark center above.
+		"tone_use_threshold": true, "tone_threshold": 0.42, "tone_softness": 0.12,
 	},
 	Constants.DamageType.POISON: {
 		"noise_scroll": Vector2(0.1, 0.4), "noise_scale": 8.0, "noise_strength": 0.45,

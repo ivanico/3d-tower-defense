@@ -209,6 +209,16 @@ with code examples.
 - Releasing a node: hide it, disable its `CollisionShape3D`(s), move it under a
   hidden pool root, return it to the available list. Getting a node reverses
   this and calls a `reset()` method the component/owner script must implement.
+- Hiding a node is NOT the same as stopping its work — `visible = false` stops
+  a node from being drawn, but nothing about it stops a running system (e.g.
+  `GPUParticles3D`) from continuing to simulate every frame while invisible.
+  `ObjectPool.release()` calls `node._on_pool_released()` if the node
+  implements it (duck-typed, most pooled scenes don't need it) — spell
+  projectiles use this to tear down their `SchoolVFXComponent`'s particle
+  dressing (`SchoolVFXComponent.stop()`) immediately on hit, instead of
+  leaving it running invisibly until that pooled instance happens to get
+  reused. Follow this same pattern for any future pooled scene that owns an
+  always-running system of its own.
 
 ---
 

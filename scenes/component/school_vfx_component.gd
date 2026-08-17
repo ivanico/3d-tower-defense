@@ -38,6 +38,27 @@ const PRESETS: Dictionary = {
 		# covered too, not just the top.
 		"direction": Vector3(0, 1, 0), "spread": 35.0, "gravity": Vector3(0, 0.9, 0),
 		"velocity": 0.5, "lifetime": 0.7, "amount": 16,
+		# "direction_follows_travel": a moving projectile (Standard/Chain/Line
+		# AoE Bolt -- see `_configure_school_vfx()` callers) passes its own
+		# world-space backward vector into `configure()`; when it does, THIS
+		# axis is swapped in for both `direction` and `gravity` above (same
+		# magnitude, new heading, just converted to this node's own local
+		# frame -- see `_build_particles()`'s doc comment) so the flame reads
+		# as leaning backward off the mesh, continuously re-wrapping its live
+		# position as it flies, instead of licking straight up. A stationary
+		# Orb never passes that vector, so it keeps the plain "licks upward"
+		# look above unchanged. Generic opt-in preset key, same pattern as
+		# "has_ring"/
+		# "no_aura" -- not Fire-specific machinery.
+		"direction_follows_travel": true,
+		# Opt-in second, SEPARATE particle system (see `_build_trail_particles()`)
+		# -- deliberately world-space, unlike the always-glued aura above, so
+		# it's the one place particles genuinely get left behind at old
+		# positions as the bolt flies, scattering back along the ribbon trail
+		# like embers falling off. 0/absent (every other school) skips it
+		# entirely. Smaller amount than the aura's own 16 -- an accent
+		# scattered along the whole trail, not a second full coat.
+		"trail_amount": 6,
 		# Flat single-color particles read as tinted balls, not fire -- real
 		# flame is hottest (yellow-white) at its base and cools to orange
 		# then deep red as it rises, so each particle shifts through that
@@ -56,6 +77,12 @@ const PRESETS: Dictionary = {
 		"direction": Vector3(0, -1, 0), "spread": 25.0, "gravity": Vector3(0, -0.4, 0),
 		"velocity": 0.15, "lifetime": 1.2, "amount": 8,
 		"particle_color": Color(1.0, 1.0, 1.0),
+		# Trail particles (see PRESETS' comment on Fire's own "trail_amount",
+		# and `_build_trail_particles()`) -- NOT travel-biased like Fire's
+		# (no "direction_follows_travel" here), so they just fall straight
+		# down same as the aura's own "direction"/"gravity" above -- snow
+		# left scattered behind along the ribbon trail as the bolt flies.
+		"trail_amount": 4,
 	},
 	Constants.DamageType.VOID: {
 		"direction": Vector3(0, 0.3, 0), "spread": 60.0, "gravity": Vector3.ZERO,
@@ -82,14 +109,32 @@ const PRESETS: Dictionary = {
 		# whole surface like Fire/every other school -- see
 		# _hemisphere_points() and its use in _build_particles().
 		"emission_top_only": true,
+		# Trail particles (see PRESETS' comment on Fire's own "trail_amount",
+		# and `_build_trail_particles()`) -- NOT travel-biased like Fire's
+		# (no "direction_follows_travel" here), so they just drift straight
+		# up same as the aura's own "direction"/"gravity" above -- motes
+		# left scattered behind along the ribbon trail as the bolt flies.
+		"trail_amount": 4,
 	},
 	Constants.DamageType.NATURE: {
 		"direction": Vector3(0, 0.4, 0), "spread": 40.0, "gravity": Vector3(0, -0.1, 0),
 		"velocity": 0.2, "lifetime": 1.0, "amount": 8,
 		# No ambient aura -- same "no_aura" opt-out as Void, per feedback
 		# that the drifting particle dressing reads as "things coming out
-		# of the orb" and isn't wanted here either.
+		# of the orb" and isn't wanted here either. Independent of
+		# "trail_amount" below -- see `configure()`'s own comment on why
+		# "no_aura" only ever gates the wrap-coat, not the trail.
 		"no_aura": true,
+		# Trail particles (see PRESETS' comment on Fire's own "trail_amount")
+		# -- NOT travel-biased (no "direction_follows_travel" here), so they
+		# reuse this preset's own "direction"/"gravity" above, same as
+		# Poison/Frost's trails do. "shape": "leaf" -- solid leaf silhouette
+		# (see `_get_particle_texture()`'s own doc comment), deliberately
+		# NOT the soft glowing dot every other school's particles use, per
+		# feedback. "tumbles" spins each leaf randomly (see this file's
+		# other particle-builders) so they read as leaves caught in the
+		# bolt's wake, not a uniform stream of identical glyphs.
+		"trail_amount": 5, "shape": "leaf", "tumbles": true,
 	},
 }
 
@@ -116,6 +161,7 @@ static var _color_ramps: Dictionary = {}  # Constants.DamageType -> GradientText
 
 var _damage_type: int = -1
 var _aura: GPUParticles3D
+var _trail_particles: GPUParticles3D
 var _reserved_particles: int = 0
 
 var _trail_mesh: MeshInstance3D
@@ -128,6 +174,30 @@ var _trail_update_timer: float = 0.0
 var _ring_mesh: MeshInstance3D
 const RING_SPIN_SPEED: float = 0.3  # radians/sec, local Y -- subtle, not a spinning top
 
+# Void's stand-in for the accretion disk when `allow_ring` is false -- see
+# `_build_sonic_rings()`'s own doc comment. Index 0 = right at the bolt
+# (bigger, brightest), index 1 = just behind its tail (smaller, fainter).
+var _sonic_rings: Array[MeshInstance3D] = []
+const SONIC_RING_SCALES: Array[float] = [1.0, 0.55]
+const SONIC_RING_ALPHAS: Array[float] = [1.0, 0.5]
+# Tunable sizing/spacing, overridable per-archetype (see `configure()`'s own
+# `sonic_ring_tuning` doc comment) -- these are the DEFAULTS, i.e. what
+# Line AoE Bolt gets since it doesn't pass an override. Standard Bolt passes
+# its own tuned dictionary instead, so retuning one never silently drags
+# the other along with it (they're two different mesh shapes/sizes, so one
+# shared set of numbers was never going to suit both).
+const SONIC_RING_DEFAULT_TUNING: Dictionary = {
+	"radius_scale": 0.5, "outer_scale": 1.6,
+	"front_offset_scale": 0.25, "back_offset_scale": 0.5,
+}
+# How far, in WORLD units, each ring sits from the live position along the
+# travel direction -- positive = forward (toward the nose), negative =
+# backward (toward the tail). Computed once in `_build_sonic_rings()`, one
+# value per ring (index-matched to `_sonic_rings`) so the front and back
+# ring can be tuned independently instead of sharing one offset.
+var _sonic_ring_offsets: Array[float] = []
+var _sonic_ring_backward: Vector3 = Vector3.ZERO
+
 
 ## `search_root` is optional -- auto-discovers the parent's own subtree the
 ## same way `hit_flash_component.gd` does, if not given explicitly. Applies
@@ -136,14 +206,36 @@ const RING_SPIN_SPEED: float = 0.3  # radians/sec, local Y -- subtle, not a spin
 ## mesh count -- callers looping over their model's meshes to set a material
 ## (the old `CombatUtils.get_school_material()` pattern) should call this
 ## ONCE with the model root, not once per mesh.
-## `allow_ring` gates the Void "accretion disk" ring (has_ring preset key)
-## independent of school -- Orb of the Void keeps it (a persistent orbiting
-## body reads as a black hole), but every other archetype passes false so a
-## flying/bouncing/piercing Void projectile doesn't drag a spinning disk
-## behind it. The preset itself stays shared across every archetype (see
-## the file-level doc comment) -- this is a per-*call* override, not a
-## per-school one.
-func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = true) -> void:
+## `allow_ring` gates WHICH ring-style dressing a `has_ring` school (Void)
+## gets, not whether it gets one at all -- Orb of the Void keeps the rigid
+## accretion disk (a persistent orbiting body reads as a black hole), but
+## every other archetype passes false and gets `_build_sonic_rings()`
+## instead (a flying/bouncing/piercing Void object doesn't drag a spinning
+## disk behind it, but per feedback it shouldn't get NOTHING either -- see
+## that function's own doc comment). The preset itself stays shared across
+## every archetype (see the file-level doc comment) -- this is a
+## per-*call* override, not a per-school one.
+## `backward_direction_world` is the same kind of per-*call* override as
+## `allow_ring` -- a plain WORLD-space "opposite of travel" vector (see
+## `spell_projectile_base.gd`'s callers: every archetype just negates its
+## own already-known travel vector, no local-space conversion needed on
+## their end -- `_build_particles()` converts it to this node's own local
+## frame once it gets there). Left at the `Vector3.ZERO` sentinel by Orb,
+## which has no travel direction to speak of -- only presets opting in via
+## "direction_follows_travel" (currently just Fire) ever look at this
+## value at all.
+## `ring_filled` -- per-*call* override, same pattern -- false (default)
+## keeps `_build_ring()`'s donut-shaped accretion disk (Orb: a black hole's
+## own hole in the middle IS the point of that look). Chain Bolt passes
+## true instead -- per feedback its ring should be a solid filled disc, no
+## hole. Only meaningful when `allow_ring` is also true (Orb/Chain Bolt) --
+## ignored otherwise (`_build_sonic_rings()`'s rings are already filled).
+## `sonic_ring_tuning` -- per-*call* override for `_build_sonic_rings()`'s
+## sizing/spacing (see `SONIC_RING_DEFAULT_TUNING`'s own comment on why this
+## is per-archetype, not per-school) -- empty dict (default, Line AoE Bolt)
+## keeps the original numbers; Standard Bolt passes its own tuned dict.
+## Only meaningful when `allow_ring` is false (the sonic-rings path).
+func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = true, backward_direction_world: Vector3 = Vector3.ZERO, ring_filled: bool = false, sonic_ring_tuning: Dictionary = {}) -> void:
 	_damage_type = damage_type
 	if search_root == null:
 		search_root = get_parent()
@@ -156,33 +248,77 @@ func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = 
 
 	_teardown_particles()
 
-	# Mesh radius drives both the aura's emission-sphere size (so particles
-	# spawn spread across the WHOLE surface, not from one point at the
-	# origin -- that single-point-at-center emission was the old "too little
-	# and invisible, only ever looks like it's on top" problem, since a
-	# narrow directional cone from a point reads as a jet, not a coat of
-	# flame around a sphere) and the particle/ribbon sizes, so this component
-	# scales sanely whether it's dressing a small bolt or a bigger orb
-	# instead of hardcoding an orb-specific size.
+	# Mesh radius drives the aura's emission-sphere size (so particles spawn
+	# spread across the WHOLE surface, not from one point at the origin --
+	# that single-point-at-center emission was the old "too little and
+	# invisible, only ever looks like it's on top" problem, since a narrow
+	# directional cone from a point reads as a jet, not a coat of flame
+	# around a sphere) and the particle sizes, so this component scales
+	# sanely whether it's dressing a small bolt or a bigger orb instead of
+	# hardcoding an orb-specific size.
 	var mesh_radius := _get_mesh_radius(meshes)
+	# This node's own local-frame AABB (not just `mesh_radius`, a single
+	# scalar collapsed from the longest axis) -- see `_get_mesh_local_aabb()`'s
+	# own doc comment for why a rotation-and-offset-aware box is required.
+	# Always computed now (not just for the box-emission particle path) --
+	# the trail's own starting width below is driven by this mesh's real X
+	# extent, same generic mechanism, no per-archetype special-casing.
+	var mesh_aabb := _get_mesh_local_aabb(meshes)
 
 	var preset: Dictionary = PRESETS.get(damage_type, PRESETS[Constants.DamageType.VOID])
-	_build_trail(mesh_radius)
-	if preset.get("has_ring", false) and allow_ring:
-		_build_ring(mesh_radius)
+	_build_trail(mesh_aabb.size.x)
+	if preset.get("has_ring", false):
+		if allow_ring:
+			_build_ring(mesh_radius, ring_filled)
+		else:
+			_build_sonic_rings(mesh_aabb, backward_direction_world, sonic_ring_tuning)
 
-	# "no_aura" opts a school out of the ambient particle dressing entirely
-	# (e.g. Void -- a black hole doesn't shed particles, the ring is its own
-	# ambient effect) -- generic preset key, same as "has_ring" above.
+	var trail_amount: int = preset.get("trail_amount", 0)
+
+	# "no_aura" opts a school out of the ambient WRAP-COAT dressing
+	# specifically (e.g. Void -- a black hole doesn't shed particles, the
+	# ring is its own ambient effect; Nature -- per feedback the drifting
+	# coat reads as "things coming out of the orb"). Deliberately does NOT
+	# gate "trail_amount" below -- Nature keeps "no_aura" but still wants
+	# its own trailing leaves, so the two are independent.
 	if not preset.get("no_aura", false):
-		_aura = _build_particles(preset.amount, preset.lifetime, preset, mesh_radius)
+		_aura = _build_particles(preset.amount, preset.lifetime, preset, mesh_radius, mesh_aabb, backward_direction_world)
 		if CombatUtils.try_reserve_particles(preset.amount):
 			_reserved_particles = preset.amount
 			_aura.emitting = true
-	# else: shader dressing above still applies -- only the particle
-	# dressing is skipped when the global budget is already spent. The trail
-	# mesh isn't a GPUParticles3D and doesn't draw from this budget -- it's
-	# one small hand-built mesh, not a particle count.
+	# "trail_amount" -- see PRESETS' own comment on Fire's/Poison's/Frost's/
+	# Nature's keys -- a second, separate, deliberately world-space system,
+	# layered ON TOP of the wrap-coat above when that's also present, so
+	# particles actually get left behind along the ribbon trail. Doesn't
+	# require `backward_direction_world` itself -- only the travel-biased
+	# schools (Fire) need that, `_build_trail_particles()` falls back to the
+	# preset's own direction/gravity otherwise (Poison/Frost/Nature).
+	# Reserved/emitted independently of the wrap-coat's own reservation --
+	# either can degrade under budget pressure without taking the other down.
+	if trail_amount > 0:
+		_trail_particles = _build_trail_particles(trail_amount, preset.lifetime, preset, mesh_radius, mesh_aabb, backward_direction_world)
+		if CombatUtils.try_reserve_particles(trail_amount):
+			_reserved_particles += trail_amount
+			_trail_particles.emitting = true
+	# else (both skipped): shader dressing above still applies -- only the
+	# particle dressing is skipped when the global budget is already spent.
+	# The trail mesh isn't a GPUParticles3D and doesn't draw from this
+	# budget -- it's one small hand-built mesh, not a particle count.
+
+
+## Public entry point for a caller to fully tear down this component's VFX
+## OUTSIDE of a normal `configure()` cycle -- specifically, "this spell
+## object was just pool-released (hidden), not necessarily about to be
+## reused" (see `spell_projectile_base.gd`'s `_on_pool_released()`).
+## Without this, a hidden-but-still-pooled instance's `GPUParticles3D`
+## children keep `emitting = true` and keep being simulated even though
+## `visible = false` (set by `ObjectPool.release()`) already stops them
+## from being DRAWN -- wasted GPU work, for particles nobody sees, for
+## however long the instance then sits idle in the pool before its next
+## shot. Just calls the exact same teardown `configure()` already runs
+## before every rebuild -- this is that teardown with no rebuild after.
+func stop() -> void:
+	_teardown_particles()
 
 
 ## Rough world-space radius of the dressed mesh(es), used to size the aura's
@@ -205,6 +341,46 @@ func _get_mesh_radius(meshes: Array) -> float:
 	return maxf(radius, 0.05)
 
 
+## Bounding box of the dressed mesh(es), expressed in THIS node's own local
+## frame -- unlike `_get_mesh_radius()` above (a single scalar, immune to
+## rotation), a box-shaped emission volume needs correctly-ORIENTED axes,
+## and every bolt archetype's `Model` child carries an extra local rotation
+## (`model_rotation_degrees`) that `SchoolVFXComponent` -- a sibling of
+## `Model`, not its parent -- never inherits. Reading `get_aabb().size`
+## straight off the mesh and using those numbers as if they were already
+## this node's own X/Y/Z (the previous version of this function) silently
+## swaps/misaims axes whenever that rotation is nonzero, i.e. on every
+## current archetype -- the box ends up shaped for the mesh's UNROTATED
+## orientation, floating off to the side of the actual (rotated) mesh
+## instead of wrapping it. Transforming each corner of the mesh's own AABB
+## through `self.global_transform.affine_inverse() * mesh_inst.global_transform`
+## bakes in that relative rotation -- and any off-center mesh origin, since
+## corners are used directly instead of assuming the mesh is centered on
+## its own local (0,0,0) -- before measuring the result, so the box comes
+## out correctly shaped AND positioned regardless of how the mesh sits
+## relative to this node.
+func _get_mesh_local_aabb(meshes: Array) -> AABB:
+	var to_self := global_transform.affine_inverse()
+	var result := AABB()
+	var first := true
+	for mi in meshes:
+		var mesh_inst := mi as MeshInstance3D
+		var mesh_to_self := to_self * mesh_inst.global_transform
+		var aabb: AABB = mesh_inst.get_aabb()
+		for corner_idx in 8:
+			var corner := aabb.position + Vector3(
+				aabb.size.x * float(corner_idx & 1),
+				aabb.size.y * float((corner_idx >> 1) & 1),
+				aabb.size.z * float((corner_idx >> 2) & 1))
+			var local_corner: Vector3 = mesh_to_self * corner
+			if first:
+				result = AABB(local_corner, Vector3.ZERO)
+				first = false
+			else:
+				result = result.expand(local_corner)
+	return result
+
+
 ## `configure()` can be called more than once on the same instance -- e.g.
 ## the editor preview below switching schools -- and must not leak budget or
 ## pile up duplicate particle children each time. `remove_child()` first,
@@ -221,6 +397,10 @@ func _teardown_particles() -> void:
 		remove_child(_aura)
 		_aura.queue_free()
 		_aura = null
+	if _trail_particles != null:
+		remove_child(_trail_particles)
+		_trail_particles.queue_free()
+		_trail_particles = null
 	if _trail_mesh != null:
 		remove_child(_trail_mesh)
 		_trail_mesh.queue_free()
@@ -229,6 +409,11 @@ func _teardown_particles() -> void:
 		remove_child(_ring_mesh)
 		_ring_mesh.queue_free()
 		_ring_mesh = null
+	for ring in _sonic_rings:
+		if ring != null:
+			remove_child(ring)
+			ring.queue_free()
+	_sonic_rings.clear()
 	_trail_positions.clear()
 	_trail_ages.clear()
 	_trail_elapsed = 0.0
@@ -269,17 +454,133 @@ static func _points_to_texture(points: PackedVector3Array) -> ImageTexture:
 ## (EMISSION_SHAPE_SPHERE_SURFACE) instead of a single point at the origin,
 ## so the look wraps all the way around the mesh -- including the underside
 ## -- rather than jetting from one spot.
-func _build_particles(amount: int, lifetime: float, preset: Dictionary, mesh_radius: float) -> GPUParticles3D:
+##
+## `local_coords = true` (always, below) rigidly ties every particle to the
+## node's CURRENT transform every frame -- this is what makes the aura read
+## as a coat continuously wrapping the mesh, moving with it, instead of a
+## discrete trail of puffs left behind in world space (that was tried --
+## `local_coords = false` -- and rejected: at this project's bolt speeds
+## the mesh outruns its own particles almost immediately, so only 1-2 stray
+## particles are ever near the mesh at once, and Godot's particle
+## `visibility_aabb` doesn't grow to cover a fast-moving emitter's world-
+## space trail either, both compounding into a sparse, mostly-invisible
+## result -- nothing like a firebolt). A school opting into
+## "direction_follows_travel" still gets a backward-biased `direction`
+## (see below), just applied in this node's own LOCAL frame every frame
+## rather than baked into a single world-space snapshot at spawn -- the
+## coat re-wraps the mesh's live position continuously, "leaning" back
+## along the travel axis, same as Orb's plain "licks upward" but aimed
+## opposite of travel instead of world-up.
+func _build_particles(amount: int, lifetime: float, preset: Dictionary, mesh_radius: float, mesh_aabb: AABB = AABB(), backward_direction_world: Vector3 = Vector3.ZERO) -> GPUParticles3D:
+	var follows_travel: bool = preset.get("direction_follows_travel", false) and backward_direction_world != Vector3.ZERO
 	var p := GPUParticles3D.new()
 	p.name = "Aura"
 	p.amount = amount
 	p.lifetime = lifetime
 	p.one_shot = false
 	p.emitting = false  # gated on the budget check in configure()
-	p.local_coords = true  # aura follows the mesh; particles emitted from and drifting relative to it
+	p.local_coords = true  # see this function's own doc comment above
 
-	var quad := QuadMesh.new()
+	# "particle_color" lets a school's particle dressing use a different tint
+	# than its own surface (e.g. Frost: white snowflakes over a blue/white
+	# sphere, not blue-on-blue) -- falls back to the usual school color.
+	var color: Color = preset.get("particle_color", CombatUtils.get_damage_color(_damage_type))
 	var particle_size: float = clampf(mesh_radius * 0.5, 0.04, 0.4)
+	p.draw_pass_1 = _build_particle_quad(preset, particle_size, color)
+
+	var proc := ParticleProcessMaterial.new()
+	# "emission_top_only" confines spawn points to the upper hemisphere
+	# (Poison) instead of the whole surface (every other school's default,
+	# e.g. Fire's deliberate all-sides wrap) -- direction/spread/gravity
+	# below are unaffected, so this only changes WHERE particles spawn, not
+	# how they move afterward.
+	if preset.get("emission_top_only", false):
+		proc.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINTS
+		var hemisphere_points := _hemisphere_points(mesh_radius)
+		proc.emission_point_count = hemisphere_points.size()
+		proc.emission_point_texture = _points_to_texture(hemisphere_points)
+	elif follows_travel:
+		# Box shaped to the mesh's own AABB, NOT `EMISSION_SHAPE_SPHERE_SURFACE`
+		# with the single averaged `mesh_radius` the plain-Orb branch below
+		# uses -- that scalar is half the mesh's LONGEST axis, so on a long
+		# thin mesh (the Line AoE Bolt's ~2.4m lance) it wraps a sphere far
+		# bigger than the mesh's actual width/height, spawning particles well
+		# off to the sides where there's no real geometry ("particles coming
+		# out of nothing"). A box sized to the real per-axis extents instead
+		# spawns particles across the mesh's own true footprint -- nose,
+		# tail, AND both side edges -- same "wraps the whole mesh" look the
+		# plain branch has, just shaped correctly for a non-spherical mesh.
+		# `emission_box_extents` alone is always centered on THIS node's own
+		# local origin -- `mesh_aabb` (see `_get_mesh_local_aabb()`) already
+		# accounts for the mesh possibly sitting off-center relative to that
+		# origin, so `emission_shape_offset` recenters the box on the mesh's
+		# actual middle instead of silently assuming the two coincide.
+		proc.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		var box_extents: Vector3 = mesh_aabb.size * 0.5
+		box_extents.x = maxf(box_extents.x, 0.05)
+		box_extents.y = maxf(box_extents.y, 0.05)
+		box_extents.z = maxf(box_extents.z, 0.05)
+		proc.emission_box_extents = box_extents
+		proc.emission_shape_offset = mesh_aabb.get_center()
+	else:
+		proc.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE_SURFACE
+		proc.emission_sphere_radius = mesh_radius
+	var launch_direction: Vector3 = preset.direction
+	var launch_gravity: Vector3 = preset.gravity
+	# Swap the authored "up" axis for the caller's backward vector, keeping
+	# each value's own original magnitude (0.9 gravity strength, etc.) --
+	# only the heading changes, so this reads as the same flame "kick," just
+	# aimed behind the bolt instead of above it. The caller hands this in as
+	# a plain WORLD-space vector (it's the simplest thing for every
+	# archetype to compute -- just negate its own already-known travel
+	# vector, no local-space math needed on that end), but `local_coords =
+	# true` above means the process material's `direction`/`gravity` are
+	# read in THIS node's own local frame -- `global_transform.basis`
+	# converts world to local here, once, so every caller stays simple.
+	if follows_travel:
+		var backward_local: Vector3 = global_transform.basis.orthonormalized().inverse() * backward_direction_world
+		backward_local = backward_local.normalized()
+		launch_direction = backward_local
+		launch_gravity = backward_local * preset.gravity.length()
+	proc.direction = launch_direction
+	proc.spread = preset.spread
+	proc.gravity = launch_gravity
+	proc.initial_velocity_min = preset.velocity * 0.7
+	proc.initial_velocity_max = preset.velocity
+	proc.scale_min = 0.6
+	proc.scale_max = 1.2
+	# "tumbles" -- generic preset key (currently only Nature's leaves) --
+	# random initial billboard rotation plus a slow continuous spin, so
+	# every particle doesn't render at the same fixed orientation. Harmless
+	# no-op for round shapes (a rotated circle looks the same), but matters
+	# for a directional shape like "leaf" -- without this every leaf would
+	# point the same way, reading as a repeated glyph instead of debris.
+	if preset.get("tumbles", false):
+		proc.angle_min = 0.0
+		proc.angle_max = 360.0
+		proc.angular_velocity_min = -90.0
+		proc.angular_velocity_max = 90.0
+	# Multi-tone schools (currently just Fire) shift color over each
+	# particle's own lifetime via a gradient instead of staying one flat
+	# tint; proc.color stays white so the ramp isn't multiplied/darkened.
+	if preset.has("color_ramp"):
+		proc.color_ramp = _get_color_ramp(_damage_type, preset.color_ramp)
+		proc.color = Color.WHITE
+	else:
+		proc.color = color
+	p.process_material = proc
+
+	add_child(p)
+	return p
+
+
+## Shared billboard-quad "look" (unshaded, alpha, glow) for any
+## GPUParticles3D this component builds -- the always-glued aura above and
+## the world-space trail particles below use the exact same visual
+## dressing, just driven by different process materials (physics), so this
+## is the one place that dressing is authored.
+func _build_particle_quad(preset: Dictionary, particle_size: float, color: Color) -> QuadMesh:
+	var quad := QuadMesh.new()
 	quad.size = Vector2(particle_size, particle_size)
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -293,10 +594,6 @@ func _build_particles(amount: int, lifetime: float, preset: Dictionary, mesh_rad
 	# of what the process material says (Godot docs, ParticleProcessMaterial).
 	mat.vertex_color_use_as_albedo = true
 	mat.albedo_color = Color.WHITE  # neutral -- actual tint comes from proc.color/color_ramp below
-	# "particle_color" lets a school's particle dressing use a different tint
-	# than its own surface (e.g. Frost: white snowflakes over a blue/white
-	# sphere, not blue-on-blue) -- falls back to the usual school color.
-	var color: Color = preset.get("particle_color", CombatUtils.get_damage_color(_damage_type))
 	mat.emission_enabled = true
 	mat.emission = color
 	# Emission doesn't pick up the per-particle color_ramp (that's an ALBEDO-
@@ -305,32 +602,83 @@ func _build_particles(amount: int, lifetime: float, preset: Dictionary, mesh_rad
 	# schools get a softer glow and let ALBEDO's gradient carry the look.
 	mat.emission_energy_multiplier = 1.1 if preset.has("color_ramp") else 2.0
 	quad.material = mat
-	p.draw_pass_1 = quad
+	return quad
+
+
+## Second, SEPARATE particle system, layered on top of the aura above, not
+## a replacement for it -- see PRESETS' "trail_amount" comment for why:
+## the aura is always `local_coords = true` (glued to the mesh, by design,
+## see `_build_particles()`'s own doc comment), which by construction can
+## never leave anything behind at an old position. This system is the one
+## place that's actually wanted -- `local_coords = false`, so particles
+## genuinely get left scattered along the ribbon trail as the bolt flies,
+## reading as embers falling off, not just a coat around the mesh.
+## Reuses the same mesh-footprint emission box as the aura's own
+## "direction_follows_travel" branch (spawns across the real silhouette,
+## not one point at the origin), just a smaller `amount`/particle size --
+## an accent scattered along the trail, not a second full coat.
+## Direction/gravity are world-space, used AS GIVEN, no local-frame
+## conversion needed here (contrast `_build_particles()`'s own conversion,
+## required only because ITS particles are local-space) -- but which
+## values depend on the school: "direction_follows_travel" (Fire) biases
+## backward off the caller's own travel vector plus an extra downward kick
+## (embers falling off behind it); every other school with a "trail_amount"
+## (Poison, Frost) has no travel bias at all -- it just reuses its own
+## `direction`/`gravity` unchanged, the exact same up/down drift its aura
+## already uses, just left behind in world space instead of staying glued
+## to the mesh.
+func _build_trail_particles(amount: int, lifetime: float, preset: Dictionary, mesh_radius: float, mesh_aabb: AABB, backward_direction_world: Vector3) -> GPUParticles3D:
+	var p := GPUParticles3D.new()
+	p.name = "TrailParticles"
+	p.amount = amount
+	p.lifetime = lifetime
+	p.one_shot = false
+	p.emitting = false  # gated on the budget check in configure()
+	p.local_coords = false  # see this function's own doc comment above
+	# `visibility_aabb` is a LOCAL-space box, re-transformed by this node's
+	# CURRENT position every frame, that Godot uses to decide whether to
+	# draw the system AT ALL -- it does not grow automatically. Godot's
+	# small built-in default only covers particles that stay near the node,
+	# which these deliberately don't once the bolt's flown a meter or two --
+	# sized generously (this project's arena is ~40x57 units) rather than
+	# tuned tightly to one archetype's speed.
+	p.visibility_aabb = AABB(Vector3(-20, -20, -20), Vector3(40, 40, 40))
+
+	var color: Color = preset.get("particle_color", CombatUtils.get_damage_color(_damage_type))
+	var particle_size: float = clampf(mesh_radius * 0.35, 0.03, 0.25)
+	p.draw_pass_1 = _build_particle_quad(preset, particle_size, color)
 
 	var proc := ParticleProcessMaterial.new()
-	# "emission_top_only" confines spawn points to the upper hemisphere
-	# (Poison) instead of the whole surface (every other school's default,
-	# e.g. Fire's deliberate all-sides wrap) -- direction/spread/gravity
-	# below are unaffected, so this only changes WHERE particles spawn, not
-	# how they move afterward.
-	if preset.get("emission_top_only", false):
-		proc.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINTS
-		var hemisphere_points := _hemisphere_points(mesh_radius)
-		proc.emission_point_count = hemisphere_points.size()
-		proc.emission_point_texture = _points_to_texture(hemisphere_points)
+	proc.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	var box_extents: Vector3 = mesh_aabb.size * 0.5
+	box_extents.x = maxf(box_extents.x, 0.05)
+	box_extents.y = maxf(box_extents.y, 0.05)
+	box_extents.z = maxf(box_extents.z, 0.05)
+	proc.emission_box_extents = box_extents
+	proc.emission_shape_offset = mesh_aabb.get_center()
+	# See this function's own doc comment above -- Fire leans backward off
+	# the caller's own travel vector (with an extra downward kick so it
+	# reads as "falling off," not just "drifting straight back"); every
+	# other school with a "trail_amount" just reuses its own preset
+	# direction/gravity unchanged, same as its aura already does.
+	if preset.get("direction_follows_travel", false) and backward_direction_world != Vector3.ZERO:
+		var backward := backward_direction_world.normalized()
+		proc.direction = backward
+		proc.gravity = backward * preset.gravity.length() + Vector3(0, -1.0, 0)
 	else:
-		proc.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE_SURFACE
-		proc.emission_sphere_radius = mesh_radius
-	proc.direction = preset.direction
+		proc.direction = preset.direction
+		proc.gravity = preset.gravity
 	proc.spread = preset.spread
-	proc.gravity = preset.gravity
-	proc.initial_velocity_min = preset.velocity * 0.7
+	proc.initial_velocity_min = preset.velocity * 0.5
 	proc.initial_velocity_max = preset.velocity
-	proc.scale_min = 0.6
-	proc.scale_max = 1.2
-	# Multi-tone schools (currently just Fire) shift color over each
-	# particle's own lifetime via a gradient instead of staying one flat
-	# tint; proc.color stays white so the ramp isn't multiplied/darkened.
+	proc.scale_min = 0.5
+	proc.scale_max = 1.0
+	# See `_build_particles()`'s own comment on "tumbles" -- same generic key.
+	if preset.get("tumbles", false):
+		proc.angle_min = 0.0
+		proc.angle_max = 360.0
+		proc.angular_velocity_min = -90.0
+		proc.angular_velocity_max = 90.0
 	if preset.has("color_ramp"):
 		proc.color_ramp = _get_color_ramp(_damage_type, preset.color_ramp)
 		proc.color = Color.WHITE
@@ -349,7 +697,15 @@ func _build_particles(amount: int, lifetime: float, preset: Dictionary, mesh_rad
 ## stays at world-space identity, so vertices can be written directly in
 ## world-space coordinates from `_trail_positions` without having to
 ## re-derive them relative to a parent that's moved since they were recorded.
-func _build_trail(mesh_radius: float) -> void:
+## `mesh_width` is the dressed mesh's own real extent along this node's
+## local X (see `configure()`'s `mesh_aabb`, computed via
+## `_get_mesh_local_aabb()`) -- the ribbon STARTS at (approximately) that
+## full width and tapers to nothing across `TRAIL_LIFETIME`, same taper as
+## always (see `_rebuild_trail_mesh()`). Driven by the mesh's real geometry
+## instead of a fixed/guessed fraction, so a wide mesh (Line AoE Bolt's
+## lance) naturally gets a wide trail and a narrow mesh (Standard Bolt)
+## naturally gets a narrow one -- no per-archetype special-casing needed.
+func _build_trail(mesh_width: float) -> void:
 	var mesh_inst := MeshInstance3D.new()
 	mesh_inst.name = "Trail"
 	mesh_inst.top_level = true
@@ -369,7 +725,7 @@ func _build_trail(mesh_radius: float) -> void:
 
 	add_child(mesh_inst)
 	_trail_mesh = mesh_inst
-	_trail_width = clampf(mesh_radius * 0.6, 0.03, 0.3)
+	_trail_width = maxf(mesh_width, 0.03)
 	_trail_positions.clear()
 	_trail_ages.clear()
 	_trail_elapsed = 0.0
@@ -388,35 +744,36 @@ func _build_trail(mesh_radius: float) -> void:
 	_trail_update_timer = TRAIL_UPDATE_INTERVAL
 
 
-## Flat "accretion disk" ring encircling the mesh -- a real black hole's
-## defining visual, and a fragment shader alone can't conjure geometry a
-## mesh doesn't have (same reasoning the file-level doc comment above gives
-## for particles+trail). Built once per configure(), gated on the
-## "has_ring" preset key. Lies flat in the local XZ plane (horizontal) --
-## this project's camera is a fixed angle, so a flat ring reads as a tilted
-## ellipse from it without needing per-frame camera-facing math, same
-## "flat, ground-parallel" shortcut the trail below already relies on for
-## the same reason. Colored via CombatUtils.get_damage_color() -- the exact
-## same bright color the sphere's own rim uses, by construction, not a
-## separately-authored ring color.
-func _build_ring(mesh_radius: float) -> void:
-	var mesh_inst := MeshInstance3D.new()
-	mesh_inst.name = "Ring"
-
-	var inner_radius: float = mesh_radius  # touches the sphere's own silhouette, no gap
-	var outer_radius: float = mesh_radius * 2.0
+## Shared annulus mesh builder -- used by both the Orb's rigid accretion
+## disk (`_build_ring()`) and the traveling sonic-boom rings
+## (`_build_sonic_rings()`) below. `basis_a`/`basis_b` are two perpendicular
+## unit vectors spanning the ring's PLANE -- default (RIGHT, FORWARD) lies
+## flat in local XZ (horizontal), the "fixed-camera-angle reads it as a
+## tilted ellipse" shortcut `_build_ring()` uses for a stationary orb (see
+## that function's own doc comment). `_build_sonic_rings()` passes a
+## different pair instead -- perpendicular to the bolt's OWN travel
+## direction, so the ring faces along the flight path like a hoop the bolt
+## flies through (a real sound-barrier shockwave ring), not a flat disk lying
+## under it -- a ground-parallel ring next to this project's overhead-ish
+## camera reads as a flat glow/shadow patch, not a recognizable ring, which
+## is exactly the bug this parameter exists to fix. `inner_alpha` lets a
+## fainter/older ring (sonic rings further back along the trail) start
+## partway-faded at its own inner edge instead of fully opaque -- the outer
+## edge always fades the rest of the way to 0 regardless, same per-vertex-
+## alpha technique the trail uses.
+static func _build_ring_mesh(inner_radius: float, outer_radius: float, color: Color, inner_alpha: float = 1.0, basis_a: Vector3 = Vector3.RIGHT, basis_b: Vector3 = Vector3.FORWARD) -> ArrayMesh:
 	var segments := 32
-
 	var verts := PackedVector3Array()
 	var colors := PackedColorArray()
-	var color := CombatUtils.get_damage_color(_damage_type)
+	var inner_color := color
+	inner_color.a = inner_alpha
 	var outer_color := color
-	outer_color.a = 0.0  # fades out toward the outer edge, same per-vertex-alpha technique the trail uses below
+	outer_color.a = 0.0
 	for i in segments + 1:
 		var angle: float = TAU * float(i) / float(segments)
-		var dir := Vector3(cos(angle), 0.0, sin(angle))
+		var dir := basis_a * cos(angle) + basis_b * sin(angle)
 		verts.append(dir * inner_radius)
-		colors.append(color)
+		colors.append(inner_color)
 		verts.append(dir * outer_radius)
 		colors.append(outer_color)
 
@@ -426,8 +783,12 @@ func _build_ring(mesh_radius: float) -> void:
 	arrays[Mesh.ARRAY_COLOR] = colors
 	var arr_mesh := ArrayMesh.new()
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLE_STRIP, arrays)
-	mesh_inst.mesh = arr_mesh
+	return arr_mesh
 
+
+## Shared unshaded/emissive/alpha ring material -- same look for both
+## `_build_ring()` and `_build_sonic_rings()`.
+static func _build_ring_material(color: Color) -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -437,10 +798,144 @@ func _build_ring(mesh_radius: float) -> void:
 	mat.emission_enabled = true
 	mat.emission = color
 	mat.emission_energy_multiplier = 2.0
-	mesh_inst.material_override = mat
+	return mat
 
+
+## Flat "accretion disk" ring encircling the mesh -- a real black hole's
+## defining visual, and a fragment shader alone can't conjure geometry a
+## mesh doesn't have (same reasoning the file-level doc comment above gives
+## for particles+trail). Built once per configure(), gated on the
+## "has_ring" preset key AND `allow_ring` (see `configure()`'s own doc
+## comment on that param -- a flying/bouncing/piercing Void object gets
+## `_build_sonic_rings()` below instead of this). Colored via
+## CombatUtils.get_damage_color() -- the exact same bright color the
+## sphere's own rim uses, by construction, not a separately-authored ring
+## color. `filled` (see `configure()`'s own doc comment on `ring_filled`) --
+## false keeps the donut/annulus shape (Orb: the hole IS the black hole),
+## true collapses the inner edge to a solid disc instead (Chain Bolt).
+func _build_ring(mesh_radius: float, filled: bool = false) -> void:
+	var mesh_inst := MeshInstance3D.new()
+	mesh_inst.name = "Ring"
+	var color := CombatUtils.get_damage_color(_damage_type)
+	# touches the sphere's own silhouette, no gap -- unless `filled`, which
+	# collapses the inner edge to the center point instead (same technique
+	# `_build_sonic_rings()` uses for its own filled discs).
+	var inner_radius: float = 0.0 if filled else mesh_radius
+	mesh_inst.mesh = _build_ring_mesh(inner_radius, mesh_radius * 2.0, color)
+	mesh_inst.material_override = _build_ring_material(color)
 	add_child(mesh_inst)
 	_ring_mesh = mesh_inst
+
+
+## Void's stand-in for the accretion disk when `allow_ring` is false -- 2
+## rings, BOTH anchored close to the bolt itself (not spread far along the
+## trail -- an earlier version sampled `_trail_positions` history for a 3rd,
+## further-back ring, but that only became correctly positioned once the
+## trail had built up some length, reading as "appears late"; per feedback,
+## simpler and more reliable): index 0 sits AT the bolt's own live position,
+## sized to the mesh's actual cross-section so its inner edge touches the
+## mesh with no gap ("around the bolt"); index 1 is smaller/fainter and
+## sits a small fixed distance behind, along the SAME travel direction, at
+## roughly the bolt's own tail ("a smaller one at the end of the bolt").
+## Reads as the shockwave rings a jet leaves behind breaking the sound
+## barrier, per feedback -- a flying Void object shouldn't drag a rigid
+## disk behind it (see `_build_ring()`'s own doc comment on why
+## `allow_ring` exists), but shouldn't get NOTHING either.
+##
+## Faces ALONG the travel direction (perpendicular-to-travel plane, not
+## flat/ground-parallel) -- a real sound-barrier shockwave is a ring the
+## aircraft flies THROUGH. NOTE: a rigid flat plane like this IS edge-on
+## (hard to see) from whatever viewing angle happens to line up with it --
+## known tradeoff, kept anyway per feedback (preferred over the
+## ground-parallel alternative, which never goes edge-on but also never
+## reads as a real "ring" from most angles).
+##
+## `mesh_aabb` (see `configure()`'s own comment on it) drives the ring's
+## radius (its cross-section perpendicular to travel -- X/Y extent, NOT
+## `mesh_radius`'s longest-axis scalar, which is dominated by the mesh's
+## LENGTH on an elongated shape like the Line AoE Bolt's lance and left the
+## ring floating well outside the mesh's actual width).
+##
+## `radius_scale`/`outer_scale`/`front_offset_scale`/`back_offset_scale`
+## (read from the `tuning` dict, see `SONIC_RING_DEFAULT_TUNING`'s own
+## comment on why this is per-*call*, not a hardcoded constant) each apply
+## to BOTH rings' base sizing, but the front/back OFFSETS are independent
+## per ring -- `front_offset_scale` moves ring 0 forward, `back_offset_scale`
+## moves ring 1 backward, from the SAME live position, not from each other
+## -- so tuning one never drags the other along with it.
+##
+## `top_level = true`, same as `_trail_mesh` -- world-space points, not
+## glued to this node's own (moving) local transform; repositioned every
+## frame off the LIVE position in `_update_sonic_rings()`, not sampled from
+## history, so both rings are correctly placed from the very first frame.
+## Cheap: 2 small STATIC meshes built once here, no `GPUParticles3D`, no
+## particle-budget cost.
+func _build_sonic_rings(mesh_aabb: AABB, backward_direction_world: Vector3, tuning: Dictionary = {}) -> void:
+	var color := CombatUtils.get_damage_color(_damage_type)
+	var backward: Vector3 = backward_direction_world
+	if backward.length_squared() < 0.0001:
+		backward = Vector3.BACK
+	backward = backward.normalized()
+	var forward: Vector3 = -backward
+	var basis_a: Vector3 = forward.cross(Vector3.UP)
+	if basis_a.length_squared() < 0.0001:
+		basis_a = Vector3.RIGHT
+	basis_a = basis_a.normalized()
+	var basis_b: Vector3 = forward.cross(basis_a).normalized()
+	var radius_scale: float = tuning.get("radius_scale", SONIC_RING_DEFAULT_TUNING.radius_scale)
+	var outer_scale: float = tuning.get("outer_scale", SONIC_RING_DEFAULT_TUNING.outer_scale)
+	var front_offset_scale: float = tuning.get("front_offset_scale", SONIC_RING_DEFAULT_TUNING.front_offset_scale)
+	var back_offset_scale: float = tuning.get("back_offset_scale", SONIC_RING_DEFAULT_TUNING.back_offset_scale)
+	# Half the mesh's actual width/height (perpendicular to travel), NOT
+	# `mesh_radius` (half the LONGEST axis -- on a long thin mesh that's
+	# dominated by length, not the cross-section a travel-facing ring
+	# actually needs to hug). Floored so a degenerate/tiny mesh still gets a
+	# visible ring instead of a zero-size one.
+	var cross_radius: float = maxf(maxf(mesh_aabb.size.x, mesh_aabb.size.y) * radius_scale, 0.05)
+	_sonic_ring_backward = backward
+	_sonic_ring_offsets = [mesh_aabb.size.z * front_offset_scale, -mesh_aabb.size.z * back_offset_scale]
+	for i in SONIC_RING_SCALES.size():
+		var mesh_inst := MeshInstance3D.new()
+		mesh_inst.name = "SonicRing%d" % i
+		mesh_inst.top_level = true
+		var scale: float = SONIC_RING_SCALES[i]
+		# FILLED disc, not an annulus -- inner radius 0 collapses the strip's
+		# inner edge to a single center point per angle, same technique the
+		# particle textures already use for a solid-to-faded circle (see
+		# `_get_particle_texture()`'s "circle" shape) -- per feedback, a
+		# donut with visible daylight through the middle read wrong; a solid
+		# glow the mesh sits inside of is what was wanted.
+		var inner_radius: float = 0.0
+		var outer_radius: float = cross_radius * scale * outer_scale
+		mesh_inst.mesh = _build_ring_mesh(inner_radius, outer_radius, color, SONIC_RING_ALPHAS[i], basis_a, basis_b)
+		mesh_inst.material_override = _build_ring_material(color)
+		# `add_child()` BEFORE setting `global_position` -- the setter reads
+		# the node's CURRENT global transform to modify just the origin, and
+		# a node not yet inside the tree has none yet (Godot logs
+		# "!is_inside_tree()" and silently substitutes identity instead of
+		# actually erroring, which is what made this easy to miss until the
+		# console showed it).
+		add_child(mesh_inst)
+		mesh_inst.global_position = global_position
+		_sonic_rings.append(mesh_inst)
+
+
+## Repositions the sonic rings (see `_build_sonic_rings()`) every physics
+## frame -- cheap, just 1-2 `global_position` assignments on already-built
+## STATIC meshes, no mesh rebuild. Each ring tracks this frame's live
+## position plus its OWN entry in `_sonic_ring_offsets` (index-matched,
+## along the travel direction -- positive forward, negative backward),
+## smooth every frame same as the ribbon's own live leading edge (see
+## `_rebuild_trail_mesh()`'s doc comment on why that matters for a fast
+## bolt). Not sampled from trail history, so both are correctly placed
+## immediately instead of needing the trail to grow first.
+func _update_sonic_rings() -> void:
+	if _sonic_rings.is_empty():
+		return
+	var forward: Vector3 = -_sonic_ring_backward
+	for i in _sonic_rings.size():
+		var offset: float = _sonic_ring_offsets[i] if i < _sonic_ring_offsets.size() else 0.0
+		_sonic_rings[i].global_position = global_position + forward * offset
 
 
 ## Records this node's current world position on a throttled timer
@@ -462,18 +957,18 @@ func _build_ring(mesh_radius: float) -> void:
 func _physics_process(delta: float) -> void:
 	if _ring_mesh != null:
 		_ring_mesh.rotate_y(delta * RING_SPIN_SPEED)
-	if _trail_mesh == null:
-		return
-	_trail_update_timer += delta
-	if _trail_update_timer >= TRAIL_UPDATE_INTERVAL:
-		_trail_elapsed += _trail_update_timer
-		_trail_update_timer = 0.0
-		_trail_positions.push_front(global_position)
-		_trail_ages.push_front(_trail_elapsed)
-		while _trail_ages.size() > 2 and _trail_elapsed - _trail_ages[-1] > TRAIL_LIFETIME:
-			_trail_ages.pop_back()
-			_trail_positions.pop_back()
-	_rebuild_trail_mesh()
+	if _trail_mesh != null:
+		_trail_update_timer += delta
+		if _trail_update_timer >= TRAIL_UPDATE_INTERVAL:
+			_trail_elapsed += _trail_update_timer
+			_trail_update_timer = 0.0
+			_trail_positions.push_front(global_position)
+			_trail_ages.push_front(_trail_elapsed)
+			while _trail_ages.size() > 2 and _trail_elapsed - _trail_ages[-1] > TRAIL_LIFETIME:
+				_trail_ages.pop_back()
+				_trail_positions.pop_back()
+		_rebuild_trail_mesh()
+	_update_sonic_rings()
 
 ## Rebuilds the trail as a flat triangle-strip ribbon -- newest end at full
 ## width/opacity, tapering to nothing at the oldest end. The very first
@@ -545,6 +1040,12 @@ func _rebuild_trail_mesh() -> void:
 ## as an organic flame lick rather than a uniform ball, from any rotation
 ## (the wobble is purely radial/per-angle, so there's no fixed up/down
 ## orientation a billboard could render wrong side up).
+## "leaf": solid, hard-edged pointed-oval (vesica -- two overlapping circles
+## offset along Y) instead of "circle"/"flicker"'s soft glowing falloff --
+## per feedback, Nature's trail wants "solid leafs, not particles like
+## fire/poison/frost." Alpha ramps from 0 to 1 across a thin few-pixel band
+## right at the true silhouette edge, not across the whole radius, so the
+## interior reads as a flat filled shape rather than a glow.
 static func _get_particle_texture(shape: String = "circle") -> ImageTexture:
 	if not _particle_textures.has(shape):
 		const SIZE := 16
@@ -553,13 +1054,24 @@ static func _get_particle_texture(shape: String = "circle") -> ImageTexture:
 		for y in SIZE:
 			for x in SIZE:
 				var p := Vector2(x, y) - center
-				var d := p.length() / (SIZE * 0.5)
-				if shape == "flicker":
-					var angle := p.angle()
-					var wobble := 0.18 * sin(angle * 5.0) + 0.12 * sin(angle * 9.0 + 1.7)
-					d /= (1.0 + wobble)
-				var a := clampf(1.0 - d, 0.0, 1.0)
-				a *= a
+				var a: float
+				if shape == "leaf":
+					var px: float = p.x / (SIZE * 0.5) * 1.6  # narrower than tall
+					var py: float = p.y / (SIZE * 0.5)
+					var offset := 0.55
+					var radius := 0.85
+					var edge := 0.12
+					var d1 := Vector2(px, py - offset).length()
+					var d2 := Vector2(px, py + offset).length()
+					a = clampf((radius - maxf(d1, d2)) / edge, 0.0, 1.0)
+				else:
+					var d := p.length() / (SIZE * 0.5)
+					if shape == "flicker":
+						var angle := p.angle()
+						var wobble := 0.18 * sin(angle * 5.0) + 0.12 * sin(angle * 9.0 + 1.7)
+						d /= (1.0 + wobble)
+					a = clampf(1.0 - d, 0.0, 1.0)
+					a *= a
 				img.set_pixel(x, y, Color(1.0, 1.0, 1.0, a))
 		_particle_textures[shape] = ImageTexture.create_from_image(img)
 	return _particle_textures[shape]

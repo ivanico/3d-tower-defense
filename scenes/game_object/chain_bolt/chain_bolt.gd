@@ -52,7 +52,25 @@ func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition)
 	damage_falloff_per_bounce = spell.damage_falloff_per_bounce
 	_hit_enemies.clear()
 	_age = 0.0
-	_configure_school_vfx(damage_type)
+	# World-space "opposite of travel" -- see spell_projectile_base.gd's doc
+	# comment on _configure_school_vfx(). This archetype has no stored
+	# `_direction` var the way Standard/Line AoE Bolt do (to_target is
+	# recomputed fresh every physics frame instead, see below), so it's
+	# worked out here from the raw cast vector. Falls back to the ZERO
+	# sentinel (preset's plain "up" look, unchanged) on a zero-length cast,
+	# same as the no-op guard below.
+	var backward := Vector3.ZERO
+	var travel := target_pos - start_pos
+	if travel.length_squared() > 0.0001:
+		backward = -travel.normalized()
+	# `preview_allow_ring`/`preview_ring_filled` double as the REAL cast's
+	# own values here -- one source of truth instead of separate hardcoded
+	# literals that could drift out of sync with chain_bolt.tscn's own
+	# overrides. Per feedback, Chain Bolt's Void ring should look like the
+	# Orb's own flat accretion disk (not the 2-ring perpendicular-to-travel
+	# sonic effect Standard/Line AoE Bolt use), but filled/solid instead of
+	# a donut (see spell_projectile_base.gd's own comments on both params).
+	_configure_school_vfx(damage_type, backward, preview_allow_ring, preview_ring_filled)
 	_target = _nearest_enemy_to(target_pos, [])
 	_initialized = _target != null
 	if not _initialized:

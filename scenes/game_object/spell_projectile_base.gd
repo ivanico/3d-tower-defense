@@ -22,6 +22,16 @@ extends Area3D
 
 @export var model_rotation_degrees: Vector3 = Vector3.ZERO
 @export var model_scale: Vector3 = Vector3.ONE
+# Same per-archetype override pattern as the two above -- lets the EDITOR
+# PREVIEW actually reflect what `initialize()`'s own `_configure_school_vfx()`
+# call passes for this archetype (see that function's own doc comment),
+# instead of the preview always silently using `false` regardless of what
+# real gameplay does. Chain Bolt sets this true as a per-scene override in
+# chain_bolt.tscn; every other archetype leaves it at this default.
+@export var preview_allow_ring: bool = false
+# Same idea, for `configure()`'s `ring_filled` param -- see that function's
+# own doc comment. Chain Bolt sets this true alongside `preview_allow_ring`.
+@export var preview_ring_filled: bool = false
 
 ## EDITOR ONLY -- open the scene in the editor and change this to see that
 ## school's shader + particle/trail look on the actual mesh, live.
@@ -42,12 +52,44 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		_apply_preview()
 
+## Synthetic "flying toward -Z" backward vector (Godot's own forward
+## convention) -- a static editor preview has no real travel to compute
+## one from, but schools opting into "direction_follows_travel" (Fire)
+## should still be visible here without having to run the game, so this
+## fakes the same world-space backward vector a bolt actually flying
+## toward -Z would work out for itself.
+const PREVIEW_BACKWARD_DIRECTION := Vector3(0, 0, 1)
+
+## Subclasses that need `sonic_ring_tuning` (currently just Standard Bolt --
+## see its own `VOID_SONIC_RING_TUNING` comment) override this ONE function
+## to add it, rather than this base exposing yet another per-archetype
+## export -- a Dictionary constant living next to the archetype script that
+## actually uses it is simpler than a Dictionary in the .tscn inspector.
 func _apply_preview() -> void:
-	$SchoolVFXComponent.configure(preview_school, _model, false)
+	$SchoolVFXComponent.configure(preview_school, _model, preview_allow_ring, PREVIEW_BACKWARD_DIRECTION, preview_ring_filled)
 
 ## Called by each subclass's own initialize()/setup() with the real cast
-## damage_type. `allow_ring` is always off here -- Orb is the only
-## archetype that keeps the Void accretion-disk ring (see
-## school_vfx_component.gd's `allow_ring` doc).
-func _configure_school_vfx(damage_type: int) -> void:
-	$SchoolVFXComponent.configure(damage_type, _model, false)
+## damage_type. `allow_ring` defaults off -- Standard/Line AoE Bolt don't
+## pass it, so they keep getting `_build_sonic_rings()`'s 2-ring travel
+## effect (see school_vfx_component.gd's `allow_ring` doc). Chain Bolt
+## passes `true` -- per feedback it should look like the Orb's own single
+## flat accretion disk instead, not the sonic-ring pair the other bolts use.
+## `backward_direction_world` is this bolt's own "opposite of travel"
+## vector in plain WORLD space -- optional, only schools opting into
+## "direction_follows_travel" (currently Fire) ever use it, see
+## school_vfx_component.gd's doc comment on `configure()`/`_build_particles()`.
+## `ring_filled` -- see school_vfx_component.gd's `configure()` doc comment.
+## `sonic_ring_tuning` -- see school_vfx_component.gd's `configure()` doc
+## comment on it. Empty (default) keeps the original sonic-ring numbers --
+## only Standard Bolt currently passes its own tuned dict.
+func _configure_school_vfx(damage_type: int, backward_direction_world: Vector3 = Vector3.ZERO, allow_ring: bool = false, ring_filled: bool = false, sonic_ring_tuning: Dictionary = {}) -> void:
+	$SchoolVFXComponent.configure(damage_type, _model, allow_ring, backward_direction_world, ring_filled, sonic_ring_tuning)
+
+## Called by `ObjectPool.release()` (via `has_method()` duck-typing, not an
+## override -- see that function) the moment this projectile is hit and
+## hidden. See `school_vfx_component.gd`'s `stop()` doc comment for why
+## this matters: pooling only ever hides a node, it never frees it, so
+## without this hook a hit-but-not-yet-reused bolt would keep simulating
+## its particle dressing in the background, invisible, until its next shot.
+func _on_pool_released() -> void:
+	$SchoolVFXComponent.stop()

@@ -14,6 +14,17 @@ var damage: float = 0.0
 var damage_type: int = Constants.DamageType.VOID
 var pierce_count: int = 0
 
+# Void's sonic-boom rings (see school_vfx_component.gd's `_build_sonic_rings()`
+# and `configure()`'s `sonic_ring_tuning` doc comments) tuned specifically
+# for THIS archetype's mesh, per feedback -- NOT the shared default, which
+# Line AoE Bolt keeps using untouched. Bigger overall (radius/outer scale
+# bumped up), front ring pulled back closer to the live position, back ring
+# pulled forward closer too (both independent, not one shared offset).
+const VOID_SONIC_RING_TUNING: Dictionary = {
+	"radius_scale": 0.8, "outer_scale": 2.4,
+	"front_offset_scale": 0.0, "back_offset_scale": 0.5,
+}
+
 var _direction: Vector3 = Vector3.ZERO
 var _hits: int = 0
 var _initialized: bool = false
@@ -36,6 +47,12 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
+## Override, not just a per-scene export -- see `VOID_SONIC_RING_TUNING`'s
+## own comment on why this archetype's sonic-ring numbers live here instead
+## of the base's generic per-archetype exports.
+func _apply_preview() -> void:
+	$SchoolVFXComponent.configure(preview_school, _model, preview_allow_ring, PREVIEW_BACKWARD_DIRECTION, preview_ring_filled, VOID_SONIC_RING_TUNING)
+
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("enemies") and not _nearby_enemies.has(body):
 		_nearby_enemies.append(body)
@@ -51,7 +68,7 @@ func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition)
 	speed = spell.projectile_speed
 	_direction = (target_pos - start_pos).normalized()
 	look_at(global_position + _direction, Vector3.UP)
-	_configure_school_vfx(damage_type)
+	_configure_school_vfx(damage_type, -_direction, false, false, VOID_SONIC_RING_TUNING)
 	_hits = 0
 	_initialized = true
 

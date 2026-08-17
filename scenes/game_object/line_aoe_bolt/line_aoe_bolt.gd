@@ -5,7 +5,16 @@ extends "res://scenes/game_object/spell_projectile_base.gd"
 ## Line AoE Bolt archetype (spells.md Task S-05): fired only when an enemy
 ## is inside the short trigger range, then travels in a straight line for
 ## max_travel_distance, piercing and damaging every enemy in its path
-## exactly once. Never stops on hit — only despawns at the end of its line.
+## exactly once. Never stops on HIT — only despawns at the end of its line
+## OR the moment it leaves the camera view (`VisibleOnScreenNotifier3D`,
+## same pattern as `standard_bolt.gd`), whichever comes first. Without the
+## latter: `max_travel` (30m, "crosses the whole visible arena") is
+## calibrated for a shot fired straight down the arena's long axis, but a
+## shot fired toward a shorter/off-axis edge leaves the camera well before
+## covering 30m -- and until this fix, the lance (and its trailing
+## particles, once schools started having those) kept flying and emitting
+## the whole time regardless, reading as "particles lingering forever"
+## even though the lance itself had already left the visible arena.
 
 # The glb is authored ~2.4m long along +X, nose toward -X; -90 flies it
 # nose-first (-Z) toward the enemy. model_rotation_degrees/model_scale
@@ -47,8 +56,13 @@ func _ready() -> void:
 		return
 	# Own shape instance per lance — never mutate a shared shape resource.
 	collision.shape = BoxShape3D.new()
+	$VisibleOnScreenNotifier3D.screen_exited.connect(_on_screen_exited)
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
+
+func _on_screen_exited() -> void:
+	_initialized = false
+	ObjectPool.release(self)
 
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("enemies") and not _nearby_enemies.has(body):
@@ -76,7 +90,7 @@ func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition)
 			hitbox_width + DETECTION_MARGIN, hitbox_width + DETECTION_MARGIN,
 			hitbox_length + DETECTION_MARGIN)
 	look_at(global_position + _direction, Vector3.UP)
-	_configure_school_vfx(damage_type)
+	_configure_school_vfx(damage_type, -_direction)
 	_hit_enemies.clear()
 	_traveled = 0.0
 	_initialized = true

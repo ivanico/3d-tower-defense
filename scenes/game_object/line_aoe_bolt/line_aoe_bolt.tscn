@@ -10,12 +10,15 @@ size = Vector3(1.7, 1.7, 2.6)
 [node name="LineAoeBolt" type="Area3D"]
 script = ExtResource("1")
 model_rotation_degrees = Vector3(0, -90, 0)
-model_scale = Vector3(0.55, 0.5, 0.5)
+model_scale = Vector3(0.55, 0.35, 0.625)
+preview_school = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("Shape_lance")
 
+[node name="VisibleOnScreenNotifier3D" type="VisibleOnScreenNotifier3D" parent="."]
+
 [node name="SchoolVFXComponent" parent="." instance=ExtResource("3")]
 
 [node name="Model" parent="." instance=ExtResource("2")]
-transform = Transform3D(-2.40413e-08, 0, -0.5, 0, 0.5, 0, 0.55, 0, -2.18557e-08, 0, 0, 0)
+transform = Transform3D(-2.40413e-08, 0, -0.625, 0, 0.35, 0, 0.55, 0, -2.73196e-08, 0.00744, -0.001385, -0.580658)
