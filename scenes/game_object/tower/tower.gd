@@ -125,8 +125,9 @@ func _fire_aoe_area(spell: SpellDefinition, target: Node3D) -> void:
 
 func _fire_projectile(spell: SpellDefinition, target: Node3D) -> void:
 	# Volley stacking (spells.md Task S-01): stack_count bolts per cast, at
-	# the nearest distinct enemies, with a small stagger so it reads as a
-	# volley. Extra bolts fall back to the nearest target when enemies < bolts.
+	# random distinct enemies (every spell type targets randomly except Orb,
+	# which orbits instead), with a small stagger so it reads as a volley.
+	# Extra bolts fall back to a random target when enemies < bolts.
 	var stacks: int = maxi(_spell_stacks.get(spell.spell_id, 1), 1)
 	var targets: Array[Node3D] = targeting.get_targets(stacks, spell.range)
 	if targets.is_empty():

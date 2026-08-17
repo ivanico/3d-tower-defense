@@ -136,7 +136,14 @@ const RING_SPIN_SPEED: float = 0.3  # radians/sec, local Y -- subtle, not a spin
 ## mesh count -- callers looping over their model's meshes to set a material
 ## (the old `CombatUtils.get_school_material()` pattern) should call this
 ## ONCE with the model root, not once per mesh.
-func configure(damage_type: int, search_root: Node3D = null) -> void:
+## `allow_ring` gates the Void "accretion disk" ring (has_ring preset key)
+## independent of school -- Orb of the Void keeps it (a persistent orbiting
+## body reads as a black hole), but every other archetype passes false so a
+## flying/bouncing/piercing Void projectile doesn't drag a spinning disk
+## behind it. The preset itself stays shared across every archetype (see
+## the file-level doc comment) -- this is a per-*call* override, not a
+## per-school one.
+func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = true) -> void:
 	_damage_type = damage_type
 	if search_root == null:
 		search_root = get_parent()
@@ -161,7 +168,7 @@ func configure(damage_type: int, search_root: Node3D = null) -> void:
 
 	var preset: Dictionary = PRESETS.get(damage_type, PRESETS[Constants.DamageType.VOID])
 	_build_trail(mesh_radius)
-	if preset.get("has_ring", false):
+	if preset.get("has_ring", false) and allow_ring:
 		_build_ring(mesh_radius)
 
 	# "no_aura" opts a school out of the ambient particle dressing entirely
@@ -366,6 +373,19 @@ func _build_trail(mesh_radius: float) -> void:
 	_trail_positions.clear()
 	_trail_ages.clear()
 	_trail_elapsed = 0.0
+	# Seed the spawn point immediately and pre-fill the throttle timer so the
+	# very next _physics_process tick (~one physics frame, not a full
+	# TRAIL_UPDATE_INTERVAL later) records the second point a trail needs
+	# before it draws anything at all. Without this, a fast-moving
+	# projectile fired at a close target can hit and despawn before its
+	# first throttled sample (~0.083s) ever happens -- it would have 0-1
+	# recorded points the entire time, so the trail never rendered, or only
+	# "popped in" right as the hit landed. Steady-state sampling for
+	# anything that survives past this first tick is unaffected, still
+	# throttled at 12Hz same as always.
+	_trail_positions.push_front(global_position)
+	_trail_ages.push_front(0.0)
+	_trail_update_timer = TRAIL_UPDATE_INTERVAL
 
 
 ## Flat "accretion disk" ring encircling the mesh -- a real black hole's
@@ -424,44 +444,72 @@ func _build_ring(mesh_radius: float) -> void:
 
 
 ## Records this node's current world position on a throttled timer
-## (TRAIL_UPDATE_INTERVAL, not every physics frame), drops anything older
-## than TRAIL_LIFETIME, and rebuilds the trail as a flat triangle-strip
-## ribbon connecting the remaining points -- newest end at full
-## width/opacity, tapering to nothing at the oldest end. Runs in-editor too
-## (tool script), same as the rest of this component's preview support;
-## harmless when stationary since duplicate points at the same spot just
-## collapse to a zero-length sliver.
+## (TRAIL_UPDATE_INTERVAL, not every physics frame) to bound how fast
+## `_trail_positions` grows, drops anything older than TRAIL_LIFETIME, then
+## hands off to `_rebuild_trail_mesh()` -- which runs every physics frame,
+## unthrottled, and always draws the ribbon's leading edge at THIS frame's
+## live `global_position`, not just the last throttled sample. Runs in-
+## editor too (tool script), same as the rest of this component's preview
+## support; harmless when stationary since duplicate points at the same
+## spot just collapse to a zero-length sliver.
+##
+## Rebuilding unthrottled looks expensive but isn't: TRAIL_UPDATE_INTERVAL
+## still caps how many points EXIST (~6-7 for the default TRAIL_LIFETIME),
+## so this is a tiny per-frame ArrayMesh rebuild from a short array, not a
+## return to rebuilding from scratch on a growing history -- only the
+## *sampling* rate (how often a new historical point is captured) stays
+## throttled, not the *draw* rate.
 func _physics_process(delta: float) -> void:
 	if _ring_mesh != null:
 		_ring_mesh.rotate_y(delta * RING_SPIN_SPEED)
 	if _trail_mesh == null:
 		return
 	_trail_update_timer += delta
-	if _trail_update_timer < TRAIL_UPDATE_INTERVAL:
-		return
-	_trail_elapsed += _trail_update_timer
-	_trail_update_timer = 0.0
-	_trail_positions.push_front(global_position)
-	_trail_ages.push_front(_trail_elapsed)
-	while _trail_ages.size() > 2 and _trail_elapsed - _trail_ages[-1] > TRAIL_LIFETIME:
-		_trail_ages.pop_back()
-		_trail_positions.pop_back()
+	if _trail_update_timer >= TRAIL_UPDATE_INTERVAL:
+		_trail_elapsed += _trail_update_timer
+		_trail_update_timer = 0.0
+		_trail_positions.push_front(global_position)
+		_trail_ages.push_front(_trail_elapsed)
+		while _trail_ages.size() > 2 and _trail_elapsed - _trail_ages[-1] > TRAIL_LIFETIME:
+			_trail_ages.pop_back()
+			_trail_positions.pop_back()
+	_rebuild_trail_mesh()
 
-	var n := _trail_positions.size()
+## Rebuilds the trail as a flat triangle-strip ribbon -- newest end at full
+## width/opacity, tapering to nothing at the oldest end. The very first
+## point is always THIS frame's live position (age 0), not the last
+## historical sample -- without this, the mesh only visibly moved once
+## every TRAIL_UPDATE_INTERVAL (~0.083s) while the object it's attached to
+## keeps moving every physics frame, so the ribbon's tip visibly lagged up
+## to ~1+ meter behind a fast bolt (this project's bolts move at
+## 14-16 m/s) -- it never looked attached to the thing it was trailing.
+func _rebuild_trail_mesh() -> void:
+	if _trail_positions.is_empty():
+		_trail_mesh.mesh = null
+		return
+	var positions := _trail_positions.duplicate()
+	positions.push_front(global_position)
+	var n := positions.size()
 	if n < 2:
 		_trail_mesh.mesh = null
 		return
 
+	# Time elapsed as of THIS frame, including whatever's accumulated in
+	# the not-yet-throttled partial interval -- keeps every historical
+	# point's fade-out age correct even between samples.
+	var current_elapsed := _trail_elapsed + _trail_update_timer
 	var verts := PackedVector3Array()
 	var colors := PackedColorArray()
 	var color := CombatUtils.get_damage_color(_damage_type)
 	for i in n:
-		var pos: Vector3 = _trail_positions[i]
-		var age: float = _trail_elapsed - _trail_ages[i]
+		var pos: Vector3 = positions[i]
+		# i==0 is always the live leading point seeded above -- always age 0
+		# (full width/opacity), regardless of throttling.
+		var age: float = 0.0 if i == 0 else current_elapsed - _trail_ages[i - 1]
 		var t: float = clampf(age / TRAIL_LIFETIME, 0.0, 1.0)  # 0 = newest, 1 = oldest
 		# Direction along the ribbon at this point, from a neighbour --
 		# whichever neighbour exists (points are newest-first).
-		var neighbor: Vector3 = _trail_positions[i + 1] if i + 1 < n else _trail_positions[i - 1]
+		var neighbor: Vector3 = positions[i + 1] if i + 1 < n else positions[i - 1]
 		var along: Vector3 = pos - neighbor if i + 1 < n else neighbor - pos
 		if along.length_squared() < 0.0001:
 			along = Vector3.FORWARD

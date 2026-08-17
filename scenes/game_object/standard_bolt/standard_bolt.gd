@@ -1,11 +1,13 @@
-extends Area3D
+@tool  # NOT inherited from spell_projectile_base.gd -- verified via Script.is_tool(),
+# GDScript requires every script in the chain to redeclare @tool itself for
+# _ready()/the preview_school setter to actually run in the editor.
+extends "res://scenes/game_object/spell_projectile_base.gd"
 
-# Swap in the Inspector if a spell later gets its own dedicated model.
-@export var model_scene: PackedScene = preload("res://assets/models/spells/spell_bolt_standard.glb")
-# The glb is authored 1.53m long along +X; Godot forward is -Z. These bring
-# it to ~0.5m flying nose-first. Tune in the Inspector, no script edits.
-@export var model_rotation_degrees: Vector3 = Vector3(0, 90, 0)
-@export var model_scale: Vector3 = Vector3.ONE / 3.0
+# The glb is authored 1.53m long along +X; Godot forward is -Z. The
+# model_rotation_degrees=(0,90,0)/model_scale=ONE/3.0 values that bring it
+# to ~0.5m flying nose-first are set as a per-scene override on
+# standard_bolt.tscn's root node (see spell_projectile_base.gd), not
+# redeclared here.
 
 var speed: float = 14.0
 var damage: float = 0.0
@@ -15,7 +17,6 @@ var pierce_count: int = 0
 var _direction: Vector3 = Vector3.ZERO
 var _hits: int = 0
 var _initialized: bool = false
-var _model: Node3D = null
 
 # Enemies currently overlapping this bolt's own CollisionShape3D (radius 1.5,
 # see standard_bolt.tscn -- deliberately much bigger than the 0.5 precise hit
@@ -28,14 +29,12 @@ var _model: Node3D = null
 var _nearby_enemies: Array[Node3D] = []
 
 func _ready() -> void:
+	super._ready()
+	if Engine.is_editor_hint():
+		return
 	$VisibleOnScreenNotifier3D.screen_exited.connect(_on_screen_exited)
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
-	if model_scene != null:
-		_model = model_scene.instantiate()
-		add_child(_model)
-		_model.rotation_degrees = model_rotation_degrees
-		_model.scale = model_scale
 
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("enemies") and not _nearby_enemies.has(body):
@@ -52,16 +51,9 @@ func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition)
 	speed = spell.projectile_speed
 	_direction = (target_pos - start_pos).normalized()
 	look_at(global_position + _direction, Vector3.UP)
-	_apply_school_tint()
+	_configure_school_vfx(damage_type)
 	_hits = 0
 	_initialized = true
-
-func _apply_school_tint() -> void:
-	if _model == null:
-		return
-	var mat := CombatUtils.get_school_material(damage_type)
-	for mi in _model.find_children("*", "MeshInstance3D", true, false):
-		mi.material_override = mat
 
 func _physics_process(delta: float) -> void:
 	if not _initialized:

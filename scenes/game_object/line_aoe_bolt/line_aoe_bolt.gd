@@ -1,16 +1,17 @@
-extends Area3D
+@tool  # NOT inherited from spell_projectile_base.gd -- see standard_bolt.gd's
+# own comment on this; every script in the chain must redeclare @tool.
+extends "res://scenes/game_object/spell_projectile_base.gd"
 
 ## Line AoE Bolt archetype (spells.md Task S-05): fired only when an enemy
 ## is inside the short trigger range, then travels in a straight line for
 ## max_travel_distance, piercing and damaging every enemy in its path
 ## exactly once. Never stops on hit — only despawns at the end of its line.
 
-# Swap in the Inspector if a spell later gets its own dedicated model.
-@export var model_scene: PackedScene = preload("res://assets/models/spells/spell_bolt_line_aoe.glb")
 # The glb is authored ~2.4m long along +X, nose toward -X; -90 flies it
-# nose-first (-Z) toward the enemy. Inspector-tunable.
-@export var model_rotation_degrees: Vector3 = Vector3(0, -90, 0)
-@export var model_scale: Vector3 = Vector3.ONE * 0.5
+# nose-first (-Z) toward the enemy. model_rotation_degrees/model_scale
+# values are set as a per-scene override on line_aoe_bolt.tscn's root node
+# (see spell_projectile_base.gd), not redeclared here.
+
 # Longer hit reach than the standard bolt (Section 1) — the piercing line.
 @export var hitbox_length: float = Constants.LANCE_HITBOX_LENGTH
 @export var hitbox_width: float = Constants.LANCE_HITBOX_WIDTH
@@ -24,7 +25,6 @@ var _direction: Vector3 = Vector3.ZERO
 var _traveled: float = 0.0
 var _hit_enemies: Array = []
 var _initialized: bool = false
-var _model: Node3D = null
 
 @onready var collision: CollisionShape3D = $CollisionShape3D
 
@@ -42,11 +42,9 @@ const DETECTION_MARGIN := 1.0
 var _nearby_enemies: Array[Node3D] = []
 
 func _ready() -> void:
-	if model_scene != null:
-		_model = model_scene.instantiate()
-		add_child(_model)
-		_model.rotation_degrees = model_rotation_degrees
-		_model.scale = model_scale
+	super._ready()
+	if Engine.is_editor_hint():
+		return
 	# Own shape instance per lance — never mutate a shared shape resource.
 	collision.shape = BoxShape3D.new()
 	body_entered.connect(_on_body_entered)
@@ -78,17 +76,10 @@ func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition)
 			hitbox_width + DETECTION_MARGIN, hitbox_width + DETECTION_MARGIN,
 			hitbox_length + DETECTION_MARGIN)
 	look_at(global_position + _direction, Vector3.UP)
-	_apply_school_tint()
+	_configure_school_vfx(damage_type)
 	_hit_enemies.clear()
 	_traveled = 0.0
 	_initialized = true
-
-func _apply_school_tint() -> void:
-	if _model == null:
-		return
-	var mat := CombatUtils.get_school_material(damage_type)
-	for mi in _model.find_children("*", "MeshInstance3D", true, false):
-		mi.material_override = mat
 
 func _physics_process(delta: float) -> void:
 	if not _initialized:

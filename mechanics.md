@@ -51,10 +51,13 @@
     (shots/sec), both modified by drafted upgrades.
   - Each `physics_process`, the tower's targeting component scans for enemies
     inside range and on a spell-by-spell cooldown, fires when ready.
-  - Targeting mode for v1: **closest enemy**. (Other modes —
-    lowest-HP/highest-HP/first-aggro — are **[LATER]**, the targeting component
-    is written to accept a mode enum so adding modes is a new `match` branch,
-    not new architecture.)
+  - Targeting: always a **random enemy in range**, for every spell type
+    except Orb (which doesn't target at all — it orbits and hits on
+    contact). No selectable mode — a prior `CLOSEST`/`RANDOM` mode enum
+    existed but was removed after `CLOSEST` turned out to be silently
+    unwired (every projectile spell always hit nearest regardless of what
+    the mode said); if targeting variety is wanted later, it should be
+    re-added wired all the way through, not left as a dormant option.
 - **Tower HP**: tower has `max_hp` and current `hp`. Enemies that reach melee
   range of the tower deal damage on a cooldown. At `hp <= 0`, the run ends in
   defeat.

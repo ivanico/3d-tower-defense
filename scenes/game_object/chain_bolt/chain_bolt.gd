@@ -1,19 +1,33 @@
-extends Area3D
+@tool  # NOT inherited from spell_projectile_base.gd -- see standard_bolt.gd's
+# own comment on this; every script in the chain must redeclare @tool.
+extends "res://scenes/game_object/spell_projectile_base.gd"
 
-## Chain Bolt archetype (spells.md Task S-02): homes to the nearest enemy,
-## then bounces to the enemy closest to the one just hit, max `max_bounces`
-## bounces. Despawns immediately (pool release, no fizzle) when no valid
-## bounce target exists within `bounce_radius`.
+## Chain Bolt archetype (spells.md Task S-02): flies at whichever enemy
+## tower.gd already picked (TargetingComponent.get_targets() -- random, see
+## targeting_component.gd), then BOUNCES to the enemy closest to the one
+## just hit, max `max_bounces` bounces. The initial `_nearest_enemy_to()`
+## call in initialize() below is not a second, competing target pick -- it
+## just resolves the actual enemy Node3D standing at the position tower.gd
+## already aimed at (initialize() only receives a Vector3, not a node
+## reference), so it always resolves back to the same enemy tower.gd chose.
+## Only the bounce step is genuinely nearest-based, and that's deliberate --
+## a chain/arc effect reads as jumping to whatever's nearby, not another
+## random pick across the whole arena. Despawns immediately (pool release,
+## no fizzle) when no valid bounce target exists within `bounce_radius`.
+##
+## Root is Area3D (inherited from spell_projectile_base.gd) but hit
+## detection here is pure distance math against the "enemies" group, not
+## Area3D collision -- the CollisionShape3D in chain_bolt.tscn exists only
+## so the editor doesn't flag "Area3D has no shapes"; nothing in this
+## script ever reads it.
 
 const MAX_LIFETIME_SEC := 6.0
 const HIT_DISTANCE := 0.5
 const AIM_HEIGHT := Vector3(0, 0.6, 0)
 
-# Swap in the Inspector if a spell later gets its own dedicated model.
-@export var model_scene: PackedScene = preload("res://assets/models/spells/spell_chain_bolt.glb")
-# Native size (~0.4m) is fine; exports here so it's tunable like the others.
-@export var model_rotation_degrees: Vector3 = Vector3.ZERO
-@export var model_scale: Vector3 = Vector3.ONE
+# Native size (~0.4m) is fine, so model_rotation_degrees/model_scale are
+# left at spell_projectile_base.gd's defaults (ZERO/ONE) -- no per-scene
+# override needed in chain_bolt.tscn.
 @export var spin_speed_degrees: float = 720.0
 
 var speed: float = 14.0
@@ -27,14 +41,6 @@ var _target: Node3D = null
 var _hit_enemies: Array = []
 var _initialized: bool = false
 var _age: float = 0.0
-var _model: Node3D = null
-
-func _ready() -> void:
-	if model_scene != null:
-		_model = model_scene.instantiate()
-		add_child(_model)
-		_model.rotation_degrees = model_rotation_degrees
-		_model.scale = model_scale
 
 func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition) -> void:
 	global_position = start_pos
@@ -46,18 +52,11 @@ func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition)
 	damage_falloff_per_bounce = spell.damage_falloff_per_bounce
 	_hit_enemies.clear()
 	_age = 0.0
-	_apply_school_tint()
+	_configure_school_vfx(damage_type)
 	_target = _nearest_enemy_to(target_pos, [])
 	_initialized = _target != null
 	if not _initialized:
 		ObjectPool.release(self)
-
-func _apply_school_tint() -> void:
-	if _model == null:
-		return
-	var mat := CombatUtils.get_school_material(damage_type)
-	for mi in _model.find_children("*", "MeshInstance3D", true, false):
-		mi.material_override = mat
 
 func _physics_process(delta: float) -> void:
 	if not _initialized:
@@ -67,8 +66,7 @@ func _physics_process(delta: float) -> void:
 		_despawn()
 		return
 	# Tumbling-shuriken spin — sells the motion regardless of travel direction.
-	if _model != null:
-		_model.rotate_y(deg_to_rad(spin_speed_degrees) * delta)
+	_model.rotate_y(deg_to_rad(spin_speed_degrees) * delta)
 	var aim: Vector3 = _target.global_position + AIM_HEIGHT
 	var to_target := aim - global_position
 	var step := speed * delta

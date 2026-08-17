@@ -400,11 +400,13 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
 
 ### `targeting_component.gd`
 - **What it does**: `class_name TargetingComponent extends Node`. Exports
-  `range: float`, `mode: TargetMode`. Maintains a list of enemies currently
-  inside an `Area3D` range trigger (sibling node), exposes
-  `get_target() -> Node3D` which applies the current `mode` (v1: closest only;
-  `match mode:` with one case — new modes are new cases, not new
-  architecture).
+  `range: float`. Maintains a list of enemies currently inside an `Area3D`
+  range trigger (sibling node), exposes `get_targets(count) -> Array[Node3D]`
+  (up to `count` distinct RANDOM targets — the one every projectile cast in
+  `tower.gd` actually fires through, stacked or not; nothing sorts by
+  distance here) and `get_target() -> Node3D` (thin wrapper, `get_targets(1)`).
+  No selectable mode — always random, no exceptions besides Orb (which
+  doesn't call this at all).
 - **Used by**: Tower.
 
 ### `cooldown_component.gd`

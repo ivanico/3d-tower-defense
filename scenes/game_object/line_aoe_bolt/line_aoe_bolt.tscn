@@ -1,8 +1,21 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=5 format=3 uid="uid://bdpn77jbe6m31"]
 
-[ext_resource type="Script" path="res://scenes/game_object/line_aoe_bolt/line_aoe_bolt.gd" id="1"]
+[ext_resource type="Script" uid="uid://bax5nw60dn387" path="res://scenes/game_object/line_aoe_bolt/line_aoe_bolt.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://erghxnq8be8h" path="res://assets/models/spells/spell_bolt_line_aoe.glb" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/component/school_vfx_component.tscn" id="3"]
+
+[sub_resource type="BoxShape3D" id="Shape_lance"]
+size = Vector3(1.7, 1.7, 2.6)
 
 [node name="LineAoeBolt" type="Area3D"]
 script = ExtResource("1")
+model_rotation_degrees = Vector3(0, -90, 0)
+model_scale = Vector3(0.55, 0.5, 0.5)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("Shape_lance")
+
+[node name="SchoolVFXComponent" parent="." instance=ExtResource("3")]
+
+[node name="Model" parent="." instance=ExtResource("2")]
+transform = Transform3D(-2.40413e-08, 0, -0.5, 0, 0.5, 0, 0.55, 0, -2.18557e-08, 0, 0, 0)

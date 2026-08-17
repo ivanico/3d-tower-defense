@@ -4,7 +4,6 @@ enum GamePhase      { WAVE, DRAFT, BOSS, DEFEAT, VICTORY }
 enum DamageType     { FIRE, FROST, VOID, POISON, NATURE }
 enum ArmorType      { UNARMORED, HEAVY }
 enum SpellCategory  { PROJECTILE, PASSIVE, ORB, AOE_AREA }
-enum TargetMode     { CLOSEST, RANDOM }
 enum CardRarity     { COMMON, RARE, EPIC }
 enum SynergyTag     { OFFENSE, ARMOR, UTILITY }
 enum MaterialType   { STANDARD }
