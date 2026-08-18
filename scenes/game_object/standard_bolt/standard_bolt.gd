@@ -14,15 +14,13 @@ var damage: float = 0.0
 var damage_type: int = Constants.DamageType.VOID
 var pierce_count: int = 0
 
-# Void's sonic-boom rings (see school_vfx_component.gd's `_build_sonic_rings()`
+# Void's trailing ring (see school_vfx_component.gd's `_build_sonic_rings()`
 # and `configure()`'s `sonic_ring_tuning` doc comments) tuned specifically
 # for THIS archetype's mesh, per feedback -- NOT the shared default, which
 # Line AoE Bolt keeps using untouched. Bigger overall (radius/outer scale
-# bumped up), front ring pulled back closer to the live position, back ring
-# pulled forward closer too (both independent, not one shared offset).
+# bumped up) to suit this bolt's own model size.
 const VOID_SONIC_RING_TUNING: Dictionary = {
 	"radius_scale": 0.8, "outer_scale": 2.4,
-	"front_offset_scale": 0.0, "back_offset_scale": 0.5,
 }
 
 var _direction: Vector3 = Vector3.ZERO

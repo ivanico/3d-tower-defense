@@ -175,28 +175,37 @@ var _ring_mesh: MeshInstance3D
 const RING_SPIN_SPEED: float = 0.3  # radians/sec, local Y -- subtle, not a spinning top
 
 # Void's stand-in for the accretion disk when `allow_ring` is false -- see
-# `_build_sonic_rings()`'s own doc comment. Index 0 = right at the bolt
-# (bigger, brightest), index 1 = just behind its tail (smaller, fainter).
-var _sonic_rings: Array[MeshInstance3D] = []
-const SONIC_RING_SCALES: Array[float] = [1.0, 0.55]
-const SONIC_RING_ALPHAS: Array[float] = [1.0, 0.5]
+# `_build_sonic_rings()`'s own doc comment. A SINGLE ring now, attached right
+# at the bolt's own tail -- an earlier version built a second, bigger ring
+# right at the bolt's own nose too, removed per feedback: it wasn't
+# noticeable in actual play.
+var _sonic_ring: MeshInstance3D = null
+# Bumped up from the old (removed) pair's fainter back-ring alpha of 0.5 --
+# it used to be the fainter of two, now it's the only ring doing the job,
+# so it needs to carry a bit more presence on its own.
+const SONIC_RING_ALPHA: float = 0.6
+# Darker than `CombatUtils.get_damage_color()`'s bright purple (what the
+# Orb's own accretion disk uses, via `_build_ring()`) -- per feedback, this
+# ring reads better in the near-black "event horizon" shade instead. Exact
+# match for combat_utils.gd's SCHOOL_SHADER_PRESETS[VOID].albedo_color --
+# authored twice deliberately, not shared via a helper, same pattern as
+# PRESETS[POISON]'s own "particle_color" above (this file and that shader-
+# preset builder are separate files/architectures on purpose -- see this
+# file's own top doc comment). Hardcoded (not read from `_damage_type`)
+# since `_build_sonic_rings()` is only ever reached by a `has_ring` school,
+# currently just Void.
+const SONIC_RING_COLOR: Color = Color(0.05, 0.01, 0.09)
 # Tunable sizing/spacing, overridable per-archetype (see `configure()`'s own
 # `sonic_ring_tuning` doc comment) -- these are the DEFAULTS, i.e. what
 # Line AoE Bolt gets since it doesn't pass an override. Standard Bolt passes
 # its own tuned dictionary instead, so retuning one never silently drags
 # the other along with it (they're two different mesh shapes/sizes, so one
-# shared set of numbers was never going to suit both).
+# shared set of numbers was never going to suit both). "offset_scale": 1.0
+# sits the ring exactly at the mesh's own tail face (no gap), same "touches
+# the silhouette" idea `_build_ring()` uses for the Orb's disk.
 const SONIC_RING_DEFAULT_TUNING: Dictionary = {
-	"radius_scale": 0.5, "outer_scale": 1.6,
-	"front_offset_scale": 0.25, "back_offset_scale": 0.5,
+	"radius_scale": 0.5, "outer_scale": 1.6, "offset_scale": 1.0,
 }
-# How far, in WORLD units, each ring sits from the live position along the
-# travel direction -- positive = forward (toward the nose), negative =
-# backward (toward the tail). Computed once in `_build_sonic_rings()`, one
-# value per ring (index-matched to `_sonic_rings`) so the front and back
-# ring can be tuned independently instead of sharing one offset.
-var _sonic_ring_offsets: Array[float] = []
-var _sonic_ring_backward: Vector3 = Vector3.ZERO
 
 
 ## `search_root` is optional -- auto-discovers the parent's own subtree the
@@ -229,7 +238,8 @@ var _sonic_ring_backward: Vector3 = Vector3.ZERO
 ## own hole in the middle IS the point of that look). Chain Bolt passes
 ## true instead -- per feedback its ring should be a solid filled disc, no
 ## hole. Only meaningful when `allow_ring` is also true (Orb/Chain Bolt) --
-## ignored otherwise (`_build_sonic_rings()`'s rings are already filled).
+## ignored otherwise (`_build_sonic_rings()`'s ring is always a fixed-hole
+## annulus, not configurable via this param).
 ## `sonic_ring_tuning` -- per-*call* override for `_build_sonic_rings()`'s
 ## sizing/spacing (see `SONIC_RING_DEFAULT_TUNING`'s own comment on why this
 ## is per-archetype, not per-school) -- empty dict (default, Line AoE Bolt)
@@ -271,7 +281,7 @@ func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = 
 		if allow_ring:
 			_build_ring(mesh_radius, ring_filled)
 		else:
-			_build_sonic_rings(mesh_aabb, backward_direction_world, sonic_ring_tuning)
+			_build_sonic_rings(mesh_aabb, sonic_ring_tuning)
 
 	var trail_amount: int = preset.get("trail_amount", 0)
 
@@ -409,11 +419,10 @@ func _teardown_particles() -> void:
 		remove_child(_ring_mesh)
 		_ring_mesh.queue_free()
 		_ring_mesh = null
-	for ring in _sonic_rings:
-		if ring != null:
-			remove_child(ring)
-			ring.queue_free()
-	_sonic_rings.clear()
+	if _sonic_ring != null:
+		remove_child(_sonic_ring)
+		_sonic_ring.queue_free()
+		_sonic_ring = null
 	_trail_positions.clear()
 	_trail_ages.clear()
 	_trail_elapsed = 0.0
@@ -745,22 +754,17 @@ func _build_trail(mesh_width: float) -> void:
 
 
 ## Shared annulus mesh builder -- used by both the Orb's rigid accretion
-## disk (`_build_ring()`) and the traveling sonic-boom rings
-## (`_build_sonic_rings()`) below. `basis_a`/`basis_b` are two perpendicular
-## unit vectors spanning the ring's PLANE -- default (RIGHT, FORWARD) lies
-## flat in local XZ (horizontal), the "fixed-camera-angle reads it as a
-## tilted ellipse" shortcut `_build_ring()` uses for a stationary orb (see
-## that function's own doc comment). `_build_sonic_rings()` passes a
-## different pair instead -- perpendicular to the bolt's OWN travel
-## direction, so the ring faces along the flight path like a hoop the bolt
-## flies through (a real sound-barrier shockwave ring), not a flat disk lying
-## under it -- a ground-parallel ring next to this project's overhead-ish
-## camera reads as a flat glow/shadow patch, not a recognizable ring, which
-## is exactly the bug this parameter exists to fix. `inner_alpha` lets a
-## fainter/older ring (sonic rings further back along the trail) start
-## partway-faded at its own inner edge instead of fully opaque -- the outer
-## edge always fades the rest of the way to 0 regardless, same per-vertex-
-## alpha technique the trail uses.
+## disk (`_build_ring()`) and the bolt's own tail ring (`_build_sonic_rings()`)
+## below. `basis_a`/`basis_b` are two perpendicular unit vectors spanning the
+## ring's PLANE -- default (RIGHT, FORWARD) lies flat in local XZ
+## (horizontal), the "fixed-camera-angle reads it as a tilted ellipse"
+## shortcut `_build_ring()` uses for the stationary Orb (see that function's
+## own doc comment). `_build_sonic_rings()` passes (RIGHT, UP) instead --
+## normal along local FORWARD, perpendicular to travel, a hoop the bolt's
+## tail sits inside of (see that function's own doc comment on why). `inner_
+## alpha` lets a fainter ring start partway-faded at its own inner edge
+## instead of fully opaque -- the outer edge always fades the rest of the
+## way to 0 regardless, same per-vertex-alpha technique the trail uses.
 static func _build_ring_mesh(inner_radius: float, outer_radius: float, color: Color, inner_alpha: float = 1.0, basis_a: Vector3 = Vector3.RIGHT, basis_b: Vector3 = Vector3.FORWARD) -> ArrayMesh:
 	var segments := 32
 	var verts := PackedVector3Array()
@@ -818,8 +822,7 @@ func _build_ring(mesh_radius: float, filled: bool = false) -> void:
 	mesh_inst.name = "Ring"
 	var color := CombatUtils.get_damage_color(_damage_type)
 	# touches the sphere's own silhouette, no gap -- unless `filled`, which
-	# collapses the inner edge to the center point instead (same technique
-	# `_build_sonic_rings()` uses for its own filled discs).
+	# collapses the inner edge to the center point instead.
 	var inner_radius: float = 0.0 if filled else mesh_radius
 	mesh_inst.mesh = _build_ring_mesh(inner_radius, mesh_radius * 2.0, color)
 	mesh_inst.material_override = _build_ring_material(color)
@@ -827,115 +830,65 @@ func _build_ring(mesh_radius: float, filled: bool = false) -> void:
 	_ring_mesh = mesh_inst
 
 
-## Void's stand-in for the accretion disk when `allow_ring` is false -- 2
-## rings, BOTH anchored close to the bolt itself (not spread far along the
-## trail -- an earlier version sampled `_trail_positions` history for a 3rd,
-## further-back ring, but that only became correctly positioned once the
-## trail had built up some length, reading as "appears late"; per feedback,
-## simpler and more reliable): index 0 sits AT the bolt's own live position,
-## sized to the mesh's actual cross-section so its inner edge touches the
-## mesh with no gap ("around the bolt"); index 1 is smaller/fainter and
-## sits a small fixed distance behind, along the SAME travel direction, at
-## roughly the bolt's own tail ("a smaller one at the end of the bolt").
-## Reads as the shockwave rings a jet leaves behind breaking the sound
-## barrier, per feedback -- a flying Void object shouldn't drag a rigid
-## disk behind it (see `_build_ring()`'s own doc comment on why
-## `allow_ring` exists), but shouldn't get NOTHING either.
+## Void's stand-in for the accretion disk when `allow_ring` is false -- a
+## single ring attached right at the bolt's own tail. A PLAIN child (NOT
+## `top_level`), unlike every other dressing this function's predecessor
+## tried -- this node (`SchoolVFXComponent`) is already a normal child of
+## the bolt root, which itself turns to face its travel direction every
+## cast via `look_at()` (see standard_bolt.gd/line_aoe_bolt.gd's own
+## `initialize()`). A plain child at a fixed LOCAL offset therefore rides
+## along for free, position AND rotation, through Godot's ordinary
+## parent-child transform propagation -- no per-frame code needed at all.
+## Two earlier, more complicated versions were tried and dropped: one
+## computed a fresh WORLD-space position every physics frame from a
+## caller-supplied "backward" vector; another sourced it from this
+## component's own recorded trail history (`_trail_positions`), which
+## degenerates to sitting exactly ON the bolt for a stationary preview or a
+## bolt that hasn't lived long enough to build up trail history yet (most
+## of a fast bolt's short flight). Both were solving a problem that doesn't
+## exist once the node is just a normal child.
 ##
-## Faces ALONG the travel direction (perpendicular-to-travel plane, not
-## flat/ground-parallel) -- a real sound-barrier shockwave is a ring the
-## aircraft flies THROUGH. NOTE: a rigid flat plane like this IS edge-on
-## (hard to see) from whatever viewing angle happens to line up with it --
-## known tradeoff, kept anyway per feedback (preferred over the
-## ground-parallel alternative, which never goes edge-on but also never
-## reads as a real "ring" from most angles).
+## PERPENDICULAR to travel (`_build_ring_mesh()`'s RIGHT/UP basis, normal =
+## local FORWARD) -- a hoop the bolt's own tail sits inside of, same "jet
+## breaking the sound barrier" shockwave-ring look per feedback, not a flat
+## disc lying under it.
 ##
-## `mesh_aabb` (see `configure()`'s own comment on it) drives the ring's
-## radius (its cross-section perpendicular to travel -- X/Y extent, NOT
-## `mesh_radius`'s longest-axis scalar, which is dominated by the mesh's
-## LENGTH on an elongated shape like the Line AoE Bolt's lance and left the
-## ring floating well outside the mesh's actual width).
+## ANNULUS (a real hole in the middle, not a filled disc) -- per feedback,
+## so it reads as a distinct ring shape instead of a solid blob.
 ##
-## `radius_scale`/`outer_scale`/`front_offset_scale`/`back_offset_scale`
-## (read from the `tuning` dict, see `SONIC_RING_DEFAULT_TUNING`'s own
-## comment on why this is per-*call*, not a hardcoded constant) each apply
-## to BOTH rings' base sizing, but the front/back OFFSETS are independent
-## per ring -- `front_offset_scale` moves ring 0 forward, `back_offset_scale`
-## moves ring 1 backward, from the SAME live position, not from each other
-## -- so tuning one never drags the other along with it.
-##
-## `top_level = true`, same as `_trail_mesh` -- world-space points, not
-## glued to this node's own (moving) local transform; repositioned every
-## frame off the LIVE position in `_update_sonic_rings()`, not sampled from
-## history, so both rings are correctly placed from the very first frame.
-## Cheap: 2 small STATIC meshes built once here, no `GPUParticles3D`, no
-## particle-budget cost.
-func _build_sonic_rings(mesh_aabb: AABB, backward_direction_world: Vector3, tuning: Dictionary = {}) -> void:
-	var color := CombatUtils.get_damage_color(_damage_type)
-	var backward: Vector3 = backward_direction_world
-	if backward.length_squared() < 0.0001:
-		backward = Vector3.BACK
-	backward = backward.normalized()
-	var forward: Vector3 = -backward
-	var basis_a: Vector3 = forward.cross(Vector3.UP)
-	if basis_a.length_squared() < 0.0001:
-		basis_a = Vector3.RIGHT
-	basis_a = basis_a.normalized()
-	var basis_b: Vector3 = forward.cross(basis_a).normalized()
+## `mesh_aabb` (see `configure()`'s own comment on it) drives both the
+## ring's radius (its cross-section perpendicular to travel -- X/Y extent,
+## NOT `mesh_radius`'s longest-axis scalar, which is dominated by the
+## mesh's LENGTH on an elongated shape like the Line AoE Bolt's lance and
+## would leave the ring floating well outside the mesh's actual width) and
+## its position (`offset_scale` in `tuning`, see `SONIC_RING_DEFAULT_TUNING`'s
+## own comment, places it at the mesh's own back face by default).
+func _build_sonic_rings(mesh_aabb: AABB, tuning: Dictionary = {}) -> void:
+	var color := SONIC_RING_COLOR
 	var radius_scale: float = tuning.get("radius_scale", SONIC_RING_DEFAULT_TUNING.radius_scale)
 	var outer_scale: float = tuning.get("outer_scale", SONIC_RING_DEFAULT_TUNING.outer_scale)
-	var front_offset_scale: float = tuning.get("front_offset_scale", SONIC_RING_DEFAULT_TUNING.front_offset_scale)
-	var back_offset_scale: float = tuning.get("back_offset_scale", SONIC_RING_DEFAULT_TUNING.back_offset_scale)
+	var offset_scale: float = tuning.get("offset_scale", SONIC_RING_DEFAULT_TUNING.offset_scale)
 	# Half the mesh's actual width/height (perpendicular to travel), NOT
-	# `mesh_radius` (half the LONGEST axis -- on a long thin mesh that's
-	# dominated by length, not the cross-section a travel-facing ring
-	# actually needs to hug). Floored so a degenerate/tiny mesh still gets a
-	# visible ring instead of a zero-size one.
+	# `mesh_radius` (half the LONGEST axis -- see doc comment above).
+	# Floored so a degenerate/tiny mesh still gets a visible ring instead of
+	# a zero-size one.
 	var cross_radius: float = maxf(maxf(mesh_aabb.size.x, mesh_aabb.size.y) * radius_scale, 0.05)
-	_sonic_ring_backward = backward
-	_sonic_ring_offsets = [mesh_aabb.size.z * front_offset_scale, -mesh_aabb.size.z * back_offset_scale]
-	for i in SONIC_RING_SCALES.size():
-		var mesh_inst := MeshInstance3D.new()
-		mesh_inst.name = "SonicRing%d" % i
-		mesh_inst.top_level = true
-		var scale: float = SONIC_RING_SCALES[i]
-		# FILLED disc, not an annulus -- inner radius 0 collapses the strip's
-		# inner edge to a single center point per angle, same technique the
-		# particle textures already use for a solid-to-faded circle (see
-		# `_get_particle_texture()`'s "circle" shape) -- per feedback, a
-		# donut with visible daylight through the middle read wrong; a solid
-		# glow the mesh sits inside of is what was wanted.
-		var inner_radius: float = 0.0
-		var outer_radius: float = cross_radius * scale * outer_scale
-		mesh_inst.mesh = _build_ring_mesh(inner_radius, outer_radius, color, SONIC_RING_ALPHAS[i], basis_a, basis_b)
-		mesh_inst.material_override = _build_ring_material(color)
-		# `add_child()` BEFORE setting `global_position` -- the setter reads
-		# the node's CURRENT global transform to modify just the origin, and
-		# a node not yet inside the tree has none yet (Godot logs
-		# "!is_inside_tree()" and silently substitutes identity instead of
-		# actually erroring, which is what made this easy to miss until the
-		# console showed it).
-		add_child(mesh_inst)
-		mesh_inst.global_position = global_position
-		_sonic_rings.append(mesh_inst)
+	var outer_radius: float = cross_radius * outer_scale
+	var inner_radius: float = outer_radius * 0.5  # the hole -- see doc comment above
 
-
-## Repositions the sonic rings (see `_build_sonic_rings()`) every physics
-## frame -- cheap, just 1-2 `global_position` assignments on already-built
-## STATIC meshes, no mesh rebuild. Each ring tracks this frame's live
-## position plus its OWN entry in `_sonic_ring_offsets` (index-matched,
-## along the travel direction -- positive forward, negative backward),
-## smooth every frame same as the ribbon's own live leading edge (see
-## `_rebuild_trail_mesh()`'s doc comment on why that matters for a fast
-## bolt). Not sampled from trail history, so both are correctly placed
-## immediately instead of needing the trail to grow first.
-func _update_sonic_rings() -> void:
-	if _sonic_rings.is_empty():
-		return
-	var forward: Vector3 = -_sonic_ring_backward
-	for i in _sonic_rings.size():
-		var offset: float = _sonic_ring_offsets[i] if i < _sonic_ring_offsets.size() else 0.0
-		_sonic_rings[i].global_position = global_position + forward * offset
+	var mesh_inst := MeshInstance3D.new()
+	mesh_inst.name = "SonicRing"
+	mesh_inst.mesh = _build_ring_mesh(inner_radius, outer_radius, color, SONIC_RING_ALPHA, Vector3.RIGHT, Vector3.UP)
+	mesh_inst.material_override = _build_ring_material(color)
+	# Local offset behind the mesh's own tail -- forward is local -Z (Godot
+	# convention, matches this node's own bolt-root parent's `look_at()`),
+	# so "behind" is +Z. `mesh_aabb.get_center()` (not just the raw offset)
+	# accounts for the mesh possibly sitting off-center relative to this
+	# node's own local origin, same reasoning `_build_particles()`'s box
+	# emission uses `mesh_aabb.get_center()` for its own offset.
+	mesh_inst.position = mesh_aabb.get_center() + Vector3(0, 0, mesh_aabb.size.z * 0.5 * offset_scale)
+	add_child(mesh_inst)
+	_sonic_ring = mesh_inst
 
 
 ## Records this node's current world position on a throttled timer
@@ -968,7 +921,6 @@ func _physics_process(delta: float) -> void:
 				_trail_ages.pop_back()
 				_trail_positions.pop_back()
 		_rebuild_trail_mesh()
-	_update_sonic_rings()
 
 ## Rebuilds the trail as a flat triangle-strip ribbon -- newest end at full
 ## width/opacity, tapering to nothing at the oldest end. The very first

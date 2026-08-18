@@ -70,8 +70,8 @@ func _apply_preview() -> void:
 
 ## Called by each subclass's own initialize()/setup() with the real cast
 ## damage_type. `allow_ring` defaults off -- Standard/Line AoE Bolt don't
-## pass it, so they keep getting `_build_sonic_rings()`'s 2-ring travel
-## effect (see school_vfx_component.gd's `allow_ring` doc). Chain Bolt
+## pass it, so they keep getting `_build_sonic_rings()`'s single trailing
+## ring (see school_vfx_component.gd's `allow_ring` doc). Chain Bolt
 ## passes `true` -- per feedback it should look like the Orb's own single
 ## flat accretion disk instead, not the sonic-ring pair the other bolts use.
 ## `backward_direction_world` is this bolt's own "opposite of travel"
