@@ -59,6 +59,9 @@ static var _flat_icon_tex: GradientTexture2D = null
 const ICON_MASK_SHADER := preload("res://scenes/ui/draft_card_icon_mask.gdshader")
 static var _icon_mask_material: ShaderMaterial = null
 
+const GLOW_SHADER := preload("res://scenes/ui/draft_card_glow.gdshader")
+
+@onready var glow_rect: ColorRect        = $GlowRect
 @onready var icon_rect: TextureRect      = $IconRect
 @onready var name_label: Label           = $NameLabel
 @onready var type_pill: Label            = $TypePillLabel
@@ -92,6 +95,17 @@ func _ready() -> void:
 	# — no manual "icon_size" knob to remember to update.
 	icon_rect.resized.connect(_sync_icon_mask_size)
 	_sync_icon_mask_size()
+	# Glow color differs PER CARD (a draft shows Common/Rare/Epic side by
+	# side), unlike the icon mask above — so this material is always
+	# per-instance, never the shared-static trick, or every visible card
+	# would fight over one material's glow_color (the same hot-reload-style
+	# gotcha this project already hit once with a shared shader material).
+	var glow_mat := ShaderMaterial.new()
+	glow_mat.shader = GLOW_SHADER
+	glow_mat.set_shader_parameter("card_size", Vector2(249.0, 566.0))
+	glow_mat.set_shader_parameter("corner_radius", 10.0)
+	glow_mat.set_shader_parameter("glow_radius", 12.0)
+	glow_rect.material = glow_mat
 	_apply_editor_preview()
 
 func _sync_icon_mask_size() -> void:
@@ -138,6 +152,7 @@ func _rebuild_bg_styles() -> void:
 		add_theme_stylebox_override("hover", _get_bg_style(r))
 		add_theme_stylebox_override("pressed", _get_bg_style(r, true))
 		add_theme_stylebox_override("disabled", _get_bg_style(r))
+		_refresh_glow(r)
 
 func setup(card_data: Resource) -> void:
 	_card_data = card_data
@@ -158,6 +173,20 @@ func _refresh_bg_style() -> void:
 	add_theme_stylebox_override("hover", _get_bg_style(r))
 	add_theme_stylebox_override("pressed", _get_bg_style(r, true))
 	add_theme_stylebox_override("disabled", _get_bg_style(r))
+	_refresh_glow(r)
+
+# Rarity-tinted glow behind the card (GlowRect's ShaderMaterial —
+# draft_card_glow.gdshader — draws a soft rounded-rect falloff around the
+# card's own visible frame). Common: gray, Rare: blue, Epic: purple.
+const RARITY_GLOW_COLORS := {
+	0: Color(0.75, 0.75, 0.75, 0.85),
+	1: Color(0.3, 0.55, 1.0, 0.85),
+	2: Color(0.65, 0.25, 0.95, 0.85),
+}
+
+func _refresh_glow(rarity: int) -> void:
+	var glow: Color = RARITY_GLOW_COLORS.get(rarity, RARITY_GLOW_COLORS[0])
+	glow_rect.material.set_shader_parameter("glow_color", glow)
 
 # Same rarity-tinted card art as before, now used as the Button's normal/
 # hover/pressed/disabled style instead of a PanelContainer's single "panel"

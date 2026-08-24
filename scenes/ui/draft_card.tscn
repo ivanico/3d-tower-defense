@@ -11,6 +11,14 @@ focus_mode = 0
 text = ""
 script = ExtResource("1")
 
+[node name="GlowRect" type="ColorRect" parent="."]
+mouse_filter = 2
+offset_left = 64.0
+offset_top = 6.0
+offset_right = 337.0
+offset_bottom = 596.0
+color = Color(1, 1, 1, 1)
+
 [node name="NameLabel" type="Label" parent="."]
 mouse_filter = 2
 offset_left = 85.0
