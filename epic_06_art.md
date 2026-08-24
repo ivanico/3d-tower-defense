@@ -244,7 +244,7 @@ Create a `GPUParticles3D` subscene for each VFX type:
 
 **Acceptance criteria**:
 - [ ] No `ColorRect` placeholders remain in HUD or draft UI.
-- [ ] Each of the 3 v1 spells and 3 v1 upgrades shows its correct icon in
+- [x] Each of the 3 v1 spells and 3 v1 upgrades shows its correct icon in
 	  the draft card.
 
 ---
@@ -282,5 +282,5 @@ Create a `GPUParticles3D` subscene for each VFX type:
 - [ ] Shadows and lighting read correctly on the real models from multiple
 	  camera-distance test positions (re-verify Task 06-04's tuning didn't
 	  regress after the arena swap in Task 06-05).
-- [ ] Draft cards show correct spell/upgrade icons and rarity borders.
+- [x] Draft cards show correct spell/upgrade icons and rarity borders.
 - [ ] Fix all visual glitches before moving to Epic 07.

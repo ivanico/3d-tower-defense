@@ -172,6 +172,9 @@ The three menu screens are broken down piece by piece above. The rest:
 | 3D tower preview (garage) | `scenes/ui/widget/tower_preview_3d/` |
 | Meta row (codex list rows) | `scenes/ui/widget/meta_row/` |
 | Primary / secondary buttons | `scenes/ui/widget/primary_button/`, `secondary_button/` |
+| Spell/upgrade icon (rounded mask + school-color fallback) | `scenes/ui/widget/spell_icon/` |
+| Spell rank pips (diamond row, draft card + HUD row) | `scenes/ui/widget/spell_rank_pips/` |
+| HUD spell-stack row (icon + pick-count per active spell, replaces the OFF/ARM/UTL tag row — Draft Card polish follow-up) | `scenes/ui/widget/spell_stack_row/` |
 
 ### Art
 

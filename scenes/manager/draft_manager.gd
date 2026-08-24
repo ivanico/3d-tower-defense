@@ -73,6 +73,15 @@ func _close_draft() -> void:
 
 func get_draft_cards() -> Array:
 	var pool := SpellRegistry.get_all_cards()
+	if _draft_trigger == "first_spell":
+		# The tower now spawns with zero spells (tower.gd no longer
+		# auto-equips starting_spell_id), so this pick must actually grant
+		# an attack — stat upgrades and PASSIVE-category spells (armor %,
+		# etc.) don't call tower.add_spell() at all (see
+		# GameState.apply_card), so either one here would leave the player
+		# with STILL no way to attack going into wave 1.
+		pool = SpellRegistry.all_spells.filter(
+			func(c): return c.spell_category != Constants.SpellCategory.PASSIVE)
 	var eligible := pool.filter(func(c): return _is_eligible(c))
 	return _weighted_draw(eligible, Constants.DRAFT_CARDS_SHOWN)
 

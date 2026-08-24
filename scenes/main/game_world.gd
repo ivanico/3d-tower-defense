@@ -21,6 +21,15 @@ func _ready() -> void:
 	EventBus.tower_died.connect(_on_tower_died)
 	EventBus.phase_changed.connect(_on_phase_changed)
 	EventBus.boss_died.connect(_on_boss_died)
+	# No auto-equipped starting spell any more (tower.gd) — the player picks
+	# their opener from a "first_spell" draft instead. Wave 1 is already
+	# running above (per user request: see the arena/enemies for a beat
+	# first) rather than the draft blocking it from the very first frame;
+	# this just waits a moment then opens it like any other mid-wave draft
+	# (level_up already works this way — pause, pick, resume the SAME wave,
+	# no "start the wave after" needed since it's already going).
+	await get_tree().create_timer(1.0).timeout
+	draft_manager.open_draft("first_spell")
 
 func _spawn_tower() -> void:
 	var tower_def: TowerDefinition = GameState.pending_tower_def if GameState.pending_tower_def != null else default_tower_def

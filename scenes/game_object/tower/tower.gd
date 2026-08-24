@@ -26,7 +26,13 @@ func _ready() -> void:
 	health.max_health = definition.base_hp
 	health.current_health = definition.base_hp
 	GameState.start_run(definition)
-	_load_starting_spell()
+	# No auto-equipped starting spell any more — the tower now spawns with
+	# zero spells, and game_world.gd opens a "first_spell" draft immediately
+	# (before wave 1 starts) so the player picks their own opener instead.
+	# _load_starting_spell()/definition.starting_spell_id are unused as of
+	# this change, left in place rather than ripped out along with their
+	# five .tres values and the docs describing the old design
+	# (components.md, spells.md, epic_02/03) — ask if those should go too.
 	_play_idle()
 
 func _play_idle() -> void:
@@ -48,6 +54,12 @@ func add_spell(spell: SpellDefinition) -> void:
 
 func get_stack_count(spell_id: String) -> int:
 	return _spell_stacks.get(spell_id, 0)
+
+## Distinct spells picked this run, in pick order — read-only view for HUD
+## widgets (e.g. the spell-stack row) that need to list what's active
+## without reaching into the private _active_spells array directly.
+func get_active_spells() -> Array[SpellDefinition]:
+	return _active_spells
 
 func _add_spell(spell: SpellDefinition) -> void:
 	if spell == null:

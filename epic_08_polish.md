@@ -265,8 +265,10 @@ real-time shadows active).
 **File**: Various UI scripts
 
 - [ ] All `Button`/tappable UI: `minimum_size` at least `Vector2(80, 80)`.
-- [ ] Draft cards: full-card tap area (not just a small button), per Epic
+- [x] Draft cards: full-card tap area (not just a small button), per Epic
 	  03's existing implementation — confirm here as a check, not a rebuild.
+	  Confirmed: `draft_card.gd`'s root is the `Button` itself (no separate
+	  select button), tap anywhere on the card selects it.
 - [ ] Disable mouse-hover-only states (no mobile hover).
 - [ ] Test on a 1080×1920 device/emulator: confirm no UI clipping.
 - [ ] Audit for `Input.is_action_pressed()` calls that should be

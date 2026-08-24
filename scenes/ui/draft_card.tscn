@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/draft_card.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/spell_rank_pips/spell_rank_pips.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/spell_icon/spell_icon.tscn" id="3"]
 
 [node name="DraftCard" type="Button"]
 custom_minimum_size = Vector2(400, 600)
@@ -30,14 +31,11 @@ theme_override_font_sizes/font_size = 28
 autowrap_mode = 3
 horizontal_alignment = 1
 
-[node name="IconRect" type="TextureRect" parent="."]
-mouse_filter = 2
+[node name="IconRect" parent="." instance=ExtResource("3")]
 offset_left = 110.0
 offset_top = 115.0
 offset_right = 290.0
 offset_bottom = 295.0
-expand_mode = 1
-stretch_mode = 5
 
 [node name="TypePillLabel" type="Label" parent="."]
 mouse_filter = 2

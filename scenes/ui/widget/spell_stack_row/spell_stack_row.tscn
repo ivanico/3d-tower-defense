@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/spell_stack_row/spell_stack_row.gd" id="1"]
+
+[node name="SpellStackRow" type="HBoxContainer"]
+mouse_filter = 2
+theme_override_constants/separation = 10
+script = ExtResource("1")

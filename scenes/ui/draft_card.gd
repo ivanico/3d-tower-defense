@@ -52,17 +52,10 @@ static var _bg_styles := {}
 # One shared pill StyleBoxFlat per color, built on first use.
 static var _pill_styles := {}
 
-# Flat white texture reused by every card's icon slot until real icon art
-# exists — modulated to the spell's school color (spells.md Task S-06).
-static var _flat_icon_tex: GradientTexture2D = null
-
-const ICON_MASK_SHADER := preload("res://scenes/ui/draft_card_icon_mask.gdshader")
-static var _icon_mask_material: ShaderMaterial = null
-
 const GLOW_SHADER := preload("res://scenes/ui/draft_card_glow.gdshader")
 
 @onready var glow_rect: ColorRect        = $GlowRect
-@onready var icon_rect: TextureRect      = $IconRect
+@onready var icon_rect: SpellIcon        = $IconRect
 @onready var name_label: Label           = $NameLabel
 @onready var type_pill: Label            = $TypePillLabel
 @onready var effect_label: Label         = $EffectLabel
@@ -74,29 +67,8 @@ func _ready() -> void:
 	if not Engine.is_editor_hint():
 		pressed.connect(_on_select_pressed)
 	add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	# In the editor, always build a fresh per-instance icon mask material —
-	# the static cache exists to avoid rebuilding this at runtime for every
-	# card, but in the editor it would mean only the FIRST-loaded instance
-	# actually gets a correctly-synced rect_size (see school-shader
-	# hot-reload gotcha this project already hit once with a similar cache).
-	if Engine.is_editor_hint():
-		var mat := ShaderMaterial.new()
-		mat.shader = ICON_MASK_SHADER
-		icon_rect.material = mat
-	elif _icon_mask_material == null:
-		_icon_mask_material = ShaderMaterial.new()
-		_icon_mask_material.shader = ICON_MASK_SHADER
-		icon_rect.material = _icon_mask_material
-	else:
-		icon_rect.material = _icon_mask_material
-	# Keeps the shader's rounding in sync with IconRect's actual size
-	# automatically, however that size gets set (typed into the Inspector,
-	# dragged in the 2D editor, or whatever it ends up at in the real game)
-	# — no manual "icon_size" knob to remember to update.
-	icon_rect.resized.connect(_sync_icon_mask_size)
-	_sync_icon_mask_size()
 	# Glow color differs PER CARD (a draft shows Common/Rare/Epic side by
-	# side), unlike the icon mask above — so this material is always
+	# side), unlike SpellIcon's mask material — so this one is always
 	# per-instance, never the shared-static trick, or every visible card
 	# would fight over one material's glow_color (the same hot-reload-style
 	# gotcha this project already hit once with a shared shader material).
@@ -107,10 +79,6 @@ func _ready() -> void:
 	glow_mat.set_shader_parameter("glow_radius", 12.0)
 	glow_rect.material = glow_mat
 	_apply_editor_preview()
-
-func _sync_icon_mask_size() -> void:
-	if icon_rect.material:
-		icon_rect.material.set_shader_parameter("rect_size", icon_rect.size)
 
 # Editor-only stand-in content (real gameplay always calls setup() with real
 # spell/upgrade data instead, which overwrites all of this). Lets this scene
@@ -124,11 +92,9 @@ func _apply_editor_preview() -> void:
 	var pill_colors := {0: Color(0.75, 0.75, 0.75), 1: Color(0.3, 0.55, 1.0), 2: Color(0.65, 0.25, 0.95)}
 	var pill_texts := {0: "Common", 1: "Rare", 2: "Epic"}
 	var color: Color = pill_colors.get(preview_rarity, pill_colors[0])
-	# setup() normally assigns a real spell icon (_setup_icon) — preview mode
-	# has no spell to look up, so it needs to fill this in itself or the
-	# TextureRect stays null (renders as nothing through the mask shader).
-	icon_rect.texture = _get_flat_icon()
-	icon_rect.modulate = color
+	# setup() normally assigns a real spell icon (icon_rect.setup) — preview
+	# mode has no spell to look up, so it needs to fill this in itself.
+	icon_rect.setup_preview(color)
 	type_pill.visible = true
 	type_pill.text = pill_texts.get(preview_rarity, "Common")
 	type_pill.add_theme_stylebox_override("normal", _get_pill_style(color))
@@ -161,7 +127,7 @@ func setup(card_data: Resource) -> void:
 		n = card_data.get("upgrade_name")
 	name_label.text = str(n) if n != null else "?"
 	_refresh_bg_style()
-	_setup_icon(card_data)
+	icon_rect.setup(card_data)
 	_setup_type_pill(card_data)
 	_setup_effect_line(card_data)
 	_setup_level_pips(card_data)
@@ -210,30 +176,6 @@ func _get_bg_style(rarity: int, pressed_state: bool = false) -> StyleBoxTexture:
 			sb.modulate_color = Color(0.8, 0.8, 0.8, 1)
 		_bg_styles[key] = sb
 	return _bg_styles[key]
-
-func _setup_icon(card_data: Resource) -> void:
-	var icon := SpellRegistry.get_card_icon(card_data)
-	var dtype = card_data.get("damage_type")
-	if icon != null:
-		# Real icon art: explicit .tres icon or the assets.md ID-convention lookup.
-		icon_rect.texture = icon
-		icon_rect.modulate = Color.WHITE
-	else:
-		icon_rect.texture = _get_flat_icon()
-		# School-colored block: Fire/Frost/Void/Poison/Nature tellable at a
-		# glance. Stat upgrades (no damage_type) get a neutral gray.
-		icon_rect.modulate = CombatUtils.get_damage_color(dtype) if dtype != null else Color(0.75, 0.75, 0.75)
-
-static func _get_flat_icon() -> GradientTexture2D:
-	if _flat_icon_tex == null:
-		var gradient := Gradient.new()
-		gradient.colors = PackedColorArray([Color.WHITE])
-		gradient.offsets = PackedFloat32Array([0.0])
-		_flat_icon_tex = GradientTexture2D.new()
-		_flat_icon_tex.gradient = gradient
-		_flat_icon_tex.width = 64
-		_flat_icon_tex.height = 64
-	return _flat_icon_tex
 
 # Pill under the icon: damage school for a spell (colored to match), or the
 # first synergy tag for a stat upgrade (which has no damage_type).

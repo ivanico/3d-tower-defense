@@ -26,7 +26,15 @@ func _ready() -> void:
 func get_all_cards() -> Array:
 	return all_spells + all_stat_upgrades
 
-func get_card_icon(card_data: Resource) -> Texture2D:
+## static: touches no autoload state (just card_data fields + ResourceLoader),
+## and MUST stay callable without going through the SpellRegistry singleton
+## instance — a @tool script (SpellIcon) calling it via the autoload name
+## crashes in the editor, because non-@tool autoloads are swapped for a
+## placeholder instance there. Called normally (SpellRegistry.get_card_icon())
+## still works fine at real runtime; SpellIcon instead calls it via its
+## preloaded script directly, which resolves the static method without ever
+## touching the (possibly-placeholder) singleton node.
+static func get_card_icon(card_data: Resource) -> Texture2D:
 	var explicit = card_data.get("icon")
 	if explicit != null:
 		return explicit

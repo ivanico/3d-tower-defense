@@ -23,14 +23,45 @@ func _on_draft_opened() -> void:
 		_close_tween.kill()
 		_close_tween = null
 	var dm := _draft_manager()
-	title_label.text = "Wave Cleared!" if dm._draft_trigger == "wave_clear" else "Level Up!"
+	match dm._draft_trigger:
+		"wave_clear": title_label.text = "Wave Cleared!"
+		"first_spell": title_label.text = "First Spell!"
+		_: title_label.text = "Level Up!"
 	for child in card_container.get_children():
 		child.queue_free()
+	var card_index := 0
 	for card_data in dm._draft_cards:
+		# The card sits inside a plain-Control WRAPPER, itself the direct
+		# HBoxContainer child, instead of the card being a direct child of
+		# the container — Container.fit_child_in_rect() resets scale to 1
+		# on every direct child it lays out (ui_tuning.md "A Container
+		# silently un-rotates its children"), which was silently stomping
+		# the scale-in animation below on every card whose tween hadn't
+		# already finished by the container's next sort pass. The wrapper
+		# eats that reset (its own scale is never touched); the card inside
+		# it is safe to animate.
+		var wrapper := Control.new()
+		wrapper.custom_minimum_size = Vector2(400.0, 600.0)
+		card_container.add_child(wrapper)
 		var card_node: DraftCard = DRAFT_CARD_SCENE.instantiate()
-		card_container.add_child(card_node)
+		wrapper.add_child(card_node)
 		card_node.setup(card_data)
 		card_node.card_selected.connect(_on_card_selected)
+		# Scale-in pop instead of just appearing at full size — pivot at the
+		# card's own center (its size is fixed at 400x600, draft_card.tscn)
+		# so it grows from the middle, not the top-left corner (a Control's
+		# default pivot). TRANS_BACK overshoots slightly past 1.0 before
+		# settling, which is what makes it read as a "pop" rather than a
+		# plain linear grow. Each card's tween is independent, so a small
+		# per-card stagger (index * 0.1s start delay) reads as a left-to-
+		# right cascade instead of all three popping in simultaneously.
+		card_node.pivot_offset = Vector2(200.0, 300.0)
+		card_node.scale = Vector2.ZERO
+		var card_tween := create_tween()
+		card_tween.tween_interval(card_index * 0.1)
+		card_tween.tween_property(card_node, "scale", Vector2.ONE, 0.65) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		card_index += 1
 	panel.visible = true
 	var tween := create_tween()
 	tween.tween_property(dim_bg, "modulate:a", 1.0, 0.2)

@@ -6,7 +6,7 @@
 [ext_resource type="Resource" uid="uid://bx10rnihvihju" path="res://resources/towers/tower_ancient_tower.tres" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/ui/draft_ui.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/ui/synergy_banner.tscn" id="8"]
-[ext_resource type="PackedScene" path="res://scenes/ui/tag_row_widget.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/spell_stack_row/spell_stack_row.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/manager/wave_manager.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://scenes/manager/draft_manager.tscn" id="11"]
 [ext_resource type="Resource" uid="uid://c5el3moeg23y4" path="res://resources/chapters/chapter_01.tres" id="12"]
@@ -97,7 +97,7 @@ theme_override_font_sizes/font_size = 64
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TagRowWidget" parent="HUD" instance=ExtResource("9")]
+[node name="SpellStackRow" parent="HUD" instance=ExtResource("9")]
 offset_left = 170.0
 offset_top = 268.0
 offset_right = 746.0
