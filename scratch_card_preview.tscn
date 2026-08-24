@@ -1,0 +1,37 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/draft_card.tscn" id="1"]
+
+[node name="ScratchCardPreview" type="Control"]
+custom_minimum_size = Vector2(1080, 1920)
+offset_right = 1080.0
+offset_bottom = 1920.0
+
+[node name="BG" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.06, 0.08, 0.05, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer"]
+theme_override_constants/separation = 19
+
+[node name="Card1" parent="CenterContainer/HBoxContainer" instance=ExtResource("1")]
+layout_mode = 2
+preview_name = "Lightning Storm+"
+preview_rarity = 0
+
+[node name="Card2" parent="CenterContainer/HBoxContainer" instance=ExtResource("1")]
+layout_mode = 2
+preview_name = "Orb of Corruption+"
+preview_rarity = 1
+
+[node name="Card3" parent="CenterContainer/HBoxContainer" instance=ExtResource("1")]
+layout_mode = 2
+preview_name = "Ice Crystal+"
+preview_rarity = 2

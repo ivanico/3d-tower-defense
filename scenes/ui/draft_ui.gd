@@ -5,7 +5,7 @@ const DRAFT_CARD_SCENE := preload("res://scenes/ui/draft_card.tscn")
 @onready var dim_bg: ColorRect         = $DimBG
 @onready var panel: PanelContainer     = $FullscreenContainer/Panel
 @onready var card_container: HBoxContainer = $FullscreenContainer/Panel/VBoxContainer/CardContainer
-@onready var subtitle_label: Label     = $FullscreenContainer/Panel/VBoxContainer/SubtitleLabel
+@onready var title_label: Label        = $FullscreenContainer/Panel/VBoxContainer/TitleLabel
 
 var _close_tween: Tween = null
 
@@ -23,7 +23,7 @@ func _on_draft_opened() -> void:
 		_close_tween.kill()
 		_close_tween = null
 	var dm := _draft_manager()
-	subtitle_label.text = "Wave Cleared!" if dm._draft_trigger == "wave_clear" else "Level Up!"
+	title_label.text = "Wave Cleared!" if dm._draft_trigger == "wave_clear" else "Level Up!"
 	for child in card_container.get_children():
 		child.queue_free()
 	for card_data in dm._draft_cards:

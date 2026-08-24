@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/spell_rank_pips/spell_rank_pips.gd" id="1"]
+
+[node name="SpellRankPips" type="Control"]
+script = ExtResource("1")
+filled = 1
+max_pips = 5

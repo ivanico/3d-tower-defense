@@ -1,35 +1,59 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/draft_card.gd" id="1"]
-[ext_resource type="Script" path="res://scenes/ui/widget/shadow_button/shadow_button.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/spell_rank_pips/spell_rank_pips.tscn" id="2"]
 
-[node name="DraftCard" type="PanelContainer"]
+[node name="DraftCard" type="Button"]
+custom_minimum_size = Vector2(320, 700)
+offset_right = 320.0
+offset_bottom = 700.0
+focus_mode = 0
+text = ""
 script = ExtResource("1")
-custom_minimum_size = Vector2(160, 260)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-theme_override_constants/separation = 8
+[node name="NameLabel" type="Label" parent="."]
+mouse_filter = 2
+offset_left = 20.0
+offset_top = 45.0
+offset_right = 300.0
+offset_bottom = 95.0
+theme_override_font_sizes/font_size = 22
+autowrap_mode = 3
+horizontal_alignment = 1
 
-[node name="RarityBorder" type="ColorRect" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 8)
-color = Color(0.55, 0.55, 0.55, 1)
-
-[node name="IconRect" type="TextureRect" parent="VBoxContainer"]
-custom_minimum_size = Vector2(64, 64)
-size_flags_horizontal = 4
+[node name="IconRect" type="TextureRect" parent="."]
+mouse_filter = 2
+offset_left = 75.0
+offset_top = 105.0
+offset_right = 245.0
+offset_bottom = 275.0
 expand_mode = 1
 stretch_mode = 5
 
-[node name="NameLabel" type="Label" parent="VBoxContainer"]
-autowrap_mode = 3
-theme_override_font_sizes/font_size = 16
+[node name="TypePillLabel" type="Label" parent="."]
+mouse_filter = 2
+offset_left = 90.0
+offset_top = 285.0
+offset_right = 230.0
+offset_bottom = 325.0
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="DescLabel" type="Label" parent="VBoxContainer"]
+[node name="EffectLabel" type="Label" parent="."]
+mouse_filter = 2
 theme_type_variation = &"BodyLabel"
-size_flags_vertical = 3
+offset_left = 20.0
+offset_top = 335.0
+offset_right = 300.0
+offset_bottom = 385.0
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
 autowrap_mode = 3
-theme_override_font_sizes/font_size = 12
 
-[node name="SelectButton" type="Button" parent="VBoxContainer"]
-script = ExtResource("2")
-text = "Choose"
+[node name="LevelPips" parent="." instance=ExtResource("2")]
+mouse_filter = 2
+offset_left = 80.0
+offset_top = 652.0
+offset_right = 239.0
+offset_bottom = 678.0

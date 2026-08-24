@@ -36,6 +36,11 @@ func _on_wave_started(wave_number: int) -> void:
 ## that could toggle it during those would fight them and strand the game paused.
 func _on_phase_changed(phase: int) -> void:
 	pause_button.visible = phase == Constants.GamePhase.WAVE
+	# The draft dims the whole screen (draft_ui.tscn's DimBG) but a
+	# translucent overlay alone still leaves bright HUD text/bars readable
+	# through it — hide the HUD outright while the draft is up, same as the
+	# pause button above, restored on any non-draft phase.
+	visible = phase != Constants.GamePhase.DRAFT
 
 func _on_pause_pressed() -> void:
 	if GameState.phase != Constants.GamePhase.WAVE:
