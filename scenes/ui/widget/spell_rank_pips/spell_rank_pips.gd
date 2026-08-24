@@ -18,20 +18,20 @@ extends Control
 		_update_min_size()
 		queue_redraw()
 
-@export var pip_size: float = 14.0:
+@export var pip_size: float = 17.0:
 	set(value):
 		pip_size = maxf(value, 4.0)
 		_update_min_size()
 		queue_redraw()
 
-@export var gap: float = 6.0:
+@export var gap: float = 15.0:
 	set(value):
 		gap = maxf(value, 0.0)
 		_update_min_size()
 		queue_redraw()
 
 @export var filled_color: Color = Color(1.0, 0.82, 0.2)
-@export var empty_color: Color = Color(0.3, 0.3, 0.32, 0.6)
+@export var empty_color: Color = Color(0.02, 0.02, 0.02, 1.0)
 @export var outline_color: Color = Color(0.12, 0.09, 0.02)
 @export var outline_width: float = 1.5
 

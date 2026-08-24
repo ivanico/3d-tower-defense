@@ -1,37 +1,108 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=14 format=3 uid="uid://sgqqqyxi815i"]
 
 [ext_resource type="PackedScene" path="res://scenes/ui/draft_card.tscn" id="1"]
+[ext_resource type="Texture2D" uid="uid://svtnxnrsl0xj" path="res://assets/ui/draft/ui_card_bg_common.png" id="2_guka3"]
+[ext_resource type="Texture2D" uid="uid://doh50g3p5n7x2" path="res://assets/ui/draft/ui_card_bg_rare_v2.png" id="3_iohuh"]
+[ext_resource type="Texture2D" uid="uid://ln8ub73n2i86" path="res://assets/ui/draft/ui_card_bg_epic_v3.png" id="4_863f7"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1v6e2"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dlxfo"]
+texture = ExtResource("2_guka3")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_edufx"]
+texture = ExtResource("2_guka3")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+modulate_color = Color(0.8, 0.8, 0.8, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3hkwy"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lmg4c"]
+texture = ExtResource("3_iohuh")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_gd4e7"]
+texture = ExtResource("3_iohuh")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+modulate_color = Color(0.8, 0.8, 0.8, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5xncp"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hg357"]
+texture = ExtResource("4_863f7")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_mustm"]
+texture = ExtResource("4_863f7")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+modulate_color = Color(0.8, 0.8, 0.8, 1)
 
 [node name="ScratchCardPreview" type="Control"]
 custom_minimum_size = Vector2(1080, 1920)
+layout_mode = 3
+anchors_preset = 0
 offset_right = 1080.0
 offset_bottom = 1920.0
 
 [node name="BG" type="ColorRect" parent="."]
-anchors_preset = 15
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.06, 0.08, 0.05, 1)
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
-anchors_preset = 15
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer"]
-theme_override_constants/separation = 19
+layout_mode = 2
+theme_override_constants/separation = -100
 
 [node name="Card1" parent="CenterContainer/HBoxContainer" instance=ExtResource("1")]
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_1v6e2")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_dlxfo")
+theme_override_styles/hover = SubResource("StyleBoxTexture_dlxfo")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_edufx")
+theme_override_styles/normal = SubResource("StyleBoxTexture_dlxfo")
 preview_name = "Lightning Storm+"
-preview_rarity = 0
 
 [node name="Card2" parent="CenterContainer/HBoxContainer" instance=ExtResource("1")]
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_3hkwy")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_lmg4c")
+theme_override_styles/hover = SubResource("StyleBoxTexture_lmg4c")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_gd4e7")
+theme_override_styles/normal = SubResource("StyleBoxTexture_lmg4c")
 preview_name = "Orb of Corruption+"
 preview_rarity = 1
 
 [node name="Card3" parent="CenterContainer/HBoxContainer" instance=ExtResource("1")]
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_5xncp")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_hg357")
+theme_override_styles/hover = SubResource("StyleBoxTexture_hg357")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_mustm")
+theme_override_styles/normal = SubResource("StyleBoxTexture_hg357")
 preview_name = "Ice Crystal+"
 preview_rarity = 2
