@@ -115,7 +115,10 @@ func _apply_editor_preview() -> void:
 	type_pill.add_theme_stylebox_override("normal", _get_pill_style(color))
 	type_pill.add_theme_color_override("font_color", color)
 	effect_label.text = "+1 Bolt"
-	level_pips.visible = true
+	# A card previewing the green upgrade-card look (preview_bg_override set)
+	# represents a StatUpgradeDefinition, which never shows rank pips in
+	# real gameplay (_setup_level_pips) — match that here too.
+	level_pips.visible = preview_bg_override == null
 	level_pips.max_pips = 5
 	level_pips.filled = 2
 	level_pips.filled_color = PIP_FILLED_COLORS.get(preview_rarity, PIP_FILLED_COLORS[0])

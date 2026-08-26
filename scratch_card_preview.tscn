@@ -1,8 +1,60 @@
-[gd_scene load_steps=4 format=3 uid="uid://sgqqqyxi815i"]
+[gd_scene load_steps=14 format=3 uid="uid://sgqqqyxi815i"]
 
-[ext_resource type="PackedScene" path="res://scenes/ui/draft_card.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://cumakiuye0nua" path="res://scenes/ui/draft_card.tscn" id="1"]
 [ext_resource type="Texture2D" uid="uid://doh50g3p5n7x2" path="res://assets/ui/draft/ui_card_bg_rare_v2.png" id="3_iohuh"]
+[ext_resource type="Texture2D" uid="uid://ln8ub73n2i86" path="res://assets/ui/draft/ui_card_bg_epic_v3.png" id="4_863f7"]
 [ext_resource type="Texture2D" uid="uid://bpqv5argbgyn1" path="res://assets/ui/draft/ui_card_bg_green.png" id="5_1v6e2"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_guka3"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_iohuh"]
+texture = ExtResource("5_1v6e2")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_863f7"]
+texture = ExtResource("5_1v6e2")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+modulate_color = Color(0.8, 0.8, 0.8, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1v6e2"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dlxfo"]
+texture = ExtResource("3_iohuh")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_edufx"]
+texture = ExtResource("3_iohuh")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+modulate_color = Color(0.8, 0.8, 0.8, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3hkwy"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lmg4c"]
+texture = ExtResource("4_863f7")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_gd4e7"]
+texture = ExtResource("4_863f7")
+texture_margin_left = 50.0
+texture_margin_top = 50.0
+texture_margin_right = 50.0
+texture_margin_bottom = 50.0
+modulate_color = Color(0.8, 0.8, 0.8, 1)
 
 [node name="ScratchCardPreview" type="Control"]
 custom_minimum_size = Vector2(1080, 1920)
@@ -28,15 +80,30 @@ theme_override_constants/separation = -100
 
 [node name="Card1_Green" parent="CenterContainer/HBoxContainer" instance=ExtResource("1")]
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_guka3")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_iohuh")
+theme_override_styles/hover = SubResource("StyleBoxTexture_iohuh")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_863f7")
+theme_override_styles/normal = SubResource("StyleBoxTexture_iohuh")
 preview_name = "Lightning Storm+"
 preview_bg_override = ExtResource("5_1v6e2")
 
 [node name="Card2" parent="CenterContainer/HBoxContainer" instance=ExtResource("1")]
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_1v6e2")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_dlxfo")
+theme_override_styles/hover = SubResource("StyleBoxTexture_dlxfo")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_edufx")
+theme_override_styles/normal = SubResource("StyleBoxTexture_dlxfo")
 preview_name = "Orb of Corruption+"
 preview_rarity = 1
 
 [node name="Card3" parent="CenterContainer/HBoxContainer" instance=ExtResource("1")]
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_3hkwy")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_lmg4c")
+theme_override_styles/hover = SubResource("StyleBoxTexture_lmg4c")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_gd4e7")
+theme_override_styles/normal = SubResource("StyleBoxTexture_lmg4c")
 preview_name = "Ice Crystal+"
 preview_rarity = 2

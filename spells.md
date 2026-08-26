@@ -623,12 +623,16 @@ hand-registered, dropping a `.tres` in is enough:
 - `resources/spells/` → **exactly the 20 catalog spells** from Section 4.
   All v1-era spells (`basic_bolt`, `basic_aoe`, `basic_passive`) are
   **deleted**.
-- `resources/upgrades/` → 3 stat upgrade cards: "Sharpening" (+15%
-  damage, stackable ×4), "Quickened" (faster fire rate, ×3), "Fortify"
-  (+200 HP, ×5). Epic-03-era cards, kept as slot-free filler. Delete
-  their `.tres` files to remove them — no code involved.
+- `resources/upgrades/` → 8 stat upgrade cards: the original 3
+  Epic-03-era ones — "Sharpening" (+15% damage, **all schools**,
+  stackable ×4), "Quickened" (faster fire rate, ×3), "Fortify" (+200 HP,
+  ×5) — plus 5 newer **school-scoped** damage cards, one per school:
+  "Fire/Frost/Void/Poison/Nature Dmg Increase" (+20% damage, **that
+  school's spells only**, Rare, stackable ×4, green cardback — see §6.9).
+  Slot-free filler either way. Delete a `.tres` file to remove that card —
+  no code involved.
 
-A draft rolls 3 cards from those 23, weighted by rarity: **Common 60 /
+A draft rolls 3 cards from those 28, weighted by rarity: **Common 60 /
 Rare 30 / Epic 10** (`RARITY_WEIGHTS` in `draft_manager.gd`).
 `SpellRegistry` prints the loaded counts on startup as a sanity check.
 
@@ -691,11 +695,71 @@ Most damage spells carry `[Offense]`, the Nature/heal spells `[Armor]`,
 Glacier Lance and Blizzard `[Utility]`. Duplicate picks count too.
 Thresholds at ×3 and ×5 grant the v1 bonuses (unchanged Epic-03 system).
 
-### 6.8 Where to change things (no code, ever)
+### 6.9 Per-school damage upgrades (the 5 "`<School> Dmg Increase`" cards)
+
+Same `StatUpgradeDefinition` class as Sharpening/Quickened/Fortify, just
+two extra fields filled in: `scoped_damage_type` (a `Constants.DamageType`;
+`-1` = applies to all schools, which is what the original 3 cards leave it
+at) and `bg_texture_override` (a `Texture2D` — when set, the draft card
+uses this instead of the normal rarity-tinted background). Nothing about
+the card *class* or the draft/eligibility/stacking system changed — these
+are ordinary upgrade cards that happen to fill in two more optional
+fields, same pattern `SpellDefinition`'s per-archetype fields already use.
+
+- **Damage math**: `GameState.school_damage_multiplier` is a
+  `Constants.DamageType -> float` dict, separate from the flat
+  `tower_damage_multiplier` Sharpening feeds. `apply_card()` multiplies
+  into one or the other depending on whether `scoped_damage_type == -1`.
+  Every damage-archetype script (`standard_bolt`, `chain_bolt`, `orb`,
+  `aoe_area`, `line_aoe_bolt`) reads both:
+  `spell.damage * GameState.tower_damage_multiplier *
+  GameState.get_school_damage_multiplier(spell.damage_type) *
+  GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(...)`
+  — a school nobody has drafted a scoped card for just multiplies by
+  `1.0`, no branching anywhere.
+- **Draft card look**: `draft_card.gd`'s `_get_bg_style()` uses
+  `bg_texture_override` instead of the rarity texture when the card sets
+  one; `_refresh_glow()` matches the glow color to it too (green, not the
+  rarity-tinted blue/purple/gray) so the halo doesn't clash with the
+  background. The type pill shows the scoped school's name/color (same
+  treatment a spell card's `damage_type` pill gets) instead of a synergy
+  tag. Rank pips are already hidden for every `StatUpgradeDefinition`
+  (unchanged, existing behavior) — these cards are no exception.
+- **Icon convention**: same ID-based lookup as everything else
+  (`assets/ui/upgrades/icon_<upgrade_id>.png`) — void's is named
+  `icon_upgrade_damage_shadow.png` (`upgrade_id = "upgrade_damage_shadow"`)
+  matching the project's existing convention that void's non-per-spell
+  icons use "shadow", not "void" (e.g. `icon_bonus_shadow.png`).
+- **Shared card background asset**: `assets/ui/draft/ui_card_bg_green.png`
+  — named with the same `ui_card_bg_` prefix the other 3 rarity textures
+  use, **not incidentally**: the editor plugin `addons/ui_icon_cap/`
+  auto-caps every image under `assets/ui/` at import, picking the size
+  limit by filename prefix (`ui_card_bg_*` → 512px, everything
+  unmatched → 256px default). A differently-named file for this same
+  purpose would silently get imported at half the resolution of its
+  siblings — rename any future shared card-background asset to match this
+  prefix, don't add a one-off rule to the plugin.
+- **HUD readout**: the existing left-side owned-spells HUD row
+  (`SpellStackRow` widget, `scenes/ui/widget/spell_stack_row/`) grew a
+  `source` export (`Spells` / `Upgrades`) so the identical scene/script
+  now also drives a **right-side row of owned upgrade cards** (all of
+  them, not just the school-scoped 5), instanced a second time in
+  `game_world.tscn` as `UpgradeStackRow`, reading
+  `GameState.get_active_upgrades()` / `get_upgrade_stack_count()`. Root
+  node is an `HFlowContainer`, not `HBoxContainer` — once a row's cells
+  stop fitting its assigned width it wraps onto a new line on its own.
+  Both rows are 360px wide (fits 5 icons before wrapping) and inset
+  170px from their own screen edge (`170–530` left, `550–910` right) —
+  a deliberate mirror, not independently tuned.
+
+### 6.10 Where to change things (no code, ever)
 
 - **One spell's numbers** (damage, cooldown, range, radius, speed,
   `stack_max`, rarity, tags, orbit radius…): its `.tres` in
   `resources/spells/`, in the Inspector.
+- **One upgrade card's numbers** (`hp_bonus`, `damage_multiplier`,
+  `fire_rate_multiplier`, `scoped_damage_type`, `stack_max`, rarity,
+  `bg_texture_override`): its `.tres` in `resources/upgrades/`.
 - **School perk strength, ring radii, default ranges, volley stagger,
   bounce/lance defaults**: `autoloads/constants.gd`.
 - **Model look** (scale/rotation of bolt, lance, chain, orb, zone

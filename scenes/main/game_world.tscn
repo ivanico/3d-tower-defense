@@ -100,13 +100,13 @@ vertical_alignment = 1
 [node name="SpellStackRow" parent="HUD" instance=ExtResource("9")]
 offset_left = 170.0
 offset_top = 268.0
-offset_right = 746.0
+offset_right = 530.0
 offset_bottom = 328.0
 
 [node name="UpgradeStackRow" parent="HUD" instance=ExtResource("9")]
-offset_left = 760.0
+offset_left = 550.0
 offset_top = 268.0
-offset_right = 1048.0
+offset_right = 910.0
 offset_bottom = 328.0
 source = 1
 

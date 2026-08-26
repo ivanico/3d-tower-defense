@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="StatUpgradeDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="StatUpgradeDefinition" load_steps=3 format=3 uid="uid://cbtp03ywy4cr8"]
 
-[ext_resource type="Script" path="res://resources/upgrades/stat_upgrade_definition.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/ui/draft/ui_card_bg_green.png" id="2"]
+[ext_resource type="Script" uid="uid://b4qcnqtgl2nuu" path="res://resources/upgrades/stat_upgrade_definition.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bpqv5argbgyn1" path="res://assets/ui/draft/ui_card_bg_green.png" id="2"]
 
 [resource]
 script = ExtResource("1")

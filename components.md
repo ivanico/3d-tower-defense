@@ -110,9 +110,8 @@ res://
 │   │   ├── spell_<archetype>_<school>.tres  # the 20 catalog spells (spells.md §4)
 │   ├── upgrades/
 │   │   ├── stat_upgrade_definition.gd
-│   │   ├── upgrade_damage.tres
-│   │   ├── upgrade_fire_rate.tres
-│   │   └── upgrade_max_hp.tres
+│   │   ├── upgrade_damage.tres      # all-schools; upgrade_fire_rate.tres, upgrade_max_hp.tres alongside
+│   │   └── upgrade_damage_<school>.tres  # 5 school-scoped cards (spells.md §6.9)
 │   ├── towers/
 │   │   ├── tower_definition.gd
 │   │   └── tower_ancient_tower.tres
@@ -239,7 +238,16 @@ Signals (grouped):
 **What it does**: Single source of truth for the in-progress run — phase, wave
 number, level/XP, tower stat totals (base + bonuses from drafted cards/stars),
 active spells, tag counts, active synergy flags, run stats (kills, waves
-cleared, damage dealt).
+cleared, damage dealt). Also tracks owned stat-upgrade cards: `active_upgrades`
+(distinct picks, in pick order — mirrors `Tower._active_spells`) and
+`upgrade_stacks` (`upgrade_id -> pick count`, mirrors `Tower._spell_stacks`),
+read by the right-side HUD row (`SpellStackRow` widget, `source = Upgrades`
+instance — see `spells.md` §6.9). Damage multipliers
+split into a flat one (`tower_damage_multiplier`, every school) and a
+per-school one (`school_damage_multiplier: Dictionary`, `Constants.DamageType
+-> float`) fed by the 5 scoped upgrade cards — every damage-archetype script
+multiplies by both via `GameState.get_school_damage_multiplier(spell.damage_type)`
+(a plain dict lookup defaulting to `1.0`, no `match`/branching).
 
 Key methods (each does ONE thing — if you find yourself adding unrelated logic
 to one of these, it belongs in a new method or a new autoload, not bolted on):
@@ -251,7 +259,13 @@ to one of these, it belongs in a new method or a new autoload, not bolted on):
 - `add_tag(tag)` — increment `tag_counts[tag]`, check threshold, call
   `_apply_synergy_bonus()`.
 - `apply_card(card)` — dispatch to spell-add or stat-delta logic based on
-  card's Resource type.
+  card's Resource type. For a `StatUpgradeDefinition`: `hp_bonus`/
+  `fire_rate_multiplier` unchanged; `damage_multiplier` goes into
+  `tower_damage_multiplier` when `scoped_damage_type == -1`, otherwise into
+  `school_damage_multiplier[scoped_damage_type]` instead; also appends to
+  `active_upgrades` (first pick) and increments `upgrade_stacks` (every pick).
+- `get_school_damage_multiplier(damage_type)`, `get_active_upgrades()`,
+  `get_upgrade_stack_count(upgrade_id)` — read-only accessors for the above.
 - `_apply_synergy_bonus(tag, level)` — the one `match` statement allowed to
   grow over time (see `mechanics.md` Section 6); every other piece of game
   logic should read the resulting flags/multipliers from `GameState`, not
@@ -473,7 +487,17 @@ scene to use — `projectile.tscn` or `Arcprojectile.tscn`).
 **What it does**: `class_name StatUpgradeDefinition extends Resource`. Fields:
 `upgrade_id`, `upgrade_name`, `description`, `icon`, `rarity`,
 `tags: Array[SynergyTag]`, `hp_bonus`, `damage_multiplier`,
-`fire_rate_multiplier`, `is_stackable`, `stack_max`.
+`fire_rate_multiplier`, `is_stackable`, `stack_max`, plus two added for the
+5 school-scoped "`<School> Dmg Increase`" cards (`resources/upgrades/
+upgrade_damage_fire.tres` etc.): `scoped_damage_type: int = -1` (a
+`Constants.DamageType`; `-1` = applies to all schools — the original
+behavior, unchanged for Sharpening/Quickened/Fortify) and
+`bg_texture_override: Texture2D = null` (draft-card background that wins
+over the normal rarity-tinted lookup when set — how the green cardback
+works). `GameState.apply_card()` reads `scoped_damage_type` to decide
+whether a pick multiplies the flat `tower_damage_multiplier` or one entry
+of the new per-school `school_damage_multiplier` dict instead (see
+`GameState.gd` below and `spells.md` §6.5).
 
 ### `chapter_definition.gd`
 **What it does**: `class_name ChapterDefinition extends Resource`. Fields:

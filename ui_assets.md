@@ -22,7 +22,16 @@
 > The rule is about **how big the thing is drawn, not the `icon_` prefix**. Four
 > files missed it for exactly that reason and are capped now: `ui_star_filled`,
 > `ui_star_empty` (the garage puts up to 35 stars on screen at once),
-> `ui_notification_badge`, and `icon_stat_level`.
+> `ui_notification_badge`, and `icon_stat_level`. Same trap bit the green
+> school-upgrade card background: it was originally named
+> `ui_spell_draft_card_green_transparent.png`, which doesn't start with
+> `ui_card_bg` (the rule that gives the other 3 card textures a 512px cap),
+> so it silently fell back to the 256px default — half its siblings'
+> resolution, visibly softer/blurrier once stretched to the same on-screen
+> card size. Renamed to `ui_card_bg_green.png` to match the existing 3
+> (`ui_card_bg_common/rare_v2/epic_v3.png`) rather than adding a one-off
+> rule — same fix as the four above, do this for any future shared
+> card-background asset instead of special-casing the plugin.
 
 > Reorganized 2026-07-27. One tree: per-screen folders + shared folders
 > (the old flat `assets/ui/` and `assets/ui_spellsdraft/` are gone).

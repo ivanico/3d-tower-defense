@@ -1,5 +1,5 @@
 @tool
-extends HBoxContainer
+extends HFlowContainer
 class_name SpellStackRow
 
 ## HUD row replacing the old OFF/ARM/UTL tag pills: one small icon per
@@ -19,6 +19,10 @@ class_name SpellStackRow
 ## handful of small TextureRects + cheap _draw()-based pip rows is
 ## negligible, but there's no reason to touch it more often than the data
 ## actually changes.
+##
+## Root is an HFlowContainer, not HBoxContainer — once cells stop fitting
+## the row's own assigned width, it wraps them onto a new line on its own
+## (no custom wrap math needed) instead of running past the row's edge.
 
 const SPELL_ICON_SCENE := preload("res://scenes/ui/widget/spell_icon/spell_icon.tscn")
 const SPELL_RANK_PIPS_SCENE := preload("res://scenes/ui/widget/spell_rank_pips/spell_rank_pips.tscn")
