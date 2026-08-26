@@ -122,5 +122,5 @@ func _physics_process(delta: float) -> void:
 		if hurtbox:
 			# Damage computed at hit time so mid-run upgrades apply to
 			# already-spawned orbs.
-			var dmg: float = spell.damage * GameState.tower_damage_multiplier * GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(spell.spell_id)
+			var dmg: float = spell.damage * GameState.tower_damage_multiplier * GameState.get_school_damage_multiplier(spell.damage_type) * GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(spell.spell_id)
 			hurtbox.apply_hit(dmg, spell.damage_type, enemy.global_position + AIM_HEIGHT)

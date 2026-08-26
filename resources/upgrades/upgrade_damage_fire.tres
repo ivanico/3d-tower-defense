@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="StatUpgradeDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/upgrades/stat_upgrade_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/draft/ui_card_bg_green.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+upgrade_id = "upgrade_damage_fire"
+upgrade_name = "Fire Dmg Increase"
+description = "Increases Fire spell damage."
+rarity = 1
+tags = Array[int]([])
+hp_bonus = 0.0
+damage_multiplier = 1.2
+fire_rate_multiplier = 1.0
+is_stackable = true
+stack_max = 4
+scoped_damage_type = 0
+bg_texture_override = ExtResource("2")

@@ -103,6 +103,13 @@ offset_top = 268.0
 offset_right = 746.0
 offset_bottom = 328.0
 
+[node name="UpgradeStackRow" parent="HUD" instance=ExtResource("9")]
+offset_left = 760.0
+offset_top = 268.0
+offset_right = 1048.0
+offset_bottom = 328.0
+source = 1
+
 [node name="PauseButton" parent="HUD" instance=ExtResource("15_pause")]
 offset_left = 32.0
 offset_top = 32.0

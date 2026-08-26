@@ -12,3 +12,9 @@ extends Resource
 @export var fire_rate_multiplier: float = 1.0
 @export var is_stackable: bool = true
 @export var stack_max: int = 5
+# Which Constants.DamageType this card's damage_multiplier applies to.
+# -1 = all schools (the original behavior — Sharpening/Quickened/Fortify).
+@export var scoped_damage_type: int = -1
+# Optional draft-card background, wins over the normal rarity-tinted
+# lookup in draft_card.gd when set (e.g. the green per-school cards).
+@export var bg_texture_override: Texture2D = null

@@ -21,10 +21,21 @@ var tower_fire_rate_multiplier: float = 1.0
 var tower_range: float = 8.0
 var tower_regen_per_sec: float = 0.0
 var tower_star_level: int = 1  # hook for star 3/5 passive enhancements — [LATER]
+# Per-school damage multipliers (Constants.DamageType -> float), from
+# scoped stat-upgrade cards (e.g. "Fire Dmg Increase"). Stacks
+# multiplicatively per school, independent of tower_damage_multiplier
+# (the flat, all-schools bonus from Sharpening etc.).
+var school_damage_multiplier: Dictionary = {}
 
 # Active spells drafted this run
 var active_spells: Array = []
 var spell_rank_multipliers: Dictionary = {}
+
+# Active stat-upgrade cards drafted this run (distinct picks, in pick
+# order) and how many times each has been picked — mirrors
+# Tower._active_spells/_spell_stacks, read by the HUD's owned-upgrades row.
+var active_upgrades: Array = []
+var upgrade_stacks: Dictionary = {}
 
 # Synergy tag counts and active bonuses
 var tag_counts: Dictionary = {}
@@ -147,8 +158,15 @@ func apply_card(card: Resource) -> void:
 	elif card is StatUpgradeDefinition:
 		tower_max_hp += card.hp_bonus
 		tower_hp = min(tower_hp + card.hp_bonus, tower_max_hp)
-		tower_damage_multiplier *= card.damage_multiplier
+		if card.scoped_damage_type == -1:
+			tower_damage_multiplier *= card.damage_multiplier
+		else:
+			var t: int = card.scoped_damage_type
+			school_damage_multiplier[t] = school_damage_multiplier.get(t, 1.0) * card.damage_multiplier
 		tower_fire_rate_multiplier *= card.fire_rate_multiplier
+		if not active_upgrades.any(func(u): return u.upgrade_id == card.upgrade_id):
+			active_upgrades.append(card)
+		upgrade_stacks[card.upgrade_id] = upgrade_stacks.get(card.upgrade_id, 0) + 1
 		for tag in card.tags:
 			add_tag(tag)
 		hp_changed.emit(tower_hp, tower_max_hp)
@@ -159,6 +177,15 @@ func register_spell_rank(spell_id: String) -> void:
 
 func get_spell_damage_multiplier(spell_id: String) -> float:
 	return spell_rank_multipliers.get(spell_id, 1.0)
+
+func get_school_damage_multiplier(damage_type: int) -> float:
+	return school_damage_multiplier.get(damage_type, 1.0)
+
+func get_active_upgrades() -> Array:
+	return active_upgrades
+
+func get_upgrade_stack_count(upgrade_id: String) -> int:
+	return upgrade_stacks.get(upgrade_id, 0)
 
 func end_run(victory: bool) -> void:
 	phase = Constants.GamePhase.VICTORY if victory else Constants.GamePhase.DEFEAT
@@ -181,6 +208,9 @@ func reset() -> void:
 	tower_star_level = 1
 	active_spells = []
 	spell_rank_multipliers = {}
+	school_damage_multiplier = {}
+	active_upgrades = []
+	upgrade_stacks = {}
 	tag_counts = {}
 	offense_damage_mult = 1.0
 	offense_bonus_shot_active = false

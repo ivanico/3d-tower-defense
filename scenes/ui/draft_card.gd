@@ -39,6 +39,18 @@ signal card_selected(card_data: Resource)
 	set(value): preview_name = value; _apply_editor_preview()
 @export_enum("Common:0", "Rare:1", "Epic:2") var preview_rarity: int = 0:
 	set(value): preview_rarity = value; _apply_editor_preview()
+## When set, the editor preview calls setup() with this REAL resource
+## instead of the synthetic preview_name/preview_rarity stand-in — shows
+## the actual icon/background/text a card would render with in real
+## gameplay (e.g. a StatUpgradeDefinition's bg_texture_override), with no
+## need to run the game. Generic for any spell/upgrade resource.
+@export var preview_card_data: Resource = null:
+	set(value): preview_card_data = value; _apply_editor_preview()
+## Background override for the plain preview_name/preview_rarity stand-in
+## path (no real card_data) — e.g. to preview the green card family without
+## a real resource. Ignored once preview_card_data/real card_data is set.
+@export var preview_bg_override: Texture2D = null:
+	set(value): preview_bg_override = value; _rebuild_bg_styles()
 
 const CARD_BG_TEXTURES := {
 	0: preload("res://assets/ui/draft/ui_card_bg_common.png"),
@@ -88,6 +100,9 @@ func _ready() -> void:
 func _apply_editor_preview() -> void:
 	if not Engine.is_editor_hint() or not is_inside_tree() or _card_data != null:
 		return
+	if preview_card_data != null:
+		setup(preview_card_data)
+		return
 	name_label.text = preview_name
 	var pill_colors := {0: Color(0.75, 0.75, 0.75), 1: Color(0.3, 0.55, 1.0), 2: Color(0.65, 0.25, 0.95)}
 	var pill_texts := {0: "Common", 1: "Rare", 2: "Epic"}
@@ -114,11 +129,12 @@ func _rebuild_bg_styles() -> void:
 		_refresh_bg_style()
 	elif Engine.is_editor_hint():
 		var r := preview_rarity
-		add_theme_stylebox_override("normal", _get_bg_style(r))
-		add_theme_stylebox_override("hover", _get_bg_style(r))
-		add_theme_stylebox_override("pressed", _get_bg_style(r, true))
-		add_theme_stylebox_override("disabled", _get_bg_style(r))
-		_refresh_glow(r)
+		var override_tex := preview_bg_override
+		add_theme_stylebox_override("normal", _get_bg_style(r, false, override_tex))
+		add_theme_stylebox_override("hover", _get_bg_style(r, false, override_tex))
+		add_theme_stylebox_override("pressed", _get_bg_style(r, true, override_tex))
+		add_theme_stylebox_override("disabled", _get_bg_style(r, false, override_tex))
+		_refresh_glow(r, override_tex != null)
 
 func setup(card_data: Resource) -> void:
 	_card_data = card_data
@@ -135,11 +151,12 @@ func setup(card_data: Resource) -> void:
 func _refresh_bg_style() -> void:
 	var rarity = _card_data.get("rarity")
 	var r: int = rarity if rarity != null else 0
-	add_theme_stylebox_override("normal", _get_bg_style(r))
-	add_theme_stylebox_override("hover", _get_bg_style(r))
-	add_theme_stylebox_override("pressed", _get_bg_style(r, true))
-	add_theme_stylebox_override("disabled", _get_bg_style(r))
-	_refresh_glow(r)
+	var override_tex: Texture2D = _card_data.get("bg_texture_override")
+	add_theme_stylebox_override("normal", _get_bg_style(r, false, override_tex))
+	add_theme_stylebox_override("hover", _get_bg_style(r, false, override_tex))
+	add_theme_stylebox_override("pressed", _get_bg_style(r, true, override_tex))
+	add_theme_stylebox_override("disabled", _get_bg_style(r, false, override_tex))
+	_refresh_glow(r, override_tex != null)
 
 # Rarity-tinted glow behind the card (GlowRect's ShaderMaterial —
 # draft_card_glow.gdshader — draws a soft rounded-rect falloff around the
@@ -149,20 +166,26 @@ const RARITY_GLOW_COLORS := {
 	1: Color(0.3, 0.55, 1.0, 0.85),
 	2: Color(0.65, 0.25, 0.95, 0.85),
 }
+# A card using bg_texture_override (e.g. the green school-damage cards)
+# gets a matching green glow instead of its rarity's color — the glow is
+# meant to echo the card's own frame, and rarity's blue/purple clashed
+# visibly against the green art (Rare-tier "Frost Dmg Increase" showed a
+# blue halo behind its green card).
+const OVERRIDE_GLOW_COLOR := Color(0.35, 0.85, 0.3, 0.85)
 
-func _refresh_glow(rarity: int) -> void:
-	var glow: Color = RARITY_GLOW_COLORS.get(rarity, RARITY_GLOW_COLORS[0])
+func _refresh_glow(rarity: int, use_override_color: bool = false) -> void:
+	var glow: Color = OVERRIDE_GLOW_COLOR if use_override_color else RARITY_GLOW_COLORS.get(rarity, RARITY_GLOW_COLORS[0])
 	glow_rect.material.set_shader_parameter("glow_color", glow)
 
 # Same rarity-tinted card art as before, now used as the Button's normal/
 # hover/pressed/disabled style instead of a PanelContainer's single "panel"
 # style — pressed gets a slight darken so tapping the card still reads as a
 # press with no separate button needed.
-func _get_bg_style(rarity: int, pressed_state: bool = false) -> StyleBoxTexture:
-	var key := "%d_%s" % [rarity, pressed_state]
+func _get_bg_style(rarity: int, pressed_state: bool = false, texture_override: Texture2D = null) -> StyleBoxTexture:
+	var key := "%s_%s" % [(texture_override.resource_path if texture_override != null else rarity), pressed_state]
 	if not _bg_styles.has(key):
 		var sb := StyleBoxTexture.new()
-		sb.texture = CARD_BG_TEXTURES.get(rarity, CARD_BG_TEXTURES[0])
+		sb.texture = texture_override if texture_override != null else CARD_BG_TEXTURES.get(rarity, CARD_BG_TEXTURES[0])
 		# 9-slice margins (in the SOURCE texture's own pixels — it's 1054x1492
 		# natively, aspect 1.42) so the rounded corners/border stay crisp
 		# instead of stretching when the card is sized to a taller aspect
@@ -177,15 +200,21 @@ func _get_bg_style(rarity: int, pressed_state: bool = false) -> StyleBoxTexture:
 		_bg_styles[key] = sb
 	return _bg_styles[key]
 
-# Pill under the icon: damage school for a spell (colored to match), or the
-# first synergy tag for a stat upgrade (which has no damage_type).
+# Pill under the icon: damage school for a spell (colored to match), the
+# scoped school for a school-specific stat upgrade (e.g. "Fire Dmg
+# Increase" — same treatment as a spell), or the first synergy tag for any
+# other stat upgrade (which has neither).
 func _setup_type_pill(card_data: Resource) -> void:
 	var dtype = card_data.get("damage_type")
+	var scoped = card_data.get("scoped_damage_type")
 	var text := ""
 	var color := Color(0.75, 0.75, 0.75)
 	if dtype != null:
 		text = Constants.DamageType.keys()[dtype].capitalize()
 		color = CombatUtils.get_damage_color(dtype)
+	elif scoped != null and scoped != -1:
+		text = Constants.DamageType.keys()[scoped].capitalize()
+		color = CombatUtils.get_damage_color(scoped)
 	else:
 		var tags = card_data.get("tags")
 		if tags != null and tags.size() > 0:

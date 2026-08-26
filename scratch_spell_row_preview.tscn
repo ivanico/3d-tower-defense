@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://bv8wkjrmk2rxf"]
+[gd_scene load_steps=13 format=3 uid="uid://bv8wkjrmk2rxf"]
 
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/spell_stack_row/spell_stack_row.tscn" id="1"]
 [ext_resource type="Resource" path="res://resources/spells/spell_bolt_void.tres" id="2"]
@@ -7,6 +7,11 @@
 [ext_resource type="Resource" path="res://resources/spells/spell_lance_rift.tres" id="4"]
 [ext_resource type="Resource" path="res://resources/spells/spell_orb_thorn.tres" id="5"]
 [ext_resource type="Resource" path="res://resources/spells/spell_bolt_frost.tres" id="6"]
+[ext_resource type="Script" uid="uid://b4qcnqtgl2nuu" path="res://resources/upgrades/stat_upgrade_definition.gd" id="7_upgdef"]
+[ext_resource type="Resource" path="res://resources/upgrades/upgrade_damage_fire.tres" id="8_fire"]
+[ext_resource type="Resource" path="res://resources/upgrades/upgrade_damage_frost.tres" id="9_frost"]
+[ext_resource type="Resource" path="res://resources/upgrades/upgrade_damage_void.tres" id="10_void"]
+[ext_resource type="Resource" path="res://resources/upgrades/upgrade_damage.tres" id="11_sharpening"]
 
 [node name="ScratchSpellRowPreview" type="Control"]
 custom_minimum_size = Vector2(1080, 1920)
@@ -50,6 +55,18 @@ offset_right = 700.0
 offset_bottom = 320.0
 preview_spells = Array[ExtResource("2_s3fw7")]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6")])
 preview_counts = PackedInt32Array(2, 3, 5, 1, 2)
+preview_upgrade_counts = PackedInt32Array()
+
+[node name="UpgradeStackRowTop" parent="." instance=ExtResource("1")]
+layout_mode = 0
+offset_left = 760.0
+offset_top = 250.0
+offset_right = 1048.0
+offset_bottom = 320.0
+source = 1
+preview_counts = PackedInt32Array()
+preview_upgrades = Array[ExtResource("7_upgdef")]([ExtResource("11_sharpening"), ExtResource("8_fire"), ExtResource("9_frost"), ExtResource("10_void")])
+preview_upgrade_counts = PackedInt32Array(2, 1, 3, 4)
 
 [node name="WrapTestLabel" type="Label" parent="."]
 layout_mode = 0
@@ -68,3 +85,24 @@ offset_right = 400.0
 offset_bottom = 530.0
 preview_spells = Array[ExtResource("2_s3fw7")]([ExtResource("2")])
 preview_counts = PackedInt32Array(6)
+preview_upgrade_counts = PackedInt32Array()
+
+[node name="UpgradeRowLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 170.0
+offset_top = 600.0
+offset_right = 910.0
+offset_bottom = 630.0
+theme_override_font_sizes/font_size = 20
+text = "Right-side HUD row (source = Upgrades): Sharpening + 3 school-scoped cards"
+
+[node name="UpgradeStackRow" parent="." instance=ExtResource("1")]
+layout_mode = 0
+offset_left = 170.0
+offset_top = 640.0
+offset_right = 700.0
+offset_bottom = 710.0
+source = 1
+preview_counts = PackedInt32Array()
+preview_upgrades = Array[ExtResource("7_upgdef")]([ExtResource("11_sharpening"), ExtResource("8_fire"), ExtResource("9_frost"), ExtResource("10_void")])
+preview_upgrade_counts = PackedInt32Array(2, 1, 3, 4)

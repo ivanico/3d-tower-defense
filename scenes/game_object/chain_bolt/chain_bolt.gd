@@ -44,7 +44,7 @@ var _age: float = 0.0
 
 func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition) -> void:
 	global_position = start_pos
-	damage = spell.damage * GameState.tower_damage_multiplier * GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(spell.spell_id)
+	damage = spell.damage * GameState.tower_damage_multiplier * GameState.get_school_damage_multiplier(spell.damage_type) * GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(spell.spell_id)
 	damage_type = spell.damage_type
 	speed = spell.projectile_speed
 	bounce_radius = spell.bounce_radius
