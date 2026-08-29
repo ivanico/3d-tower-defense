@@ -126,7 +126,9 @@ func add_tag(tag: int) -> void:
 	if count == Constants.SYNERGY_THRESHOLD_LOW:
 		_apply_synergy_bonus(tag, 1)
 		EventBus.synergy_threshold_reached.emit(tag, 1)
-	elif count == Constants.SYNERGY_THRESHOLD_HIGH:
+	# [Utility] has no ×5 tier (the old "draft shows 4 cards" idea was never
+	# wired and has been dropped) — only Offense/Armor get a tier-2 bonus.
+	elif count == Constants.SYNERGY_THRESHOLD_HIGH and tag != Constants.SynergyTag.UTILITY:
 		_apply_synergy_bonus(tag, 2)
 		EventBus.synergy_threshold_reached.emit(tag, 2)
 

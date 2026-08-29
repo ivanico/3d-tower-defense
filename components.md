@@ -164,7 +164,7 @@ const ENEMY_HP_SCALE:           float = 1.12
 const ENEMY_DMG_SCALE:          float = 1.08
 const XP_PER_KILL_BASE:         int   = 10
 const XP_PER_LEVEL_BASE:        int   = 100
-const MAX_SPELL_SLOTS:          int   = 6      # smaller than the old 12 — v1 has fewer spells
+const MAX_SPELL_SLOTS:          int   = 4      # smaller than the old 12 — v1 has fewer spells
 const SYNERGY_THRESHOLD_LOW:    int   = 3
 const SYNERGY_THRESHOLD_HIGH:   int   = 5
 const TOWER_MAX_STARS:          int   = 5
@@ -195,8 +195,8 @@ const ARMOR_TIER2_REGEN_INTERVAL:   float = 5.0   # seconds per regen tick
 
 # [Utility] synergy tag
 const UTILITY_TIER1_COOLDOWN_MULT:  float = 0.90  # ×3 threshold (lower = faster)
-# UTILITY ×5 (4-card draft) is [LATER] — see mechanics.md Section 4/6, no
-# constant needed yet since nothing reads it this epic.
+# [Utility] has no ×5 tier — the old "draft shows 4 cards" idea was dropped,
+# never wired (GameState.add_tag skips the ×5 threshold for this tag).
 
 # Boss heavy-attack (Epic 04)
 const BOSS_HEAVY_ATTACK_EVERY_N:    int   = 4    # every Nth regular attack is the heavy one

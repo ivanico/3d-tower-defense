@@ -240,7 +240,7 @@ new damage types or armor types are added — the lookup itself is generic.
 |-----|----|----|
 | [Offense] | All damage +10% (`OFFENSE_TIER1_DAMAGE_MULT`) | Every 10th attack fires a bonus projectile (`OFFENSE_TIER2_BONUS_SHOT_N`) |
 | [Armor] | Take 15% less damage (`ARMOR_TIER1_DAMAGE_REDUCTION`) | Regen 1% max HP / 5 sec (`ARMOR_TIER2_REGEN_PERCENT` / `_INTERVAL`) |
-| [Utility] | Spell cooldowns −10% (`UTILITY_TIER1_COOLDOWN_MULT`) | Draft shows 4 cards instead of 3 (**[LATER]**, no constant yet — see `mechanics.md` Section 4) |
+| [Utility] | Spell cooldowns −10% (`UTILITY_TIER1_COOLDOWN_MULT`) | *(no ×5 tier — the old "draft shows 4 cards" idea was dropped, never wired)* |
 
 > **Extend later by:** adding a new tag to the `SynergyTag` enum, a row to this
 > table, and a case in `GameState._apply_synergy_bonus()` — see `mechanics.md`

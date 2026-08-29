@@ -648,7 +648,7 @@ drafted = cap).
 
 ### 6.3 The spell-slot limit
 
-`Constants.MAX_SPELL_SLOTS = 6` — at most 6 *different* spells owned at
+`Constants.MAX_SPELL_SLOTS = 4` — at most 4 *different* spells owned at
 once. When all slots are full the draft **stops offering new spells**
 (it never offers a pick that couldn't apply); you still get duplicates
 of owned spells (stacking costs no slot) and stat upgrades. Change the

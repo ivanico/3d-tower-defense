@@ -18,7 +18,10 @@ func _ready() -> void:
 func _refresh() -> void:
 	for i in 3:
 		var count: int = GameState.tag_counts.get(i, 0)
-		var tier: int  = 2 if count >= Constants.SYNERGY_THRESHOLD_HIGH else (1 if count >= Constants.SYNERGY_THRESHOLD_LOW else 0)
+		# [Utility] has no ×5 tier (see GameState.add_tag) — cap its displayed
+		# tier at 1 so the row never implies a bonus that didn't actually fire.
+		var has_tier2 := i != Constants.SynergyTag.UTILITY
+		var tier: int  = 2 if (count >= Constants.SYNERGY_THRESHOLD_HIGH and has_tier2) else (1 if count >= Constants.SYNERGY_THRESHOLD_LOW else 0)
 		var suffix     := " ★" if tier == 2 else (" +" if tier == 1 else "")
 		_labels[i].text = "%s %d%s" % [TAG_NAMES[i], count, suffix]
 		var col: Color  = TAG_COLORS[i] if tier > 0 else COLOR_INACTIVE

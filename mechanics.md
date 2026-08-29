@@ -119,9 +119,10 @@
     count), tags applied to the running tag counter.
   - If a stat upgrade: stat delta applied immediately to `GameState`/tower
     stats, tags applied.
-- **[LATER]** Reroll cards, "guarantee a card matching an active tag," 4-card
-  draft from the [Utility]×5 synergy — all described in Section 6/`project.md`
-  tag table, build once the base draft loop is solid.
+- **[LATER]** Reroll cards, "guarantee a card matching an active tag" — the
+  4-card-draft-from-[Utility]×5 idea was dropped ([Utility] has no ×5 tier
+  any more, see `project.md` tag table) — build once the base draft loop is
+  solid.
 
 ---
 

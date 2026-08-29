@@ -14,6 +14,7 @@
 [ext_resource type="Resource" path="res://resources/upgrades/upgrade_damage.tres" id="11_sharpening"]
 [ext_resource type="Resource" path="res://resources/upgrades/upgrade_damage_poison.tres" id="12_poison"]
 [ext_resource type="Resource" path="res://resources/upgrades/upgrade_damage_nature.tres" id="13_nature"]
+[ext_resource type="Texture2D" path="res://assets/ui/bonuses/icon_bonus_fire.png" id="14_bonusfire"]
 
 [node name="ScratchSpellRowPreview" type="Control"]
 custom_minimum_size = Vector2(1080, 1920)
@@ -51,47 +52,36 @@ vertical_alignment = 1
 
 [node name="SpellStackRow" parent="." instance=ExtResource("1")]
 layout_mode = 0
-offset_left = 170.0
-offset_top = 250.0
-offset_right = 530.0
-offset_bottom = 320.0
-preview_spells = Array[ExtResource("2_s3fw7")]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6")])
-preview_counts = PackedInt32Array(2, 3, 5, 1, 2)
-
-[node name="UpgradeStackRowTop" parent="." instance=ExtResource("1")]
-layout_mode = 0
-offset_left = 550.0
-offset_top = 250.0
-offset_right = 910.0
-offset_bottom = 320.0
-source = 1
-preview_upgrades = Array[ExtResource("7_upgdef")]([ExtResource("11_sharpening"), ExtResource("8_fire"), ExtResource("9_frost"), ExtResource("10_void"), ExtResource("12_poison"), ExtResource("13_nature")])
-preview_upgrade_counts = PackedInt32Array(2, 1, 3, 4, 1, 2)
-
-[node name="WrapTestLabel" type="Label" parent="."]
-layout_mode = 0
-offset_left = 170.0
-offset_top = 1700.0
-offset_right = 910.0
-offset_bottom = 1730.0
-theme_override_font_sizes/font_size = 20
-text = "Wrap test: rows fit 5 icons before wrapping (330px), mirrored 170px in from each screen edge — spells left, upgrades right"
-
-[node name="SpellStackRowWrapTest" parent="." instance=ExtResource("1")]
-layout_mode = 0
-offset_left = 170.0
-offset_top = 1740.0
-offset_right = 500.0
-offset_bottom = 1810.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 205.0
+offset_top = -250.0
+offset_right = 875.0
+offset_bottom = -60.0
+icon_size = Vector2(160, 160)
+cell_separation = 10.0
+pip_size = 14.0
+pip_gap = 8.0
 preview_spells = Array[ExtResource("2_s3fw7")]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5")])
 preview_counts = PackedInt32Array(2, 3, 5, 1)
 
-[node name="UpgradeStackRowWrapTest" parent="." instance=ExtResource("1")]
+[node name="UpgradeStackRowTop" parent="." instance=ExtResource("1")]
 layout_mode = 0
-offset_left = 550.0
-offset_top = 1740.0
-offset_right = 910.0
-offset_bottom = 1810.0
+offset_left = 170.0
+offset_top = 250.0
+offset_right = 604.0
+offset_bottom = 320.0
+icon_size = Vector2(64, 64)
 source = 1
 preview_upgrades = Array[ExtResource("7_upgdef")]([ExtResource("11_sharpening"), ExtResource("8_fire"), ExtResource("9_frost"), ExtResource("10_void"), ExtResource("12_poison"), ExtResource("13_nature")])
 preview_upgrade_counts = PackedInt32Array(2, 1, 3, 4, 1, 2)
+
+[node name="SchoolBonusIcon" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 822.0
+offset_top = 250.0
+offset_right = 910.0
+offset_bottom = 338.0
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("14_bonusfire")
