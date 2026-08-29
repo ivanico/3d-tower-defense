@@ -130,6 +130,21 @@ const NATURE_LIFESTEAL_PERCENT: float = 0.18  # % of damage dealt healed to towe
 const SCHOOL_RESIST_MULT:       float = 0.5   # resisted school: damage AND status halved
 const STATUS_TICK_INTERVAL:     float = 0.5   # seconds between DoT damage ticks
 
+# Mono-school mastery bonus — owning all MAX_SPELL_SLOTS spells of one school
+# and nothing else (GameState.mono_school tracks which, -1 if not mono).
+# Fire/Frost/Poison/Nature swap in a bigger status-perk constant here (see
+# CombatUtils.apply_school_perk); Void has no status perk to amplify, so its
+# bonus is flat extra damage instead, applied generically via
+# GameState.get_school_damage_multiplier() through MONO_DAMAGE_BONUS_BY_SCHOOL.
+const FIRE_MONO_BURN_DPS_PERCENT:    float = 0.45  # was 0.30 (+50% relative)
+const FROST_MONO_SLOW_PERCENT:       float = 0.65  # was 0.40
+const POISON_MONO_DOT_PERCENT:       float = 0.225 # was 0.15 (+50% relative)
+const POISON_MONO_SLOW_PERCENT:      float = 0.30  # was 0.20 (+50% relative)
+const NATURE_MONO_LIFESTEAL_PERCENT: float = 0.35  # was 0.18
+const MONO_DAMAGE_BONUS_BY_SCHOOL: Dictionary = {
+	DamageType.VOID: 0.35,  # flat extra damage multiplier while mono-Void
+}
+
 # Spell archetype range hierarchy (spells.md Section 5) — mirrored into each
 # spell's .tres `range` field; Bolt > Chain > AoE Area > Line Lance.
 const BOLT_RANGE:               float = 10.0

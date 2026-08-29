@@ -206,18 +206,28 @@ static func release_particles(count: int) -> void:
 # 1.0 normally, SCHOOL_RESIST_MULT when the target resists this school.
 static func apply_school_perk(final_damage: float, damage_type: int, target: Node, resist_mult: float = 1.0) -> void:
 	var status := target.find_child("StatusEffectComponent") as StatusEffectComponent
+	# Mono-school mastery bonus (project.md) — Fire/Frost/Poison/Nature swap in
+	# a bigger constant while all owned spells are this one school. Void has no
+	# status perk to amplify; its mono bonus is flat damage instead, applied
+	# generically via GameState.get_school_damage_multiplier(), not here.
+	var mono := GameState.mono_school == damage_type
 	match damage_type:
 		Constants.DamageType.FIRE:
 			if status:
-				status.apply_burn(final_damage * Constants.FIRE_BURN_DPS_PERCENT * resist_mult, Constants.FIRE_BURN_DURATION)
+				var dps_pct := Constants.FIRE_MONO_BURN_DPS_PERCENT if mono else Constants.FIRE_BURN_DPS_PERCENT
+				status.apply_burn(final_damage * dps_pct * resist_mult, Constants.FIRE_BURN_DURATION)
 		Constants.DamageType.FROST:
 			if status:
-				status.apply_slow(Constants.FROST_SLOW_PERCENT * resist_mult, Constants.FROST_SLOW_DURATION)
+				var slow_pct := Constants.FROST_MONO_SLOW_PERCENT if mono else Constants.FROST_SLOW_PERCENT
+				status.apply_slow(slow_pct * resist_mult, Constants.FROST_SLOW_DURATION)
 		Constants.DamageType.POISON:
 			if status:
-				status.apply_poison(final_damage * Constants.POISON_DOT_PERCENT * resist_mult, Constants.POISON_SLOW_PERCENT * resist_mult, Constants.POISON_DOT_DURATION, Constants.POISON_SLOW_DURATION)
+				var dot_pct := Constants.POISON_MONO_DOT_PERCENT if mono else Constants.POISON_DOT_PERCENT
+				var slow_pct := Constants.POISON_MONO_SLOW_PERCENT if mono else Constants.POISON_SLOW_PERCENT
+				status.apply_poison(final_damage * dot_pct * resist_mult, slow_pct * resist_mult, Constants.POISON_DOT_DURATION, Constants.POISON_SLOW_DURATION)
 		Constants.DamageType.NATURE:
-			GameState.heal(final_damage * Constants.NATURE_LIFESTEAL_PERCENT * resist_mult)
+			var lifesteal_pct := Constants.NATURE_MONO_LIFESTEAL_PERCENT if mono else Constants.NATURE_LIFESTEAL_PERCENT
+			GameState.heal(final_damage * lifesteal_pct * resist_mult)
 		# VOID applies no status — its premium is baked into its .tres damage.
 
 static func calculate_wave_hp_scale(wave: int) -> float:

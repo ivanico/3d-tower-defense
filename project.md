@@ -228,25 +228,18 @@ new damage types or armor types are added — the lookup itself is generic.
 
 ---
 
-## Synergy Tags (v1)
+## Synergy Tags (v1) — REMOVED
 
-> The percentages below are the *design intent*, kept human-readable here.
-> The actual editable values live as named constants in `Constants.gd`
-> (see `components.md` Section 2's "Balance tuning constants" block and
-> Section 0's cheat sheet) — if you retune a number, update it there, and
-> update this table to match so the two never silently drift apart.
-
-| Tag | Threshold 1 (×3) | Threshold 2 (×5) |
-|-----|----|----|
-| [Offense] | All damage +10% (`OFFENSE_TIER1_DAMAGE_MULT`) | Every 10th attack fires a bonus projectile (`OFFENSE_TIER2_BONUS_SHOT_N`) |
-| [Armor] | Take 15% less damage (`ARMOR_TIER1_DAMAGE_REDUCTION`) | Regen 1% max HP / 5 sec (`ARMOR_TIER2_REGEN_PERCENT` / `_INTERVAL`) |
-| [Utility] | Spell cooldowns −10% (`UTILITY_TIER1_COOLDOWN_MULT`) | *(no ×5 tier — the old "draft shows 4 cards" idea was dropped, never wired)* |
-
-> **Extend later by:** adding a new tag to the `SynergyTag` enum, a row to this
-> table, and a case in `GameState._apply_synergy_bonus()` — see `mechanics.md`
-> Section 6 for the full extension pattern. The original (abandoned) design had
-> 9 tags ([Fire], [Chain], [Piercing], [Heavy], [Armor], [Offense], [Utility],
-> [Gold], [Chaos]) — keep that list as the long-term backlog.
+> **The old [Offense]/[Armor]/[Utility] ×3/×5 threshold bonuses (flat damage
+> buffs, bonus shots, damage reduction, HP regen, cooldown reduction) are
+> gone** — fully removed, not just hidden: `GameState._apply_synergy_bonus()`
+> is deleted, and `add_tag()` no longer calls it or fires the
+> `synergy_threshold_reached` banner popup. Superseded by the **mono-school
+> mastery bonus** (see `spells.md` "Mono-school mastery bonus" and the Tower
+> section below) — commit your whole loadout to one school instead of
+> chasing generic tag thresholds. `SynergyTag`/`tag_counts` still exist as
+> inert bookkeeping (a card's `tags[]` still drives its draft-card pill
+> label), they just no longer drive any stat effect.
 
 ---
 

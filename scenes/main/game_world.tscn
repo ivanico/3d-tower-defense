@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://gojcy8ojc28y"]
+[gd_scene load_steps=18 format=3 uid="uid://gojcy8ojc28y"]
 
 [ext_resource type="PackedScene" uid="uid://dy0co36gcwh34" path="res://scenes/game_object/camera_rig/camera_rig.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/game_object/chap1/chap1_arena/chap1_arena.tscn" id="2_arena"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://p554x4rbygwa" path="res://scenes/ui/widget/xp_bar/xp_bar.tscn" id="14_xpbar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/pause_button/pause_button.tscn" id="15_pause"]
 [ext_resource type="Script" uid="uid://cntomb20lojxx" path="res://scenes/main/hud.gd" id="Script_hud"]
+[ext_resource type="Script" path="res://scenes/ui/school_bonus_icon.gd" id="16_bonusicon"]
 
 [sub_resource type="Environment" id="Env_world"]
 background_mode = 2
@@ -100,9 +101,9 @@ vertical_alignment = 1
 [node name="SpellStackRow" parent="HUD" instance=ExtResource("9")]
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 170.0
+offset_left = 205.0
 offset_top = -250.0
-offset_right = 850.0
+offset_right = 875.0
 offset_bottom = -60.0
 icon_size = Vector2(160, 160)
 cell_separation = 10.0
@@ -110,11 +111,21 @@ pip_size = 14.0
 pip_gap = 8.0
 
 [node name="UpgradeStackRow" parent="HUD" instance=ExtResource("9")]
-offset_left = 550.0
-offset_top = 268.0
-offset_right = 910.0
-offset_bottom = 328.0
+offset_left = 170.0
+offset_top = 250.0
+offset_right = 604.0
+offset_bottom = 320.0
 source = 1
+icon_size = Vector2(64, 64)
+
+[node name="SchoolBonusIcon" parent="HUD" type="TextureRect"]
+offset_left = 822.0
+offset_top = 250.0
+offset_right = 910.0
+offset_bottom = 338.0
+expand_mode = 1
+stretch_mode = 5
+script = ExtResource("16_bonusicon")
 
 [node name="PauseButton" parent="HUD" instance=ExtResource("15_pause")]
 offset_left = 32.0

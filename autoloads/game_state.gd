@@ -26,6 +26,11 @@ var tower_star_level: int = 1  # hook for star 3/5 passive enhancements — [LAT
 # multiplicatively per school, independent of tower_damage_multiplier
 # (the flat, all-schools bonus from Sharpening etc.).
 var school_damage_multiplier: Dictionary = {}
+# Which school (Constants.DamageType) all owned spells belong to, -1 if not
+# mono. Since MAX_SPELL_SLOTS now equals the real per-school spell count,
+# this can only become true once all 4 owned spells share one school — see
+# _update_mono_school(). Drives the mono-school mastery bonus (project.md).
+var mono_school: int = -1
 
 # Active spells drafted this run
 var active_spells: Array = []
@@ -118,19 +123,15 @@ func heal(amount: float) -> void:
 	hp_changed.emit(tower_hp, tower_max_hp)
 	EventBus.tower_healed.emit(amount)
 
+## The old [Offense]/[Armor]/[Utility] ×3/×5 threshold bonuses (and their
+## synergy_threshold_reached banner popup) are REMOVED — superseded by the
+## mono-school mastery bonus (see project.md, spells.md). tag_counts still
+## increments (cosmetic bookkeeping, e.g. a card's tags[] pill label still
+## reads correctly) but no longer drives any stat effect or popup.
 func add_tag(tag: int) -> void:
 	if not tag_counts.has(tag):
 		tag_counts[tag] = 0
 	tag_counts[tag] += 1
-	var count: int = tag_counts[tag]
-	if count == Constants.SYNERGY_THRESHOLD_LOW:
-		_apply_synergy_bonus(tag, 1)
-		EventBus.synergy_threshold_reached.emit(tag, 1)
-	# [Utility] has no ×5 tier (the old "draft shows 4 cards" idea was never
-	# wired and has been dropped) — only Offense/Armor get a tier-2 bonus.
-	elif count == Constants.SYNERGY_THRESHOLD_HIGH and tag != Constants.SynergyTag.UTILITY:
-		_apply_synergy_bonus(tag, 2)
-		EventBus.synergy_threshold_reached.emit(tag, 2)
 
 func apply_card(card: Resource) -> void:
 	if card is SpellDefinition:
@@ -157,6 +158,7 @@ func apply_card(card: Resource) -> void:
 				var tower = get_tree().get_first_node_in_group("tower")
 				if tower:
 					tower.add_spell(card)
+				_update_mono_school()
 	elif card is StatUpgradeDefinition:
 		tower_max_hp += card.hp_bonus
 		tower_hp = min(tower_hp + card.hp_bonus, tower_max_hp)
@@ -181,7 +183,21 @@ func get_spell_damage_multiplier(spell_id: String) -> float:
 	return spell_rank_multipliers.get(spell_id, 1.0)
 
 func get_school_damage_multiplier(damage_type: int) -> float:
-	return school_damage_multiplier.get(damage_type, 1.0)
+	var mult: float = school_damage_multiplier.get(damage_type, 1.0)
+	if mono_school == damage_type:
+		mult *= 1.0 + Constants.MONO_DAMAGE_BONUS_BY_SCHOOL.get(damage_type, 0.0)
+	return mult
+
+# Recomputes `mono_school` after a NEW spell is added to active_spells
+# (duplicate/stacking picks never change this list, so this is the only
+# place mono status can change). Only true once all MAX_SPELL_SLOTS owned
+# spells share one damage_type.
+func _update_mono_school() -> void:
+	if active_spells.size() == Constants.MAX_SPELL_SLOTS \
+			and active_spells.all(func(s): return s.damage_type == active_spells[0].damage_type):
+		mono_school = active_spells[0].damage_type
+	else:
+		mono_school = -1
 
 func get_active_upgrades() -> Array:
 	return active_upgrades
@@ -211,6 +227,7 @@ func reset() -> void:
 	active_spells = []
 	spell_rank_multipliers = {}
 	school_damage_multiplier = {}
+	mono_school = -1
 	active_upgrades = []
 	upgrade_stacks = {}
 	tag_counts = {}
@@ -224,23 +241,6 @@ func reset() -> void:
 	waves_cleared = 0
 	damage_dealt = 0.0
 	run_start_time = 0.0
-
-func _apply_synergy_bonus(tag: int, level: int) -> void:
-	match tag:
-		Constants.SynergyTag.OFFENSE:
-			if level == 1:
-				offense_damage_mult = Constants.OFFENSE_TIER1_DAMAGE_MULT
-			elif level == 2:
-				offense_bonus_shot_active = true
-		Constants.SynergyTag.ARMOR:
-			if level == 1:
-				armor_damage_reduction = maxf(armor_damage_reduction, Constants.ARMOR_TIER1_DAMAGE_REDUCTION)
-			elif level == 2:
-				armor_regen_active = true
-				_regen_timer.start()
-		Constants.SynergyTag.UTILITY:
-			if level == 1:
-				utility_cooldown_mult = Constants.UTILITY_TIER1_COOLDOWN_MULT
 
 func _on_tower_died() -> void:
 	end_run(false)

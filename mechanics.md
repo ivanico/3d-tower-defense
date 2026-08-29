@@ -142,19 +142,17 @@
 
 ---
 
-## 6. Synergy Tags [V1-SIMPLE]
+## 6. Synergy Tags [REMOVED — see project.md]
 
-- Every card (spell or stat upgrade) carries 1–2 tags from the `SynergyTag`
-  enum.
-- `GameState` keeps a `tag_counts: Dictionary[SynergyTag, int]`. Picking a card
-  increments the count for each of its tags.
-- When a tag count crosses a threshold (`SYNERGY_THRESHOLD_LOW = 3`,
-  `SYNERGY_THRESHOLD_HIGH = 5`), `GameState._apply_synergy_bonus(tag, level)`
-  runs a `match` statement that sets the relevant flag/multiplier and fires
-  `EventBus.synergy_threshold_reached` (which the UI listens to for the banner).
-- **v1 ships 3 tags** ([Offense], [Armor], [Utility] — see `project.md` table).
-  The counting/threshold/event system is fully generic; adding tag #4 onward
-  is: add an enum entry, add a table row, add a `match` branch. No new system.
+- Every card (spell or stat upgrade) still carries 1–2 tags from the
+  `SynergyTag` enum, and `GameState.tag_counts` still increments per pick —
+  kept purely as bookkeeping (a card's `tags[]` still drives its draft-card
+  pill label).
+- **The ×3/×5 threshold bonus system itself is gone**: `GameState.add_tag()`
+  no longer calls `_apply_synergy_bonus()` (deleted) or fires
+  `EventBus.synergy_threshold_reached` — no more flat damage/reduction/
+  regen/cooldown buffs, no more banner popup. Superseded by the mono-school
+  mastery bonus (`spells.md` "Mono-school mastery bonus").
 
 ---
 

@@ -146,6 +146,47 @@ resolves — same "generic function, no per-spell branches" rule as
 `calculate_damage()`. Re-applying a status refreshes its duration; it does
 not stack (v1 rule, revisit later if needed).
 
+### Mono-school mastery bonus
+
+Owning all `MAX_SPELL_SLOTS` spells from one school — and none from any
+other — grants that school's mastery bonus, a capstone reward for
+committing a whole loadout to one school. Tracked as `GameState.mono_school`
+(a `Constants.DamageType`, or `-1` if not mono). Since `MAX_SPELL_SLOTS`
+equals the real per-school spell count (4), this can only become true once
+all 4 owned spells are the same school; duplicate/stacking picks never
+change it — `GameState._update_mono_school()` only re-checks when a
+genuinely new spell is added to `active_spells`.
+
+Each school's mastery bonus amplifies its *existing* perk rather than
+inventing a new mechanic — Fire/Frost/Poison/Nature swap in a bigger
+constant inside `CombatUtils.apply_school_perk()`; Void has no status perk
+to amplify, so its bonus is flat extra damage instead, folded generically
+into `GameState.get_school_damage_multiplier()` via
+`MONO_DAMAGE_BONUS_BY_SCHOOL` — the same multiplier chain every archetype
+script already reads, so no new per-spell branches anywhere:
+
+| School | Base perk | Mastery bonus |
+|---|---|---|
+| Fire | Burn 30%/s | Burn **45%/s** (`FIRE_MONO_BURN_DPS_PERCENT`) |
+| Frost | Slow 40% | Slow **65%** (`FROST_MONO_SLOW_PERCENT`) |
+| Void | +18% damage premium | **+35%** extra damage (`MONO_DAMAGE_BONUS_BY_SCHOOL[VOID]`) |
+| Poison | DoT 15%/s + Slow 20% | DoT **22.5%/s** + Slow **30%** (`POISON_MONO_DOT_PERCENT` / `POISON_MONO_SLOW_PERCENT`) |
+| Nature | 18% lifesteal | **35%** lifesteal (`NATURE_MONO_LIFESTEAL_PERCENT`) |
+
+Breaking mono (drafting a spell from a different school) is a one-way door
+in practice — `active_spells` is capped at exactly `MAX_SPELL_SLOTS`
+entries, so once a non-matching school takes a slot, that run can never
+reach mono again.
+
+**UI status**: `assets/ui/bonuses/icon_bonus_<school>.png` (Void's is
+`icon_bonus_shadow.png`, matching this project's existing "shadow" naming
+convention for Void's non-per-spell icons) is meant to show whichever
+school is currently mastered. **Not yet wired to `GameState.mono_school`**
+— currently only a static placeholder icon in `scratch_spell_row_preview.tscn`
+(always shows the Fire variant, doesn't hide when not mono). Wiring it into
+the real HUD (`game_world.tscn`) and swapping/hiding it live is a follow-up
+task, not done yet.
+
 ---
 
 ## 3. Resistances (armor vs. schools)
