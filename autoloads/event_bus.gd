@@ -30,6 +30,7 @@ signal synergy_threshold_reached(tag: int, level: int)
 # Meta
 signal run_reset
 signal run_ended(victory: bool)
-signal materials_earned(amount: int)
+signal tower_material_earned(amount: int)
+signal scroll_material_earned(damage_type: int, amount: int)
 signal tower_upgraded(tower_id: String, star: int)
 signal spell_ranked_up(spell_id: String, rank: int)

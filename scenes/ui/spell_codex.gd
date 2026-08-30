@@ -27,7 +27,7 @@ func _on_garage_pressed() -> void:
 
 func _refresh() -> void:
 	energy_pill.set_amount(MetaManager.energy)
-	materials_pill.set_amount(MetaManager.materials)
+	materials_pill.set_amount(MetaManager.tower_material)
 	for child in spell_list.get_children():
 		spell_list.remove_child(child)
 		child.queue_free()
@@ -53,8 +53,9 @@ func _add_spell_row(spell: SpellDefinition) -> void:
 		row.set_upgrade_maxed()
 	else:
 		var cost: int = Constants.SPELL_RANK_COSTS[rank]
-		row.set_upgrade_cost(cost, MetaManager.materials >= cost)
-		row.upgrade_pressed.connect(_on_upgrade_pressed.bind(spell.spell_id))
+		var affordable: bool = MetaManager.get_scroll_material(spell.damage_type) >= cost
+		row.set_upgrade_cost(cost, affordable, CombatUtils.get_scroll_icon(spell.damage_type))
+		row.upgrade_pressed.connect(_on_upgrade_pressed.bind(spell.spell_id, spell.damage_type))
 
 func _stats_text(spell: SpellDefinition, rank: int, next_rank: int, at_max: bool) -> String:
 	if spell.spell_category == Constants.SpellCategory.PASSIVE:
@@ -69,7 +70,7 @@ func _stats_text(spell: SpellDefinition, rank: int, next_rank: int, at_max: bool
 	var next_dmg: float = CombatUtils.calculate_rank_scaled_value(spell.damage, next_rank)
 	return "DMG: %d → %d   Cooldown: %.1fs (fixed)" % [int(round(current_dmg)), int(round(next_dmg)), spell.cooldown]
 
-func _on_upgrade_pressed(spell_id: String) -> void:
-	if MetaManager.upgrade_spell_rank(spell_id):
+func _on_upgrade_pressed(spell_id: String, damage_type: int) -> void:
+	if MetaManager.upgrade_spell_rank(spell_id, damage_type):
 		AudioManager.play_sfx("sfx_upgrade_confirm")
 	_refresh()

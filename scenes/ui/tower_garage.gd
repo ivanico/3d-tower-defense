@@ -96,7 +96,7 @@ func _cell_size() -> Vector2:
 
 func _refresh() -> void:
 	energy_pill.set_amount(MetaManager.energy)
-	materials_pill.set_amount(MetaManager.materials)
+	materials_pill.set_amount(MetaManager.tower_material)
 
 	var tower_def: Resource = TowerRegistry.get_by_id(_viewing_id)
 	var star: int = _star_of(_viewing_id)
@@ -120,11 +120,13 @@ func _refresh() -> void:
 	var playable: bool = TowerRegistry.is_playable(_viewing_id)
 	if at_max:
 		upgrade_button.text = "MAX"
+		upgrade_button.icon = null
 		upgrade_button.disabled = true
 	else:
 		var cost: int = Constants.TOWER_STAR_COSTS[star]
-		upgrade_button.text = "Upgrade %d" % cost
-		upgrade_button.disabled = MetaManager.materials < cost or not playable
+		upgrade_button.text = "Upgrade  %d" % cost
+		upgrade_button.icon = CombatUtilsScript.TOWER_MATERIAL_ICON
+		upgrade_button.disabled = MetaManager.tower_material < cost or not playable
 
 func _star_of(tower_id: String) -> int:
 	return MetaManager.tower_stars.get(tower_id, 1)

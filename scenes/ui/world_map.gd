@@ -35,7 +35,7 @@ func _ready() -> void:
 
 func _refresh() -> void:
 	energy_pill.set_amount(MetaManager.energy)
-	materials_pill.set_amount(MetaManager.materials)
+	materials_pill.set_amount(MetaManager.tower_material)
 	var chapter_def := _current_chapter()
 	title_label.text = chapter_def.chapter_name
 	if chapter_def.map_image != null:

@@ -8,8 +8,6 @@ class_name MetaRow
 signal upgrade_pressed
 signal select_pressed
 
-const MATERIALS_ICON := preload("res://assets/ui/topbar/icon_currency_materials.png")
-
 @onready var icon_rect: TextureRect = $HBox/Icon
 @onready var name_label: Label = $HBox/Info/NameLabel
 @onready var star_row: HBoxContainer = $HBox/Info/StatusSlot/StarRow
@@ -65,9 +63,9 @@ func set_stat_text(text: String) -> void:
 		chip.visible = false
 
 
-func set_upgrade_cost(cost: int, affordable: bool) -> void:
+func set_upgrade_cost(cost: int, affordable: bool, icon: Texture2D) -> void:
 	upgrade_button.text = "Upgrade  %d" % cost
-	upgrade_button.icon = MATERIALS_ICON
+	upgrade_button.icon = icon
 	upgrade_button.disabled = not affordable
 
 

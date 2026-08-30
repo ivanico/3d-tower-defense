@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/ui/victory_screen.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/ui/common/ui_panel_dark_v2.png" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/primary_button/primary_button.tscn" id="3"]
-[ext_resource type="Texture2D" path="res://assets/ui/topbar/icon_currency_materials.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/ui/rewards/icon_mat_tower_rare.png" id="4"]
 
 [sub_resource type="StyleBoxTexture" id="1"]
 texture = ExtResource("2")

@@ -6,19 +6,19 @@
 [ext_resource type="Resource" uid="uid://bx10rnihvihju" path="res://resources/towers/tower_ancient_tower.tres" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/ui/draft_ui.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/ui/synergy_banner.tscn" id="8"]
-[ext_resource type="PackedScene" path="res://scenes/ui/widget/spell_stack_row/spell_stack_row.tscn" id="9"]
+[ext_resource type="PackedScene" uid="uid://kivvexe5t8ic" path="res://scenes/ui/widget/spell_stack_row/spell_stack_row.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/manager/wave_manager.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://scenes/manager/draft_manager.tscn" id="11"]
 [ext_resource type="Resource" uid="uid://c5el3moeg23y4" path="res://resources/chapters/chapter_01.tres" id="12"]
 [ext_resource type="PackedScene" uid="uid://p554x4rbygwa" path="res://scenes/ui/widget/xp_bar/xp_bar.tscn" id="14_xpbar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/pause_button/pause_button.tscn" id="15_pause"]
+[ext_resource type="Script" uid="uid://bjy471auqvlrg" path="res://scenes/ui/school_bonus_icon.gd" id="16_bonusicon"]
 [ext_resource type="Script" uid="uid://cntomb20lojxx" path="res://scenes/main/hud.gd" id="Script_hud"]
-[ext_resource type="Script" path="res://scenes/ui/school_bonus_icon.gd" id="16_bonusicon"]
 
 [sub_resource type="Environment" id="Env_world"]
 background_mode = 2
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d5wi0"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kla03"]
 bg_color = Color(0.13, 0.15, 0.2, 0.85)
 border_width_left = 2
 border_width_top = 2
@@ -30,7 +30,7 @@ corner_radius_top_right = 24
 corner_radius_bottom_right = 24
 corner_radius_bottom_left = 24
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kla03"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rdw2g"]
 bg_color = Color(0.0975, 0.1125, 0.15, 0.85)
 border_width_left = 2
 border_width_top = 2
@@ -99,6 +99,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="SpellStackRow" parent="HUD" instance=ExtResource("9")]
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 205.0
@@ -118,7 +119,7 @@ offset_bottom = 320.0
 source = 1
 icon_size = Vector2(64, 64)
 
-[node name="SchoolBonusIcon" parent="HUD" type="TextureRect"]
+[node name="SchoolBonusIcon" type="TextureRect" parent="HUD"]
 offset_left = 822.0
 offset_top = 250.0
 offset_right = 910.0
@@ -132,11 +133,11 @@ offset_left = 32.0
 offset_top = 32.0
 offset_right = 128.0
 offset_bottom = 128.0
-theme_override_styles/focus = SubResource("StyleBoxFlat_d5wi0")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_d5wi0")
-theme_override_styles/hover = SubResource("StyleBoxFlat_d5wi0")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_kla03")
-theme_override_styles/normal = SubResource("StyleBoxFlat_d5wi0")
+theme_override_styles/focus = SubResource("StyleBoxFlat_kla03")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_kla03")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kla03")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_rdw2g")
+theme_override_styles/normal = SubResource("StyleBoxFlat_kla03")
 
 [node name="DraftUI" parent="." instance=ExtResource("7")]
 

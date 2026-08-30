@@ -21,6 +21,24 @@ static func calculate_damage(base_amount: float, damage_type: int, armor_type: i
 static func get_damage_color(damage_type: int) -> Color:
 	return Constants.SCHOOL_COLORS.get(damage_type, Color.WHITE)
 
+# Scroll material icons (Epic 05) — one per school, awarded at run-end and
+# spent on that school's spell rank-ups. Mirrors the ICONS dict pattern in
+# school_bonus_icon.gd; void's file is named "shadow", same convention as
+# icon_bonus_shadow.png / icon_upgrade_damage_shadow.png.
+const SCROLL_ICONS := {
+	Constants.DamageType.FIRE:   preload("res://assets/ui/rewards/icon_mat_scroll_fire.png"),
+	Constants.DamageType.FROST:  preload("res://assets/ui/rewards/icon_mat_scroll_frost.png"),
+	Constants.DamageType.VOID:   preload("res://assets/ui/rewards/icon_mat_scroll_shadow.png"),
+	Constants.DamageType.POISON: preload("res://assets/ui/rewards/icon_mat_scroll_poison.png"),
+	Constants.DamageType.NATURE: preload("res://assets/ui/rewards/icon_mat_scroll_nature.png"),
+}
+
+static func get_scroll_icon(damage_type: int) -> Texture2D:
+	return SCROLL_ICONS.get(damage_type)
+
+# The single material spent on tower star upgrades (not tied to any school).
+const TOWER_MATERIAL_ICON := preload("res://assets/ui/rewards/icon_mat_tower_rare.png")
+
 # One shared emissive material per school — shared (not duplicated) so every
 # projectile of a school batches as one material (mobile perf rule).
 static var _school_materials: Dictionary = {}
@@ -242,7 +260,7 @@ static func calculate_star_scaled_value(base_value: float, star: int) -> float:
 static func calculate_rank_scaled_value(base_value: float, rank: int) -> float:
 	return base_value * (1.0 + Constants.SPELL_RANK_DAMAGE_BONUS_PER_LEVEL * (rank - 1))
 
-static func calculate_run_materials(waves_cleared: int) -> int:
+static func calculate_material_reward_amount(waves_cleared: int) -> int:
 	var checkpoints: Array[int] = Constants.MATERIAL_CHECKPOINT_WAVES
 	var rewards: Array[int] = Constants.MATERIAL_CHECKPOINT_REWARDS
 	var reward := 0
@@ -250,3 +268,36 @@ static func calculate_run_materials(waves_cleared: int) -> int:
 		if waves_cleared >= checkpoints[i]:
 			reward = rewards[i]
 	return reward
+
+# Distinct schools (Constants.DamageType) among a run's active_spells, in
+# first-seen order — the set of scroll materials that run's rewards touch.
+# Shared by victory_screen and defeat_screen (both display AND later commit
+# the same reward, so both need this list independently — see
+# format_material_reward_summary / commit_material_reward below).
+static func get_fought_schools(active_spells: Array) -> Array:
+	var schools: Array = []
+	for spell in active_spells:
+		if spell.damage_type not in schools:
+			schools.append(spell.damage_type)
+	return schools
+
+# Display text for a run-end reward, e.g. "Tower Mat x50, Fire Scroll x50" —
+# pure, safe to call repeatedly (e.g. once for the results label, again later
+# when actually committing via commit_material_reward).
+static func format_material_reward_summary(amount: int, fought_schools: Array) -> String:
+	if amount <= 0:
+		return "None"
+	var parts: Array[String] = ["Tower Mat x%d" % amount]
+	for damage_type in fought_schools:
+		parts.append("%s Scroll x%d" % [Constants.DamageType.keys()[damage_type].capitalize(), amount])
+	return ", ".join(parts)
+
+# Actually grants a run-end reward through MetaManager — the Tower material
+# always, plus each fought school's scroll, all at `amount`. No-ops at
+# amount <= 0 (nothing was earned).
+static func commit_material_reward(amount: int, fought_schools: Array) -> void:
+	if amount <= 0:
+		return
+	for damage_type in fought_schools:
+		MetaManager.award_scroll_material(damage_type, amount)
+	MetaManager.award_tower_material(amount)

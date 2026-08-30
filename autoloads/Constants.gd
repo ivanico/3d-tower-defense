@@ -6,7 +6,6 @@ enum ArmorType      { UNARMORED, HEAVY }
 enum SpellCategory  { PROJECTILE, PASSIVE, ORB, AOE_AREA }
 enum CardRarity     { COMMON, RARE, EPIC }
 enum SynergyTag     { OFFENSE, ARMOR, UTILITY }
-enum MaterialType   { STANDARD }
 
 const TOTAL_WAVES:              int   = 12
 const WAVE_DURATION_MAX:        float = 60.0

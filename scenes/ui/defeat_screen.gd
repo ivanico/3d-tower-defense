@@ -7,7 +7,9 @@ extends CanvasLayer
 
 func _ready() -> void:
 	wave_label.text = "Wave Reached: %d" % GameState.wave_number
-	materials_label.text = "Materials Earned: %d" % CombatUtils.calculate_run_materials(GameState.waves_cleared)
+	var amount := CombatUtils.calculate_material_reward_amount(GameState.waves_cleared)
+	var fought_schools := CombatUtils.get_fought_schools(GameState.active_spells)
+	materials_label.text = "Earned: %s" % CombatUtils.format_material_reward_summary(amount, fought_schools)
 	retry_button.pressed.connect(_on_retry_pressed)
 	map_button.pressed.connect(_on_map_pressed)
 
@@ -24,6 +26,6 @@ func _on_map_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/world_map.tscn")
 
 func _award_consolation_materials() -> void:
-	var reward: int = CombatUtils.calculate_run_materials(GameState.waves_cleared)
-	if reward > 0:
-		MetaManager.award_materials(reward)
+	var amount := CombatUtils.calculate_material_reward_amount(GameState.waves_cleared)
+	var fought_schools := CombatUtils.get_fought_schools(GameState.active_spells)
+	CombatUtils.commit_material_reward(amount, fought_schools)
