@@ -101,15 +101,31 @@ const WAVE_FAST_ENEMY_WEIGHT:            int   = 30
 # waves). Once the chapter grows (planned: wave 10 mini-boss + wave 20 final
 # boss), update both arrays to match, e.g. checkpoints [5, 10, 15, 20].
 const MATERIAL_CHECKPOINT_WAVES:   Array[int] = [3, 6, 9, 12]
+# Base Material — the common currency, guaranteed every run, shown in the top
+# bar next to Energy.
 const MATERIAL_CHECKPOINT_REWARDS: Array[int] = [50, 100, 150, 220]
+# Tower Material / Scroll Material — the rare currencies, only a CHANCE to
+# drop (see CombatUtils.roll_material_reward). Same checkpoint tiers as
+# above, scaled proportionally to MATERIAL_CHECKPOINT_REWARDS so the curve
+# shape matches; capped at 25% on the boss checkpoint (wave 12) per design.
+const MATERIAL_CHECKPOINT_CHANCES: Array[float] = [0.06, 0.11, 0.17, 0.25]
+# Flat amount granted per rare currency when its roll hits. Tower Material is
+# rolled once per run; Scroll Material is rolled independently once per
+# fought school.
+const RARE_MATERIAL_DROP_AMOUNT: int = 1
 
 # Energy regen (Epic 05) — tunable
 const ENERGY_REGEN_INTERVAL_SEC:         float = 1200.0  # 20 min per energy point
 
 # Tower star / spell rank upgrade costs (Epic 05) — index by current level to
-# get the cost of upgrading to the next level; index 0 is unused (no level 0)
-const TOWER_STAR_COSTS:  Array[int] = [0, 100, 250, 500, 1000]
-const SPELL_RANK_COSTS:  Array[int] = [0, 80, 200, 400, 800]
+# get the cost of upgrading to the next level; index 0 is unused (no level 0).
+# Each upgrade is a DUAL cost: the _COSTS arrays below are paid in the common
+# Base Material, the _RARE_COSTS arrays alongside them are paid in the rare
+# Tower Material / that school's Scroll Material.
+const TOWER_STAR_COSTS:       Array[int] = [0, 100, 250, 500, 1000]
+const SPELL_RANK_COSTS:       Array[int] = [0, 80, 200, 400, 800]
+const TOWER_STAR_RARE_COSTS:  Array[int] = [0, 3, 6, 10, 15]
+const SPELL_RANK_RARE_COSTS:  Array[int] = [0, 3, 6, 10, 15]
 
 # Spell school perks (spells.md Sections 2-3) — applied generically by damage
 # type in the hit-resolution path; a spell's .tres never re-implements these.

@@ -36,8 +36,14 @@ const SCROLL_ICONS := {
 static func get_scroll_icon(damage_type: int) -> Texture2D:
 	return SCROLL_ICONS.get(damage_type)
 
-# The single material spent on tower star upgrades (not tied to any school).
+# The rare material spent (alongside Base Material) on tower star upgrades,
+# not tied to any school.
 const TOWER_MATERIAL_ICON := preload("res://assets/ui/rewards/icon_mat_tower_rare.png")
+
+# The common material spent (alongside a rare one) on every upgrade — earned
+# guaranteed every run, shown in the top bar next to Energy. Reuses the top
+# bar's existing generic "materials" icon; no new asset needed.
+const BASE_MATERIAL_ICON := preload("res://assets/ui/topbar/icon_currency_materials1.png")
 
 # One shared emissive material per school — shared (not duplicated) so every
 # projectile of a school batches as one material (mobile perf rule).
@@ -260,20 +266,28 @@ static func calculate_star_scaled_value(base_value: float, star: int) -> float:
 static func calculate_rank_scaled_value(base_value: float, rank: int) -> float:
 	return base_value * (1.0 + Constants.SPELL_RANK_DAMAGE_BONUS_PER_LEVEL * (rank - 1))
 
-static func calculate_material_reward_amount(waves_cleared: int) -> int:
-	var checkpoints: Array[int] = Constants.MATERIAL_CHECKPOINT_WAVES
-	var rewards: Array[int] = Constants.MATERIAL_CHECKPOINT_REWARDS
-	var reward := 0
+# Shared by the Base Material amount lookup and the rare-drop chance lookup
+# below — both key off the same checkpoint tiers (highest one reached wins),
+# just against a different value array.
+static func _highest_checkpoint_value(waves_cleared: int, checkpoints: Array, values: Array) -> Variant:
+	# Defaults to "nothing earned" (0) below checkpoint 0 — checkpoints[0] is
+	# the FIRST tier, not a zero tier.
+	var result = 0
 	for i in checkpoints.size():
 		if waves_cleared >= checkpoints[i]:
-			reward = rewards[i]
-	return reward
+			result = values[i]
+	return result
+
+static func calculate_material_reward_amount(waves_cleared: int) -> int:
+	return _highest_checkpoint_value(waves_cleared, Constants.MATERIAL_CHECKPOINT_WAVES, Constants.MATERIAL_CHECKPOINT_REWARDS)
+
+# Chance (0.0-1.0) for EACH rare material (Tower Mat, or one fought school's
+# Scroll Mat) to drop this run — see roll_material_reward below.
+static func calculate_rare_drop_chance(waves_cleared: int) -> float:
+	return _highest_checkpoint_value(waves_cleared, Constants.MATERIAL_CHECKPOINT_WAVES, Constants.MATERIAL_CHECKPOINT_CHANCES)
 
 # Distinct schools (Constants.DamageType) among a run's active_spells, in
 # first-seen order — the set of scroll materials that run's rewards touch.
-# Shared by victory_screen and defeat_screen (both display AND later commit
-# the same reward, so both need this list independently — see
-# format_material_reward_summary / commit_material_reward below).
 static func get_fought_schools(active_spells: Array) -> Array:
 	var schools: Array = []
 	for spell in active_spells:
@@ -281,23 +295,49 @@ static func get_fought_schools(active_spells: Array) -> Array:
 			schools.append(spell.damage_type)
 	return schools
 
-# Display text for a run-end reward, e.g. "Tower Mat x50, Fire Scroll x50" —
-# pure, safe to call repeatedly (e.g. once for the results label, again later
-# when actually committing via commit_material_reward).
-static func format_material_reward_summary(amount: int, fought_schools: Array) -> String:
-	if amount <= 0:
-		return "None"
-	var parts: Array[String] = ["Tower Mat x%d" % amount]
+# Rolls this run's ENTIRE reward exactly once: the guaranteed Base Material
+# amount, plus an independent chance roll for the rare Tower Material and for
+# each fought school's rare Scroll Material. Callers (victory_screen,
+# defeat_screen) must roll once and reuse the same Dictionary for both the
+# results label (format_material_reward_summary) and the actual grant
+# (commit_material_reward) — rolling twice would let the label promise a rare
+# drop the second roll then fails to grant, or vice versa.
+static func roll_material_reward(waves_cleared: int, fought_schools: Array) -> Dictionary:
+	var chance := calculate_rare_drop_chance(waves_cleared)
+	var scroll_hits: Array = []
 	for damage_type in fought_schools:
-		parts.append("%s Scroll x%d" % [Constants.DamageType.keys()[damage_type].capitalize(), amount])
+		if randf() < chance:
+			scroll_hits.append(damage_type)
+	return {
+		"base_amount": calculate_material_reward_amount(waves_cleared),
+		"tower_mat_hit": randf() < chance,
+		"scroll_hits": scroll_hits,
+	}
+
+# Display text for a run-end reward, e.g. "Base Mat x50, Tower Mat +1, Fire
+# Scroll +1" — built from an already-rolled reward (see roll_material_reward),
+# never rolls itself.
+static func format_material_reward_summary(reward: Dictionary) -> String:
+	var base_amount: int = reward.get("base_amount", 0)
+	if base_amount <= 0:
+		return "None"
+	var parts: Array[String] = ["Base Mat x%d" % base_amount]
+	if reward.get("tower_mat_hit", false):
+		parts.append("Tower Mat +%d" % Constants.RARE_MATERIAL_DROP_AMOUNT)
+	for damage_type in reward.get("scroll_hits", []):
+		parts.append("%s Scroll +%d" % [Constants.DamageType.keys()[damage_type].capitalize(), Constants.RARE_MATERIAL_DROP_AMOUNT])
 	return ", ".join(parts)
 
-# Actually grants a run-end reward through MetaManager — the Tower material
-# always, plus each fought school's scroll, all at `amount`. No-ops at
-# amount <= 0 (nothing was earned).
-static func commit_material_reward(amount: int, fought_schools: Array) -> void:
-	if amount <= 0:
+# Actually grants an already-rolled run-end reward through MetaManager (see
+# roll_material_reward) — Base Material always, Tower Material and each hit
+# school's Scroll Material at RARE_MATERIAL_DROP_AMOUNT. No-ops entirely at
+# base_amount <= 0 (nothing was earned, e.g. checkpoint 0 never reached).
+static func commit_material_reward(reward: Dictionary) -> void:
+	var base_amount: int = reward.get("base_amount", 0)
+	if base_amount <= 0:
 		return
-	for damage_type in fought_schools:
-		MetaManager.award_scroll_material(damage_type, amount)
-	MetaManager.award_tower_material(amount)
+	MetaManager.award_base_material(base_amount)
+	if reward.get("tower_mat_hit", false):
+		MetaManager.award_tower_material(Constants.RARE_MATERIAL_DROP_AMOUNT)
+	for damage_type in reward.get("scroll_hits", []):
+		MetaManager.award_scroll_material(damage_type, Constants.RARE_MATERIAL_DROP_AMOUNT)

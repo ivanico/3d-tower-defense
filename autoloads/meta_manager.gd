@@ -5,6 +5,7 @@ const SAVE_PATH := "user://savegame.tres"
 var owned_towers: Array[String] = []
 var tower_stars: Dictionary = {}
 var spell_ranks: Dictionary = {}
+var base_material: int = 0
 var tower_material: int = 0
 var scroll_materials: Dictionary = {}  # Constants.DamageType int -> int amount
 var energy: int = Constants.MAX_ENERGY
@@ -30,6 +31,11 @@ func restore_energy(amount: int) -> void:
 func get_scroll_material(damage_type: int) -> int:
 	return scroll_materials.get(damage_type, 0)
 
+func award_base_material(amount: int) -> void:
+	base_material += amount
+	save()
+	EventBus.base_material_earned.emit(amount)
+
 func award_tower_material(amount: int) -> void:
 	tower_material += amount
 	save()
@@ -40,27 +46,35 @@ func award_scroll_material(damage_type: int, amount: int) -> void:
 	save()
 	EventBus.scroll_material_earned.emit(damage_type, amount)
 
+## Dual cost: Base Material (common) + Tower Material (rare). Both must be
+## affordable or nothing is deducted.
 func upgrade_tower_star(tower_id: String) -> bool:
 	var current_star: int = tower_stars.get(tower_id, 1)
 	if current_star >= Constants.TOWER_MAX_STARS:
 		return false
-	var cost: int = Constants.TOWER_STAR_COSTS[current_star]
-	if tower_material < cost:
+	var base_cost: int = Constants.TOWER_STAR_COSTS[current_star]
+	var rare_cost: int = Constants.TOWER_STAR_RARE_COSTS[current_star]
+	if base_material < base_cost or tower_material < rare_cost:
 		return false
-	tower_material -= cost
+	base_material -= base_cost
+	tower_material -= rare_cost
 	tower_stars[tower_id] = current_star + 1
 	save()
 	EventBus.tower_upgraded.emit(tower_id, tower_stars[tower_id])
 	return true
 
+## Dual cost: Base Material (common) + that school's Scroll Material (rare).
+## Both must be affordable or nothing is deducted.
 func upgrade_spell_rank(spell_id: String, damage_type: int) -> bool:
 	var current_rank: int = spell_ranks.get(spell_id, 1)
 	if current_rank >= Constants.SPELL_MAX_RANK:
 		return false
-	var cost: int = Constants.SPELL_RANK_COSTS[current_rank]
-	if get_scroll_material(damage_type) < cost:
+	var base_cost: int = Constants.SPELL_RANK_COSTS[current_rank]
+	var rare_cost: int = Constants.SPELL_RANK_RARE_COSTS[current_rank]
+	if base_material < base_cost or get_scroll_material(damage_type) < rare_cost:
 		return false
-	scroll_materials[damage_type] = get_scroll_material(damage_type) - cost
+	base_material -= base_cost
+	scroll_materials[damage_type] = get_scroll_material(damage_type) - rare_cost
 	spell_ranks[spell_id] = current_rank + 1
 	save()
 	EventBus.spell_ranked_up.emit(spell_id, spell_ranks[spell_id])
@@ -71,6 +85,7 @@ func save() -> void:
 	data.owned_towers = owned_towers
 	data.tower_stars = tower_stars
 	data.spell_ranks = spell_ranks
+	data.base_material = base_material
 	data.tower_material = tower_material
 	data.scroll_materials = scroll_materials
 	data.energy = energy
@@ -85,6 +100,7 @@ func load() -> void:
 		owned_towers = ["ancient_tower"]
 		tower_stars = {}
 		spell_ranks = {}
+		base_material = 0
 		tower_material = 0
 		scroll_materials = {}
 		energy = Constants.MAX_ENERGY
@@ -95,6 +111,7 @@ func load() -> void:
 	owned_towers = data.owned_towers
 	tower_stars = data.tower_stars
 	spell_ranks = data.spell_ranks
+	base_material = data.base_material
 	tower_material = data.tower_material
 	scroll_materials = data.scroll_materials
 	energy = data.energy

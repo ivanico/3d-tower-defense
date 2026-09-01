@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://dxa2ue1244y5o" path="res://assets/ui/garage/icon_stat_hp.png" id="11"]
 [ext_resource type="Texture2D" uid="uid://bdusiyj4dxftf" path="res://assets/ui/garage/icon_tower_ancient.png" id="12"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/primary_button/primary_button.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/cost_chip/cost_chip.tscn" id="15"]
 
 [sub_resource type="StyleBoxFlat" id="strip"]
 bg_color = Color(0.18, 0.1, 0.3, 0.38)
@@ -281,10 +282,22 @@ offset_top = 17.0
 offset_right = 770.0
 offset_bottom = 113.0
 focus_mode = 0
-theme_override_constants/icon_max_width = 40
 theme_override_font_sizes/font_size = 46
-expand_icon = true
 text = "Upgrade"
+
+[node name="BaseChip" parent="ActionBar" instance=ExtResource("15")]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 47.0
+offset_right = 290.0
+offset_bottom = 83.0
+
+[node name="RareChip" parent="ActionBar" instance=ExtResource("15")]
+layout_mode = 0
+offset_left = 790.0
+offset_top = 47.0
+offset_right = 1040.0
+offset_bottom = 83.0
 
 [node name="NavBar" parent="." instance=ExtResource("4")]
 offset_top = 1730.0

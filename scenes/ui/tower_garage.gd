@@ -30,6 +30,11 @@ const CombatUtilsScript := preload("res://scripts/combat_utils.gd")
 @onready var hp_pill: Control = $StatsStrip/Hp
 @onready var tower_grid: GridContainer = $TowerGrid
 @onready var upgrade_button: Button = $ActionBar/UpgradeButton
+# Typed to the base class, not the global class name `CostChip` — see the
+# note above about class_name only resolving through the editor-built
+# global script class cache.
+@onready var base_chip: HBoxContainer = $ActionBar/BaseChip
+@onready var rare_chip: HBoxContainer = $ActionBar/RareChip
 @onready var energy_pill: Control = $TopBar/EnergyPill
 @onready var materials_pill: Control = $TopBar/MaterialsPill
 @onready var nav_bar: Control = $NavBar
@@ -96,7 +101,7 @@ func _cell_size() -> Vector2:
 
 func _refresh() -> void:
 	energy_pill.set_amount(MetaManager.energy)
-	materials_pill.set_amount(MetaManager.tower_material)
+	materials_pill.set_amount(MetaManager.base_material)
 
 	var tower_def: Resource = TowerRegistry.get_by_id(_viewing_id)
 	var star: int = _star_of(_viewing_id)
@@ -120,13 +125,20 @@ func _refresh() -> void:
 	var playable: bool = TowerRegistry.is_playable(_viewing_id)
 	if at_max:
 		upgrade_button.text = "MAX"
-		upgrade_button.icon = null
 		upgrade_button.disabled = true
+		base_chip.visible = false
+		rare_chip.visible = false
 	else:
-		var cost: int = Constants.TOWER_STAR_COSTS[star]
-		upgrade_button.text = "Upgrade  %d" % cost
-		upgrade_button.icon = CombatUtilsScript.TOWER_MATERIAL_ICON
-		upgrade_button.disabled = MetaManager.tower_material < cost or not playable
+		var base_cost: int = Constants.TOWER_STAR_COSTS[star]
+		var rare_cost: int = Constants.TOWER_STAR_RARE_COSTS[star]
+		var base_affordable: bool = MetaManager.base_material >= base_cost
+		var rare_affordable: bool = MetaManager.tower_material >= rare_cost
+		base_chip.visible = true
+		rare_chip.visible = true
+		base_chip.set_cost(base_cost, CombatUtilsScript.BASE_MATERIAL_ICON, base_affordable)
+		rare_chip.set_cost(rare_cost, CombatUtilsScript.TOWER_MATERIAL_ICON, rare_affordable)
+		upgrade_button.text = "Upgrade"
+		upgrade_button.disabled = not (base_affordable and rare_affordable) or not playable
 
 func _star_of(tower_id: String) -> int:
 	return MetaManager.tower_stars.get(tower_id, 1)

@@ -27,7 +27,7 @@ func _on_garage_pressed() -> void:
 
 func _refresh() -> void:
 	energy_pill.set_amount(MetaManager.energy)
-	materials_pill.set_amount(MetaManager.tower_material)
+	materials_pill.set_amount(MetaManager.base_material)
 	for child in spell_list.get_children():
 		spell_list.remove_child(child)
 		child.queue_free()
@@ -52,9 +52,11 @@ func _add_spell_row(spell: SpellDefinition) -> void:
 	if at_max:
 		row.set_upgrade_maxed()
 	else:
-		var cost: int = Constants.SPELL_RANK_COSTS[rank]
-		var affordable: bool = MetaManager.get_scroll_material(spell.damage_type) >= cost
-		row.set_upgrade_cost(cost, affordable, CombatUtils.get_scroll_icon(spell.damage_type))
+		var base_cost: int = Constants.SPELL_RANK_COSTS[rank]
+		var rare_cost: int = Constants.SPELL_RANK_RARE_COSTS[rank]
+		var base_affordable: bool = MetaManager.base_material >= base_cost
+		var rare_affordable: bool = MetaManager.get_scroll_material(spell.damage_type) >= rare_cost
+		row.set_upgrade_costs(base_cost, base_affordable, CombatUtils.BASE_MATERIAL_ICON, rare_cost, rare_affordable, CombatUtils.get_scroll_icon(spell.damage_type))
 		row.upgrade_pressed.connect(_on_upgrade_pressed.bind(spell.spell_id, spell.damage_type))
 
 func _stats_text(spell: SpellDefinition, rank: int, next_rank: int, at_max: bool) -> String:

@@ -4,6 +4,7 @@ class_name SaveData
 @export var owned_towers: Array[String] = []
 @export var tower_stars: Dictionary = {}
 @export var spell_ranks: Dictionary = {}
+@export var base_material: int = 0
 @export var tower_material: int = 0
 @export var scroll_materials: Dictionary = {}  # Constants.DamageType int -> int amount
 @export var energy: int = Constants.MAX_ENERGY

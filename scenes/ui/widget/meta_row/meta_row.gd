@@ -15,6 +15,12 @@ signal select_pressed
 @onready var select_button: CheckButton = $HBox/Actions/SelectButton
 @onready var stat_text_label: Label = $HBox/Info/StatsRow/StatText
 @onready var upgrade_button: Button = $HBox/Actions/UpgradeButton
+@onready var cost_row: HBoxContainer = $HBox/Actions/CostRow
+# Typed to the base class, not the global class name `CostChip` — see the
+# note in tower_garage.gd about class_name resolving only through the
+# editor-built global script class cache.
+@onready var base_chip: HBoxContainer = $HBox/Actions/CostRow/BaseChip
+@onready var rare_chip: HBoxContainer = $HBox/Actions/CostRow/RareChip
 
 @onready var _chips: Array[HBoxContainer] = [$HBox/Info/StatsRow/Chip1, $HBox/Info/StatsRow/Chip2]
 
@@ -63,15 +69,20 @@ func set_stat_text(text: String) -> void:
 		chip.visible = false
 
 
-func set_upgrade_cost(cost: int, affordable: bool, icon: Texture2D) -> void:
-	upgrade_button.text = "Upgrade  %d" % cost
-	upgrade_button.icon = icon
-	upgrade_button.disabled = not affordable
+## Dual cost: the button itself is a plain "Upgrade" trigger (a Button can only
+## show one icon), the two currencies are shown as chips above it instead —
+## disabled unless BOTH are affordable.
+func set_upgrade_costs(base_cost: int, base_affordable: bool, base_icon: Texture2D, rare_cost: int, rare_affordable: bool, rare_icon: Texture2D) -> void:
+	cost_row.visible = true
+	base_chip.set_cost(base_cost, base_icon, base_affordable)
+	rare_chip.set_cost(rare_cost, rare_icon, rare_affordable)
+	upgrade_button.text = "Upgrade"
+	upgrade_button.disabled = not (base_affordable and rare_affordable)
 
 
 func set_upgrade_maxed() -> void:
+	cost_row.visible = false
 	upgrade_button.text = "MAX"
-	upgrade_button.icon = null
 	upgrade_button.disabled = true
 
 

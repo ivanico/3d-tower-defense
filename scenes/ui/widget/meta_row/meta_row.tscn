@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/widget/meta_row/meta_row.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/star_row/star_row.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/primary_button/primary_button.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/cost_chip/cost_chip.tscn" id="5"]
 
 [sub_resource type="StyleBoxFlat" id="1"]
 content_margin_left = 24.0
@@ -111,13 +112,22 @@ size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 20
 text = "In Use"
 
+[node name="CostRow" type="HBoxContainer" parent="HBox/Actions"]
+size_flags_horizontal = 4
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="BaseChip" parent="HBox/Actions/CostRow" instance=ExtResource("5")]
+layout_mode = 2
+
+[node name="RareChip" parent="HBox/Actions/CostRow" instance=ExtResource("5")]
+layout_mode = 2
+
 [node name="UpgradeButton" parent="HBox/Actions" instance=ExtResource("4")]
 custom_minimum_size = Vector2(280, 154)
 offset_right = 280.0
 offset_bottom = 154.0
 size_flags_horizontal = 4
 shadow_text = false
-theme_override_constants/icon_max_width = 28
 theme_override_font_sizes/font_size = 26
 text = "Upgrade"
-expand_icon = true
