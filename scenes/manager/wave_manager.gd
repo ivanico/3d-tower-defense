@@ -13,6 +13,16 @@ var _active_enemies: Array = []
 var _current_wave: int = 0
 var _enemy_container: Node3D = null
 var _wave_timer: Timer
+var _wave_start_msec: int = 0
+
+# Stall watchdog: while a wave is running, checks every WATCHDOG_INTERVAL
+# seconds whether _active_enemies has shrunk since the last check. If not,
+# dumps every remaining enemy's id/position/is_on_floor -- catches a stuck
+# enemy (e.g. fallen off the arena edge) within seconds instead of waiting
+# out the full WAVE_DURATION_MAX to find out something was wrong.
+const WATCHDOG_INTERVAL := 5.0
+var _watchdog_timer: Timer
+var _watchdog_last_count: int = -1
 
 func _ready() -> void:
 	EventBus.enemy_died.connect(_on_enemy_died)
@@ -22,11 +32,20 @@ func _ready() -> void:
 	_wave_timer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_wave_timer.timeout.connect(_on_wave_timeout)
 	add_child(_wave_timer)
+	_watchdog_timer = Timer.new()
+	_watchdog_timer.wait_time = WATCHDOG_INTERVAL
+	_watchdog_timer.one_shot = false
+	_watchdog_timer.process_mode = Node.PROCESS_MODE_PAUSABLE
+	_watchdog_timer.timeout.connect(_on_watchdog_tick)
+	add_child(_watchdog_timer)
 
 func start_wave(wave_number: int) -> void:
 	print("DEBUGTEST start_wave(", wave_number, ")")
 	_current_wave = wave_number
 	_active_enemies.clear()
+	_wave_start_msec = Time.get_ticks_msec()
+	_watchdog_last_count = -1
+	_watchdog_timer.start()
 	_wave_timer.start(Constants.WAVE_DURATION_MAX)
 	if wave_number >= chapter.wave_count:
 		_spawn_enemy(_pick_boss())
@@ -70,10 +89,12 @@ func _get_wave_composition(wave_number: int) -> Array[EnemyDefinition]:
 
 func stop_wave() -> void:
 	_wave_timer.stop()
+	_watchdog_timer.stop()
 	_active_enemies.clear()
 
 func clear_all_enemies() -> void:
 	_wave_timer.stop()
+	_watchdog_timer.stop()
 	for enemy in _active_enemies:
 		if is_instance_valid(enemy):
 			enemy.queue_free()
@@ -129,9 +150,24 @@ func _on_wave_timeout() -> void:
 	_finish_wave()
 
 func _finish_wave() -> void:
-	print("DEBUGTEST _finish_wave wave=", _current_wave)
+	var elapsed_sec := (Time.get_ticks_msec() - _wave_start_msec) / 1000.0
+	print("DEBUGTEST _finish_wave wave=", _current_wave, " elapsed_sec=", elapsed_sec)
 	_wave_timer.stop()
+	_watchdog_timer.stop()
 	if _current_wave >= chapter.wave_count:
 		EventBus.boss_died.emit()
 	else:
 		EventBus.wave_cleared.emit(_current_wave)
+
+func _on_watchdog_tick() -> void:
+	var count := _active_enemies.size()
+	if count == 0 or count != _watchdog_last_count:
+		_watchdog_last_count = count
+		return
+	print("DEBUGTEST WATCHDOG stall wave=", _current_wave, " remaining=", count, " unchanged for ", WATCHDOG_INTERVAL, "s")
+	for enemy in _active_enemies:
+		if is_instance_valid(enemy):
+			var on_floor: bool = enemy.is_on_floor() if enemy.has_method("is_on_floor") else false
+			print("DEBUGTEST   stuck enemy=", enemy.name, " pos=", enemy.global_position, " is_on_floor=", on_floor)
+		else:
+			print("DEBUGTEST   stuck enemy=<freed but still tracked>")

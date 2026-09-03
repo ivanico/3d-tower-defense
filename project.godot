@@ -42,6 +42,18 @@ enabled=PackedStringArray("res://addons/ui_icon_cap/plugin.cfg")
 
 theme/custom="res://resources/theme/ui_theme.tres"
 
+[logging]
+
+; Every print() (all the DEBUGTEST lines included) now persists to disk
+; automatically, every run, instead of vanishing when the console/window
+; closes -- see user://logs dir (Windows:
+; %APPDATA%\Godot\app_userdata\TowersLastStand3D\logs\). max_log_files=1
+; means only the most recent run's log is kept -- each new run overwrites
+; the last one, so it never grows unbounded.
+file_logging/enable_file_logging=true
+file_logging/log_path="user://logs/game.log"
+file_logging/max_log_files=1
+
 [rendering]
 
 renderer/rendering_method="mobile"

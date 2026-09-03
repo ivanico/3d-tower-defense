@@ -15,6 +15,14 @@ const WAVE_DURATION_MAX:        float = 60.0
 # floor's edge and fall through forever (was un-killable/un-targetable once
 # off-frustum, stalling the wave until WAVE_DURATION_MAX force-cleared it).
 const ARENA_FLOOR_HALF_EXTENTS: Vector2 = Vector2(19.5, 28.0)
+# Nothing bounds the floor's edge (chap1_arena.tscn has no perimeter walls),
+# and enemies converging on the tower jostle each other via move_and_slide()
+# -- one can still get shoved off after spawning safely inside
+# ARENA_FLOOR_HALF_EXTENTS. Once off, it free-falls forever: alive, off-
+# camera, un-killable, stuck in WaveManager._active_enemies until
+# WAVE_DURATION_MAX force-clears the wave. enemy.gd force-kills anything
+# that falls this far below the floor (spawn height 0.6) as a safety net.
+const ENEMY_FALL_KILL_Y: float = -5.0
 const DRAFT_CARDS_SHOWN:        int   = 3
 const ENEMY_HP_SCALE:           float = 1.12
 const ENEMY_DMG_SCALE:          float = 1.08

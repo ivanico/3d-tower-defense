@@ -54,6 +54,16 @@ func _apply_definition() -> void:
 		mover.target_position = tower.global_position
 
 func _physics_process(delta: float) -> void:
+	# Safety net: nothing walls off the arena floor's edge, and enemies
+	# jostling each other via move_and_slide() near the tower can still
+	# shove one off it after it spawned safely inside bounds (see
+	# Constants.ENEMY_FALL_KILL_Y). Left un-checked it free-falls forever,
+	# alive and off-camera, stalling the wave until WAVE_DURATION_MAX.
+	if global_position.y < Constants.ENEMY_FALL_KILL_Y:
+		if health.current_health > 0.0:
+			print("DEBUGTEST FALL_SAFETY_NET killed ", name, " at pos=", global_position)
+			health.kill()
+		return
 	if not _is_attacking:
 		return
 	_attack_timer -= delta

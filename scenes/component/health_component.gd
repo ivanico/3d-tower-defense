@@ -18,6 +18,16 @@ func damage(amount: float) -> void:
 	if current_health <= 0.0:
 		call_deferred("_die")
 
+## Force-death that bypasses damage (e.g. an enemy that fell out of the
+## arena) but still goes through the same `died` signal as a normal kill,
+## so every listener (WaveManager, XP, kill count) stays consistent.
+func kill() -> void:
+	if current_health <= 0.0:
+		return
+	current_health = 0.0
+	health_changed.emit(current_health, max_health)
+	call_deferred("_die")
+
 func heal(amount: float) -> void:
 	current_health = min(current_health + amount, max_health)
 	health_changed.emit(current_health, max_health)
