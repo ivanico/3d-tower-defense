@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://tiggx5dhb7uj"]
+[gd_scene load_steps=28 format=3 uid="uid://tiggx5dhb7uj"]
 
 [ext_resource type="Script" uid="uid://bn6xf3kg1jeno" path="res://scenes/ui/tower_garage.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://f17epup68u0o" path="res://assets/ui/garage/bg_garage.png" id="2"]
@@ -14,6 +14,8 @@
 [ext_resource type="Texture2D" uid="uid://bdusiyj4dxftf" path="res://assets/ui/garage/icon_tower_ancient.png" id="12"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/primary_button/primary_button.tscn" id="14"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/cost_chip/cost_chip.tscn" id="15"]
+[ext_resource type="PackedScene" uid="uid://3355i6eil4wv" path="res://scenes/ui/widget/currency_pill/currency_pill.tscn" id="16"]
+[ext_resource type="Texture2D" path="res://assets/ui/rewards/icon_mat_tower_rare.png" id="17"]
 
 [sub_resource type="StyleBoxFlat" id="strip"]
 bg_color = Color(0.18, 0.1, 0.3, 0.38)
@@ -106,11 +108,21 @@ texture = ExtResource("2")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="TopBar" parent="." instance=ExtResource("3")]
+[node name="HeaderRow" type="HBoxContainer" parent="."]
 offset_left = 60.0
 offset_top = 24.0
 offset_right = 1020.0
 offset_bottom = 148.0
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="TopBar" parent="HeaderRow" instance=ExtResource("3")]
+layout_mode = 2
+
+[node name="TowerMatPill" parent="HeaderRow" instance=ExtResource("16")]
+layout_mode = 2
+icon_scale = 0.69
+icon = ExtResource("17")
 
 [node name="Preview3D" parent="." instance=ExtResource("5")]
 layout_mode = 3
@@ -287,16 +299,17 @@ text = "Upgrade"
 
 [node name="BaseChip" parent="ActionBar" instance=ExtResource("15")]
 layout_mode = 0
-offset_left = 40.0
+offset_left = 96.0
 offset_top = 47.0
-offset_right = 290.0
+offset_right = 296.0
 offset_bottom = 83.0
+alignment = 2
 
 [node name="RareChip" parent="ActionBar" instance=ExtResource("15")]
 layout_mode = 0
-offset_left = 790.0
+offset_left = 784.0
 offset_top = 47.0
-offset_right = 1040.0
+offset_right = 984.0
 offset_bottom = 83.0
 
 [node name="NavBar" parent="." instance=ExtResource("4")]

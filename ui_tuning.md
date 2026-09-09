@@ -60,7 +60,8 @@ drags freely.
 | Grid of tower icons | node `TowerGrid` (a `GridContainer`) | Drag the grid. **Cells can't be dragged** — spacing is `h_separation` / `v_separation`, count per row is `columns` |
 | One grid cell | widget `widget/tower_slot/tower_slot.tscn` | `icon_fill` (how much of the cell the art fills), `star_size`, `star_margin_bottom`, `lock_fill`, `locked_brightness`, and the green selection ring: `ring_color`, `ring_width`, `ring_corner_radius` |
 | Bottom light bar | node `ActionBar` (a plain `Panel`) | Drag/resize. Colour = its StyleBoxFlat |
-| Green Upgrade button | node `ActionBar/UpgradeButton` | Drag/resize. Its four state colours are the `up_normal` / `up_pressed` / `up_disabled` StyleBoxFlats at the top of `tower_garage.tscn`. `Shine` is the gloss strip — move it with the button |
+| Green Upgrade button | node `ActionBar/UpgradeButton` → widget `widget/primary_button/` | Drag/resize. Its art and state colours live in `primary_button.tscn` (`ui_button_primary.png` StyleBoxTextures), not in `tower_garage.tscn` |
+| The two cost chips | nodes `ActionBar/BaseChip`, `/RareChip` → widget `widget/cost_chip/` | **Each drags independently.** They read `owned/cost` and turn red when you can't pay; at max star they show bare balances. Icon size, gap, font size and the two colours: see the Cost chip section below |
 | Bottom nav bar | node `NavBar` → widget `widget/nav_bar/` | See the Nav bar section below |
 
 **Why the grid looks empty in the editor — it isn't any more.** The scene carries
@@ -171,6 +172,7 @@ The three menu screens are broken down piece by piece above. The rest:
 | ↳ its desaturate shader | `scenes/ui/widget/tower_slot/greyscale.gdshader` |
 | 3D tower preview (garage) | `scenes/ui/widget/tower_preview_3d/` |
 | Meta row (codex list rows) | `scenes/ui/widget/meta_row/` |
+| Cost chip (icon + amount beside an Upgrade button) | `scenes/ui/widget/cost_chip/` |
 | Primary / secondary buttons | `scenes/ui/widget/primary_button/`, `secondary_button/` |
 | Spell/upgrade icon (rounded mask + school-color fallback) | `scenes/ui/widget/spell_icon/` |
 | Spell rank pips (diamond row, draft card + HUD row) | `scenes/ui/widget/spell_rank_pips/` |
@@ -233,6 +235,26 @@ Shares every geometry knob above via `pill_base.gd`, plus:
 The garage sets only `icon`, `title` and — on ATK — `icon_rotation_deg = 45` and
 `icon_scale = 1.3`, because the sword fills 39% × 88% of its canvas against the
 heart's 75% × 70% and reads far smaller at the same box size.
+
+### Cost chip — `scenes/ui/widget/cost_chip/cost_chip.tscn`
+
+The little icon + number beside an Upgrade button, in both the garage's action bar
+(`BaseChip` / `RareChip`) and every codex row. Nothing is exported — the screen
+drives it entirely through `set_cost()` / `set_balance()` in code, so there is no
+knob to turn here; what you can change is the scene itself.
+
+| Piece | Where | Note |
+|---|---|---|
+| Icon size `[30×30]` | node `Icon` (`custom_minimum_size`) | `expand_mode 1` + `stretch_mode 5`, so the art never inflates the row |
+| Gap between icon and number `[6]` | root `separation` | |
+| Number size `[22]` | node `Label` (`font_size`) | |
+| Affordable / unaffordable colours `[#ccd1e6]` / `[#f25959]` | `AFFORDABLE_COLOR` / `UNAFFORDABLE_COLOR` in `cost_chip.gd` | Set as a runtime theme override, so a colour typed into the scene is dead weight |
+
+**The garage's chips read `owned/cost`; the codex's read `cost` alone.** That is
+the fourth argument of `set_cost(amount, icon, affordable, owned)` — the garage
+passes the balance, `meta_row` does not. The rare Tower Material has no other
+readout anywhere in the game, which is why the garage shows it. At max star the
+garage swaps to `set_balance()`, dropping the cost rather than hiding the chip.
 
 ### Top bar — `scenes/ui/widget/top_bar/top_bar.tscn`
 

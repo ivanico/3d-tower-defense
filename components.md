@@ -789,10 +789,18 @@ holding either a `star_row` or a RankLabel, StatsRow with two icon+value
 chips OR one plain stats line) · Actions (hidden "In Use" CheckButton +
 `primary_button` UpgradeButton at a fixed 280×154). Screens call
 `set_row_icon/set_title/show_stars|show_rank/set_stat_chip|set_stat_text/
-set_upgrade_cost|set_upgrade_maxed/show_select` and connect its
+set_upgrade_costs|set_upgrade_maxed/show_select` and connect its
 `upgrade_pressed`/`select_pressed` signals — **never build row Controls in
 code, and never copy this scene per screen**. Its panel is a
 **StyleBoxFlat**, not the panel art — see the sizing rules below).
+`cost_chip` (`class_name CostChip` — the ONE currency readout for a dual-cost
+upgrade: icon + amount, tinted `UNAFFORDABLE_COLOR` red when you can't pay.
+Used twice per upgrade by BOTH `meta_row`'s CostRow and the garage's ActionBar,
+so the icon/label/affordability logic exists once. `set_cost(amount, icon,
+affordable, owned = OWNED_HIDDEN)` — pass `owned` and the label becomes
+"have/need" (`"500/100"`), omit it and it shows the cost alone, which is what
+the codex does. `set_balance(amount, icon)` drops the cost entirely and never
+tints red, for a spot with nothing left to buy),
 
 **Wired screens:** `world_map.tscn` is the home screen and the project's
 `main_scene`. Top to bottom: `top_bar` (pills fed from
@@ -987,9 +995,18 @@ is the only thing marking the pick.
 **Both the stats strip and the action bar run 0..1080 with square corners.** They
 are full-bleed bands, not floating cards; insetting or rounding them makes the
 screen read as panels stacked on a wallpaper. The action bar is a light band in the
-nav bar's palette holding a **flat "Selected" state label** (not a second chunky
-button competing with Upgrade) and a green Upgrade button — both plain
-`StyleBoxFlat`s defined in `tower_garage.tscn`, no art.
+nav bar's palette holding the `primary_button` Upgrade button flanked by two
+`cost_chip`s — `BaseChip` left, `RareChip` right. (A flat "Selected" state label
+used to sit here too; one-tap selection removed it.)
+
+**The garage's cost chips read `owned/cost`, not `cost`.** `tower_garage.gd`
+passes the player's balance as `set_cost`'s fourth argument, so they show
+"500/100" and "10/3". The Base Material balance is also in the top bar, but the
+rare **Tower Material has no other readout anywhere in the game** — without this
+the Upgrade button could grey out on a shortfall the player had no way to see. At
+max star the chips call `set_balance()` and show bare balances instead of hiding,
+for the same reason. The Spell Codex still calls the three-argument `set_cost` and
+shows costs alone; scroll-material balances are a later pass.
 
 **`tower_preview_3d` uses ONE fixed camera for every tower and every star level** —
 `camera_distance` and `look_height`, nothing measured at runtime. All five

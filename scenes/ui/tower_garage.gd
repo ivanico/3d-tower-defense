@@ -35,8 +35,16 @@ const CombatUtilsScript := preload("res://scripts/combat_utils.gd")
 # global script class cache.
 @onready var base_chip: HBoxContainer = $ActionBar/BaseChip
 @onready var rare_chip: HBoxContainer = $ActionBar/RareChip
-@onready var energy_pill: Control = $TopBar/EnergyPill
-@onready var materials_pill: Control = $TopBar/MaterialsPill
+@onready var energy_pill: Control = $HeaderRow/TopBar/EnergyPill
+@onready var materials_pill: Control = $HeaderRow/TopBar/MaterialsPill
+# Garage-only — a sibling of the shared top_bar inside a wrapping HBoxContainer
+# (HeaderRow), not a third child added to top_bar.tscn itself, so it doesn't
+# leak onto the World Map or Spell Codex where Tower Material can't be spent.
+# The wrapper's separation matches top_bar's own, so the gap on both sides of
+# the Base Material pill reads as one evenly-spaced row instead of two systems
+# that happen to be near each other. The rare Tower Material otherwise has no
+# balance readout anywhere in the game.
+@onready var tower_mat_pill: Control = $HeaderRow/TowerMatPill
 @onready var nav_bar: Control = $NavBar
 
 ## The tower being shown, which is also the one a run will use.
@@ -102,6 +110,7 @@ func _cell_size() -> Vector2:
 func _refresh() -> void:
 	energy_pill.set_amount(MetaManager.energy)
 	materials_pill.set_amount(MetaManager.base_material)
+	tower_mat_pill.set_amount(MetaManager.tower_material)
 
 	var tower_def: Resource = TowerRegistry.get_by_id(_viewing_id)
 	var star: int = _star_of(_viewing_id)
@@ -126,17 +135,22 @@ func _refresh() -> void:
 	if at_max:
 		upgrade_button.text = "MAX"
 		upgrade_button.disabled = true
-		base_chip.visible = false
-		rare_chip.visible = false
+		# Nothing left to buy, so the chips drop the cost and become plain balance
+		# readouts rather than disappearing — the rare Tower Material has no other
+		# readout anywhere, so hiding it here hid it completely.
+		base_chip.set_balance(MetaManager.base_material, CombatUtilsScript.BASE_MATERIAL_ICON)
+		rare_chip.set_balance(MetaManager.tower_material, CombatUtilsScript.TOWER_MATERIAL_ICON)
 	else:
 		var base_cost: int = Constants.TOWER_STAR_COSTS[star]
 		var rare_cost: int = Constants.TOWER_STAR_RARE_COSTS[star]
 		var base_affordable: bool = MetaManager.base_material >= base_cost
 		var rare_affordable: bool = MetaManager.tower_material >= rare_cost
-		base_chip.visible = true
-		rare_chip.visible = true
-		base_chip.set_cost(base_cost, CombatUtilsScript.BASE_MATERIAL_ICON, base_affordable)
-		rare_chip.set_cost(rare_cost, CombatUtilsScript.TOWER_MATERIAL_ICON, rare_affordable)
+		# Owned amount passed alongside the cost, so each chip reads "have/need".
+		# The top bar shows the Base Material balance too; the Tower Material one
+		# is shown nowhere else, which is why the button could grey out on a
+		# shortfall the player had no way to see.
+		base_chip.set_cost(base_cost, CombatUtilsScript.BASE_MATERIAL_ICON, base_affordable, MetaManager.base_material)
+		rare_chip.set_cost(rare_cost, CombatUtilsScript.TOWER_MATERIAL_ICON, rare_affordable, MetaManager.tower_material)
 		upgrade_button.text = "Upgrade"
 		upgrade_button.disabled = not (base_affordable and rare_affordable) or not playable
 
