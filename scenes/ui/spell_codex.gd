@@ -10,6 +10,16 @@ const NavBarScript := preload("res://scenes/ui/widget/nav_bar/nav_bar.gd")
 @onready var materials_pill: Control = $TopBar/MaterialsPill
 @onready var nav_bar: Control = $NavBar
 
+# One CostChip per school, in the same Fire/Frost/Void/Poison/Nature order as
+# Constants.DamageType and CombatUtils.SCROLL_ICONS.
+@onready var scroll_mat_chips: Dictionary = {
+	Constants.DamageType.FIRE: $ScrollMatsRow/FireChip,
+	Constants.DamageType.FROST: $ScrollMatsRow/FrostChip,
+	Constants.DamageType.VOID: $ScrollMatsRow/VoidChip,
+	Constants.DamageType.POISON: $ScrollMatsRow/PoisonChip,
+	Constants.DamageType.NATURE: $ScrollMatsRow/NatureChip,
+}
+
 func _ready() -> void:
 	# NavBar enlarges and disables the entry we are on; no per-button fiddling.
 	nav_bar.selected = NavBarScript.Nav.CODEX
@@ -28,6 +38,9 @@ func _on_garage_pressed() -> void:
 func _refresh() -> void:
 	energy_pill.set_amount(MetaManager.energy)
 	materials_pill.set_amount(MetaManager.base_material)
+	for damage_type in scroll_mat_chips:
+		var chip: CostChip = scroll_mat_chips[damage_type]
+		chip.set_balance(MetaManager.get_scroll_material(damage_type), CombatUtils.get_scroll_icon(damage_type))
 	for child in spell_list.get_children():
 		spell_list.remove_child(child)
 		child.queue_free()

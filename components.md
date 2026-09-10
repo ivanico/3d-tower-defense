@@ -1005,8 +1005,11 @@ passes the player's balance as `set_cost`'s fourth argument, so they show
 rare **Tower Material has no other readout anywhere in the game** — without this
 the Upgrade button could grey out on a shortfall the player had no way to see. At
 max star the chips call `set_balance()` and show bare balances instead of hiding,
-for the same reason. The Spell Codex still calls the three-argument `set_cost` and
-shows costs alone; scroll-material balances are a later pass.
+for the same reason. The Spell Codex's per-row upgrade chips still call the
+three-argument `set_cost` and show costs alone; the 5 scroll materials (one per
+school) instead each get a standing `set_balance()` chip of their own in a
+`ScrollMatsRow` under the top bar (`spell_codex.tscn`/`.gd`), the same pattern
+the garage's `TowerMatPill` established for Tower Material.
 
 **`tower_preview_3d` uses ONE fixed camera for every tower and every star level** —
 `camera_distance` and `look_height`, nothing measured at runtime. All five

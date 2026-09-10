@@ -94,6 +94,7 @@ The screen the game opens on.
 |---|---|---|
 | Background image | node `BG` | Currently **borrows `assets/ui/garage/bg_garage.png`** — the codex has no art of its own yet (`bg_menu_generic.png` is still unmade) |
 | Energy + materials pills | node `TopBar` → widget `widget/top_bar/` | Same widget again |
+| Scroll material balances (5 schools) | node `ScrollMatsRow` (`FireChip`/`FrostChip`/`VoidChip`/`PoisonChip`/`NatureChip`) → widget `widget/cost_chip/` | Codex-only, not in `top_bar.tscn`. Each chip is driven by `spell_codex.gd`'s `_refresh()` via `set_balance()` — a plain readout, never red. See the Cost chip section below |
 | Title text | node `TitleLabel` | Drag it, font size on the node |
 | The scrolling list | nodes `ScrollContainer` → `SpellList` | Drag/resize the `ScrollContainer`. `SpellList` is a `VBoxContainer` — **rows can't be dragged**; the gap between them is its `separation`. `horizontal_scroll_mode` is 0 on purpose so a wide row can never make a sideways scrollbar |
 | One spell row | widget `widget/meta_row/meta_row.tscn` | Edit the widget scene — row height, icon size, fonts, the panel behind it. **All 20 rows share it** |
@@ -255,6 +256,8 @@ the fourth argument of `set_cost(amount, icon, affordable, owned)` — the garag
 passes the balance, `meta_row` does not. The rare Tower Material has no other
 readout anywhere in the game, which is why the garage shows it. At max star the
 garage swaps to `set_balance()`, dropping the cost rather than hiding the chip.
+The codex's `ScrollMatsRow` (5 chips, one per school) uses this same
+`set_balance()` call — it is a standing summary, not tied to any one row's cost.
 
 ### Top bar — `scenes/ui/widget/top_bar/top_bar.tscn`
 
