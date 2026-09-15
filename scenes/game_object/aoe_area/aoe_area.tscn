@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://d3j33ehfrua8k"]
 
-[ext_resource type="Script" path="res://scenes/game_object/aoe_area/aoe_area.gd" id="1"]
+[ext_resource type="Script" uid="uid://dx3v0hnx8fr3x" path="res://scenes/game_object/aoe_area/aoe_area.gd" id="1"]
 
 [sub_resource type="CylinderMesh" id="Mesh_decal"]
 top_radius = 1.0

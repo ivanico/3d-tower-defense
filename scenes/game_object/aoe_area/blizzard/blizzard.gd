@@ -1,3 +1,7 @@
+@tool  # NOT inherited from aoe_area.gd -- GDScript requires every script in
+# the chain to redeclare @tool itself for the preview_school setter to
+# actually run when blizzard.tscn itself is opened in the editor (same
+# gotcha standard_bolt.gd notes for spell_projectile_base.gd).
 extends "res://scenes/game_object/aoe_area/aoe_area.gd"
 
 ## Blizzard's AoE-Area effect. Inherits everything from aoe_area.gd except

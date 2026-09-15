@@ -146,15 +146,15 @@ const PRESETS: Dictionary = {
 # within our control, and is genuinely how this effect works in mobile games
 # like Archero: a short streak mesh trailing the orbiting object, tapering to
 # nothing at the tail.
-const TRAIL_LIFETIME: float = 0.55  # how far back the tail's history reaches, seconds
+const DEFAULT_TRAIL_LIFETIME: float = 0.55  # how far back the tail's history reaches, seconds
 # Sampled/rebuilt on a timer, NOT every physics frame (60Hz) -- this is the
 # only per-instance work that runs continuously for the whole lifetime of
 # every spell object on screen, so it's the one place worth being deliberate
 # about cost on a phone. 12Hz is still smooth for a fading streak (the eye
 # doesn't need 60 unique trail segments/sec to read as a continuous curve)
 # and cuts the mesh-rebuild rate -- and the point/vertex count for the same
-# TRAIL_LIFETIME -- to a fifth of doing this every physics tick.
-const TRAIL_UPDATE_INTERVAL: float = 1.0 / 12.0
+# DEFAULT_TRAIL_LIFETIME -- to a fifth of doing this every physics tick.
+const DEFAULT_TRAIL_UPDATE_INTERVAL: float = 1.0 / 12.0
 
 static var _particle_textures: Dictionary = {}  # shape name -> ImageTexture
 static var _color_ramps: Dictionary = {}  # Constants.DamageType -> GradientTexture1D
@@ -170,6 +170,11 @@ var _trail_positions: Array[Vector3] = []
 var _trail_ages: Array[float] = []
 var _trail_elapsed: float = 0.0
 var _trail_update_timer: float = 0.0
+# Per-instance override of the two consts above -- see `configure()`'s own
+# `trail_tuning` doc comment. Defaults keep every existing caller (Orb/
+# Bolts, which never pass `trail_tuning`) bit-for-bit unchanged.
+var _trail_lifetime: float = DEFAULT_TRAIL_LIFETIME
+var _trail_update_interval: float = DEFAULT_TRAIL_UPDATE_INTERVAL
 
 var _ring_mesh: MeshInstance3D
 const RING_SPIN_SPEED: float = 0.3  # radians/sec, local Y -- subtle, not a spinning top
@@ -245,8 +250,18 @@ const SONIC_RING_DEFAULT_TUNING: Dictionary = {
 ## is per-archetype, not per-school) -- empty dict (default, Line AoE Bolt)
 ## keeps the original numbers; Standard Bolt passes its own tuned dict.
 ## Only meaningful when `allow_ring` is false (the sonic-rings path).
-func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = true, backward_direction_world: Vector3 = Vector3.ZERO, ring_filled: bool = false, sonic_ring_tuning: Dictionary = {}) -> void:
+## `trail_tuning` -- per-*call* override for the ribbon trail's own timing
+## (keys: "lifetime", "update_interval" -- see `DEFAULT_TRAIL_LIFETIME`/
+## `DEFAULT_TRAIL_UPDATE_INTERVAL`'s own comments), same empty-dict-keeps-
+## defaults pattern as `sonic_ring_tuning` above. Exists for objects that
+## live for much less time than the 0.55s default trail lifetime assumes
+## (currently AoE shards, ~0.3s fall -- see `aoe_area.gd`'s
+## `SHARD_TRAIL_TUNING`) so their trail actually finishes forming instead of
+## still growing when the object despawns.
+func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = true, backward_direction_world: Vector3 = Vector3.ZERO, ring_filled: bool = false, sonic_ring_tuning: Dictionary = {}, trail_tuning: Dictionary = {}) -> void:
 	_damage_type = damage_type
+	_trail_lifetime = trail_tuning.get("lifetime", DEFAULT_TRAIL_LIFETIME)
+	_trail_update_interval = trail_tuning.get("update_interval", DEFAULT_TRAIL_UPDATE_INTERVAL)
 	if search_root == null:
 		search_root = get_parent()
 	var meshes := search_root.find_children("*", "MeshInstance3D", true, false)
@@ -709,7 +724,7 @@ func _build_trail_particles(amount: int, lifetime: float, preset: Dictionary, me
 ## `mesh_width` is the dressed mesh's own real extent along this node's
 ## local X (see `configure()`'s `mesh_aabb`, computed via
 ## `_get_mesh_local_aabb()`) -- the ribbon STARTS at (approximately) that
-## full width and tapers to nothing across `TRAIL_LIFETIME`, same taper as
+## full width and tapers to nothing across `_trail_lifetime`, same taper as
 ## always (see `_rebuild_trail_mesh()`). Driven by the mesh's real geometry
 ## instead of a fixed/guessed fraction, so a wide mesh (Line AoE Bolt's
 ## lance) naturally gets a wide trail and a narrow mesh (Standard Bolt)
@@ -750,7 +765,7 @@ func _build_trail(mesh_width: float) -> void:
 	# throttled at 12Hz same as always.
 	_trail_positions.push_front(global_position)
 	_trail_ages.push_front(0.0)
-	_trail_update_timer = TRAIL_UPDATE_INTERVAL
+	_trail_update_timer = _trail_update_interval
 
 
 ## Shared annulus mesh builder -- used by both the Orb's rigid accretion
@@ -892,8 +907,8 @@ func _build_sonic_rings(mesh_aabb: AABB, tuning: Dictionary = {}) -> void:
 
 
 ## Records this node's current world position on a throttled timer
-## (TRAIL_UPDATE_INTERVAL, not every physics frame) to bound how fast
-## `_trail_positions` grows, drops anything older than TRAIL_LIFETIME, then
+## (`_trail_update_interval`, not every physics frame) to bound how fast
+## `_trail_positions` grows, drops anything older than `_trail_lifetime`, then
 ## hands off to `_rebuild_trail_mesh()` -- which runs every physics frame,
 ## unthrottled, and always draws the ribbon's leading edge at THIS frame's
 ## live `global_position`, not just the last throttled sample. Runs in-
@@ -901,8 +916,8 @@ func _build_sonic_rings(mesh_aabb: AABB, tuning: Dictionary = {}) -> void:
 ## support; harmless when stationary since duplicate points at the same
 ## spot just collapse to a zero-length sliver.
 ##
-## Rebuilding unthrottled looks expensive but isn't: TRAIL_UPDATE_INTERVAL
-## still caps how many points EXIST (~6-7 for the default TRAIL_LIFETIME),
+## Rebuilding unthrottled looks expensive but isn't: `_trail_update_interval`
+## still caps how many points EXIST (~6-7 for the default lifetime),
 ## so this is a tiny per-frame ArrayMesh rebuild from a short array, not a
 ## return to rebuilding from scratch on a growing history -- only the
 ## *sampling* rate (how often a new historical point is captured) stays
@@ -912,12 +927,12 @@ func _physics_process(delta: float) -> void:
 		_ring_mesh.rotate_y(delta * RING_SPIN_SPEED)
 	if _trail_mesh != null:
 		_trail_update_timer += delta
-		if _trail_update_timer >= TRAIL_UPDATE_INTERVAL:
+		if _trail_update_timer >= _trail_update_interval:
 			_trail_elapsed += _trail_update_timer
 			_trail_update_timer = 0.0
 			_trail_positions.push_front(global_position)
 			_trail_ages.push_front(_trail_elapsed)
-			while _trail_ages.size() > 2 and _trail_elapsed - _trail_ages[-1] > TRAIL_LIFETIME:
+			while _trail_ages.size() > 2 and _trail_elapsed - _trail_ages[-1] > _trail_lifetime:
 				_trail_ages.pop_back()
 				_trail_positions.pop_back()
 		_rebuild_trail_mesh()
@@ -953,7 +968,7 @@ func _rebuild_trail_mesh() -> void:
 		# i==0 is always the live leading point seeded above -- always age 0
 		# (full width/opacity), regardless of throttling.
 		var age: float = 0.0 if i == 0 else current_elapsed - _trail_ages[i - 1]
-		var t: float = clampf(age / TRAIL_LIFETIME, 0.0, 1.0)  # 0 = newest, 1 = oldest
+		var t: float = clampf(age / _trail_lifetime, 0.0, 1.0)  # 0 = newest, 1 = oldest
 		# Direction along the ribbon at this point, from a neighbour --
 		# whichever neighbour exists (points are newest-first).
 		var neighbor: Vector3 = positions[i + 1] if i + 1 < n else positions[i - 1]
