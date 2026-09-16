@@ -258,7 +258,22 @@ const SONIC_RING_DEFAULT_TUNING: Dictionary = {
 ## (currently AoE shards, ~0.3s fall -- see `aoe_area.gd`'s
 ## `SHARD_TRAIL_TUNING`) so their trail actually finishes forming instead of
 ## still growing when the object despawns.
-func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = true, backward_direction_world: Vector3 = Vector3.ZERO, ring_filled: bool = false, sonic_ring_tuning: Dictionary = {}, trail_tuning: Dictionary = {}) -> void:
+## `suppress_particles` -- per-*call* override, same pattern as `allow_ring`/
+## `ring_filled`/`sonic_ring_tuning` above: forces BOTH the ambient wrap-coat
+## aura AND the separate `trail_amount` world-space particles off, regardless
+## of the school's own preset (unlike `PRESETS[...].no_aura`, which is a
+## per-SCHOOL choice baked into that school's look everywhere -- Void/Nature
+## never get a coat on ANY archetype). AoE Area passes this true for every
+## shard (see `aoe_area.gd`'s `_create_dressed_shard()`) purely for perf: a
+## shard only lives ~0.3s and many can be in the air/on the ground at once,
+## so continuous per-shard particle systems (16 aura + trail particles for
+## Fire, etc., each reserved from the global particle budget for the
+## shard's whole lifetime) are a lot of standing cost for something barely
+## visible in such a short window -- while the same dressing on a single
+## long-lived Orb is worth it. The hand-built ribbon trail mesh is
+## unaffected (not a particle system at all, and it's what actually reads
+## as "falling") -- this only kills the two GPUParticles3D systems.
+func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = true, backward_direction_world: Vector3 = Vector3.ZERO, ring_filled: bool = false, sonic_ring_tuning: Dictionary = {}, trail_tuning: Dictionary = {}, suppress_particles: bool = false) -> void:
 	_damage_type = damage_type
 	_trail_lifetime = trail_tuning.get("lifetime", DEFAULT_TRAIL_LIFETIME)
 	_trail_update_interval = trail_tuning.get("update_interval", DEFAULT_TRAIL_UPDATE_INTERVAL)
@@ -306,7 +321,7 @@ func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = 
 	# coat reads as "things coming out of the orb"). Deliberately does NOT
 	# gate "trail_amount" below -- Nature keeps "no_aura" but still wants
 	# its own trailing leaves, so the two are independent.
-	if not preset.get("no_aura", false):
+	if not preset.get("no_aura", false) and not suppress_particles:
 		_aura = _build_particles(preset.amount, preset.lifetime, preset, mesh_radius, mesh_aabb, backward_direction_world)
 		if CombatUtils.try_reserve_particles(preset.amount):
 			_reserved_particles = preset.amount
@@ -320,7 +335,9 @@ func configure(damage_type: int, search_root: Node3D = null, allow_ring: bool = 
 	# preset's own direction/gravity otherwise (Poison/Frost/Nature).
 	# Reserved/emitted independently of the wrap-coat's own reservation --
 	# either can degrade under budget pressure without taking the other down.
-	if trail_amount > 0:
+	# `suppress_particles` also gates this one -- see this function's own doc
+	# comment on that param (AoE shards want neither particle system).
+	if trail_amount > 0 and not suppress_particles:
 		_trail_particles = _build_trail_particles(trail_amount, preset.lifetime, preset, mesh_radius, mesh_aabb, backward_direction_world)
 		if CombatUtils.try_reserve_particles(trail_amount):
 			_reserved_particles += trail_amount

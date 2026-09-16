@@ -165,11 +165,18 @@ func _tick_damage(enemies: Array) -> void:
 			hurtbox.apply_hit(dmg, spell.damage_type, enemy.global_position + Vector3(0, 0.6, 0))
 
 ## Instantiates the shard model, positions/orients it, and dresses it with
-## the same shader/trail/particle look every other spell object (Orb/Bolts)
-## gets via SchoolVFXComponent -- shared by the real drop path
-## (`_spawn_shard()`) and the editor-only preview (`_apply_preview()`) so
-## both stay visually identical, no copy-pasted setup. Adds the shard as a
-## child of `shards_root` itself. `backward_direction_world` is the shard's
+## the same shader/trail look every other spell object (Orb/Bolts) gets via
+## SchoolVFXComponent -- shared by the real drop path (`_spawn_shard()`) and
+## the editor-only preview (`_apply_preview()`) so both stay visually
+## identical, no copy-pasted setup. Adds the shard as a child of
+## `shards_root` itself. `suppress_particles: true` -- shards skip BOTH the
+## ambient wrap-coat aura AND the separate trail-particle system every other
+## archetype gets (perf: a shard only lives ~0.3s and many can be falling/
+## landed at once, so continuous per-shard particle systems aren't worth
+## their standing particle-budget cost here -- see school_vfx_component.gd's
+## `configure()` doc comment on `suppress_particles`). The hand-built ribbon
+## trail mesh is unaffected -- that's what actually reads as "falling," and
+## isn't a particle system. `backward_direction_world` is the shard's
 ## own "opposite of travel" vector (see school_vfx_component.gd's
 ## `configure()` doc comment) -- only schools opting into
 ## "direction_follows_travel" (currently Fire) ever look at it; pass
@@ -188,7 +195,7 @@ func _create_dressed_shard(damage_type: int, shard_position: Vector3, shard_rota
 	var vfx := SchoolVFXComponent.new()
 	vfx.name = "SchoolVFXComponent"
 	shard.add_child(vfx)
-	vfx.configure(damage_type, shard, false, backward_direction_world, false, {}, SHARD_TRAIL_TUNING)
+	vfx.configure(damage_type, shard, false, backward_direction_world, false, {}, SHARD_TRAIL_TUNING, true)
 	return shard
 
 func _spawn_shard() -> void:
