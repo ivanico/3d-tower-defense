@@ -195,6 +195,14 @@ func show_tower(id: String, star_level: int) -> void:
 	star = star_level
 
 
+## Called by the garage screen when it slides off/on screen in the meta shell —
+## an off-screen preview has no reason to keep rendering its SubViewport every
+## frame.
+func set_rendering_active(active: bool) -> void:
+	_viewport.render_target_update_mode = (
+			SubViewport.UPDATE_ALWAYS if active else SubViewport.UPDATE_DISABLED)
+
+
 func _reload_model() -> void:
 	if not is_inside_tree() or _model_root == null:
 		return

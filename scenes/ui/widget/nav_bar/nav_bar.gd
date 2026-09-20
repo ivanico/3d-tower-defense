@@ -271,16 +271,6 @@ func _device_scale() -> float:
 	return viewport.get_final_transform().get_scale().x
 
 
-## Selects `target`, lets the transition play, then swaps scene. Screens call this
-## instead of change_scene_to_file directly — changing scene immediately would
-## kill the tween on its first frame and you would never see it.
-func navigate_to(target: Nav, scene_path: String) -> void:
-	selected = target
-	if animation_time > 0.0:
-		await get_tree().create_timer(animation_time).timeout
-	get_tree().change_scene_to_file(scene_path)
-
-
 ## Buttons in `Nav` order, so the enum indexes straight into this.
 func _buttons() -> Array:
 	return [
