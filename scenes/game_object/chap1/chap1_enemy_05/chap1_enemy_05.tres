@@ -13,6 +13,7 @@ base_speed = 0.8
 base_damage = 12.0
 attack_cooldown = 1.4
 armor_type = 1
+resisted_school = 4
 xp_value = 55
 is_boss = false
 is_flying = true

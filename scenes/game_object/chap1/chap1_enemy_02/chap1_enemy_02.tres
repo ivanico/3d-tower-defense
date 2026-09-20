@@ -13,6 +13,7 @@ base_speed = 2.6
 base_damage = 6.0
 attack_cooldown = 0.8
 armor_type = 0
+resisted_school = 4
 xp_value = 8
 is_boss = false
 hold_height = 0.0
