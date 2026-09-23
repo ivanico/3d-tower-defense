@@ -2,7 +2,7 @@ extends Node
 
 enum GamePhase      { WAVE, DRAFT, BOSS, DEFEAT, VICTORY }
 enum DamageType     { FIRE, FROST, VOID, POISON, NATURE }
-enum ArmorType      { UNARMORED, HEAVY }
+enum ArmorType      { UNARMORED, HEAVY, LIGHT, MEDIUM, FORTIFIED }
 enum SpellCategory  { PROJECTILE, PASSIVE, ORB, AOE_AREA }
 enum CardRarity     { COMMON, RARE, EPIC }
 enum SynergyTag     { OFFENSE, ARMOR, UTILITY }

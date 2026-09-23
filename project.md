@@ -200,7 +200,7 @@ Stars improve stats and enhance passives. Ranks add new behaviors to spells.
 
 ---
 
-## Damage Type vs Armor Table (v1)
+## Damage Type vs Armor Table (v1 — current code, flat/neutral)
 
 Same shape as before, smaller set. Extend the table with new rows/columns when
 new damage types or armor types are added — the lookup itself is generic.
@@ -225,6 +225,50 @@ new damage types or armor types are added — the lookup itself is generic.
 > new rows/columns to this table — the damage-calculation code reads the table
 > generically (see `mechanics.md` Section 5 and `CombatUtils` in `components.md`),
 > so it never needs new branches, only new data.
+
+---
+
+## Damage Type vs Armor Table (v2 — live)
+
+Rework of the above, modeled directly on Warcraft 3's attack-type vs
+armor-type multiplier grid instead of a flat/neutral table. Each spell school
+is now given one WC3 attack-type identity (Hero attack/armor excluded — no
+heroes in this game):
+
+| School | WC3 attack-type identity |
+|---|---|
+| Nature | Normal |
+| Poison | Piercing |
+| Frost | Siege |
+| Fire | Magic |
+| Void | Chaos |
+
+Multiplier table (school row × armor-type column), values taken directly from
+WC3's Frozen Throne table for the mapped attack type:
+
+| | Unarmored | Light | Medium | Heavy | Fortified |
+|---|---|---|---|---|---|
+| Nature | 100% | 100% | 150% | 100% | 70% |
+| Poison | 150% | 200% | 75% | 100% | 35% |
+| Frost | 150% | 100% | 50% | 100% | 150% |
+| Fire | 100% | 125% | 75% | 200% | 35% |
+| Void | 100% | 100% | 100% | 100% | 100% |
+
+> Void stays flat 100% across every armor type, same as v1 — consistent with
+> "nothing resists Void."
+>
+> **Implemented**: `Constants.ArmorType` now has `LIGHT`/`MEDIUM`/`FORTIFIED`
+> (appended after `HEAVY`, not inserted before it — existing enemy `.tres`
+> files store `armor_type` as a raw int, so reordering would have silently
+> reclassified them). `CombatUtils.DAMAGE_TABLE` carries these percentages.
+> This applies on top of, not instead of, the existing per-enemy
+> `resisted_school` / `SCHOOL_RESIST_MULT` mechanic — both multipliers stack
+> on the same hit; nothing has been removed.
+>
+> **Still to do:** no enemy `.tres` currently sets `armor_type` to
+> `LIGHT`/`MEDIUM`/`FORTIFIED` (only `UNARMORED`/`HEAVY` are used in
+> `scenes/game_object/chap1/`) — the new columns exist but nothing exercises
+> them yet.
 
 ---
 

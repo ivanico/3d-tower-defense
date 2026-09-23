@@ -2,16 +2,19 @@ class_name CombatUtils
 
 # Damage multiplier table: [DamageType][ArmorType]
 # Rows: FIRE=0, FROST=1, VOID=2, POISON=3, NATURE=4
-# Cols: UNARMORED=0, HEAVY=1
-# School rows are neutral 1.0 vs armor — school counterplay comes from the
-# per-enemy resisted school (SCHOOL_RESIST_MULT in apply_hit), not armor.
+# Cols: UNARMORED=0, HEAVY=1, LIGHT=2, MEDIUM=3, FORTIFIED=4
+# v2 (project.md "Damage Type vs Armor Table (v2)") — each school mirrors a
+# Warcraft 3 attack-type identity: FIRE=Magic, FROST=Siege, VOID=Chaos,
+# POISON=Piercing, NATURE=Normal. Values are WC3's own multipliers for those
+# rows. This is on top of, not instead of, the per-enemy resisted school
+# (SCHOOL_RESIST_MULT in apply_hit) — both layers apply on the same hit.
 # Void's row must always stay >= 1.0 (never resisted by anything).
 const DAMAGE_TABLE: Array = [
-	[1.0,  1.0 ],  # FIRE
-	[1.0,  1.0 ],  # FROST
-	[1.0,  1.0 ],  # VOID
-	[1.0,  1.0 ],  # POISON
-	[1.0,  1.0 ],  # NATURE
+	[1.0,  2.0,  1.25, 0.75, 0.35],  # FIRE (Magic)
+	[1.5,  1.0,  1.0,  0.5,  1.5 ],  # FROST (Siege)
+	[1.0,  1.0,  1.0,  1.0,  1.0 ],  # VOID (Chaos)
+	[1.5,  1.0,  2.0,  0.75, 0.35],  # POISON (Piercing)
+	[1.0,  1.0,  1.0,  1.5,  0.7 ],  # NATURE (Normal)
 ]
 
 static func calculate_damage(base_amount: float, damage_type: int, armor_type: int) -> float:

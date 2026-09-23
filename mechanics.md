@@ -137,6 +137,12 @@
   branches — new damage types/armor types are new table entries, not new code
   paths. This is the single most important rule for keeping the "add more
   spells/enemies later" promise true.
+- **v2 table live** (`project.md` "Damage Type vs Armor Table (v2)"): each
+  school is mapped to a Warcraft 3 attack-type identity (Nature=Normal,
+  Poison=Piercing, Frost=Siege, Fire=Magic, Void=Chaos) and `DAMAGE_TABLE`
+  carries WC3's own numbers for those rows, against Unarmored/Heavy/Light/
+  Medium/Fortified armor. No enemy is assigned Light/Medium/Fortified yet —
+  the columns exist but are unused until an enemy `.tres` sets one.
 - Hit detection: every projectile/AoE/melee hit is an `Area3D` overlap check
   against the target's `HurtboxComponent` (see Section 8 / `components.md`).
 
