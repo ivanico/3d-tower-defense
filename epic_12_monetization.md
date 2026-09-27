@@ -5,9 +5,15 @@
 > device (13-01) is needed for real billing/ad testing, so 13-01 can be
 > pulled forward.
 > **Rules**: see `epic_09_content.md` → "Rules for Epics 09–13".
-> **Design constraint** (`project.md`, `mechanics.md` §12): monetization is
-> convenience/cosmetic. Energy, cosmetic skins and tower unlock packs are
-> time-saving, **not power**.
+> **Design constraint (updated 2026-09-27)**: the old rule (`project.md`,
+> `mechanics.md` §12: "time-saving, not power") was replaced by the user with
+> **capped pay-to-skip**. See `epic_09_content.md` 09-00.1 "Store rule":
+> - material chests: 3/day, key included, chance of an unowned tower
+> - energy refills: unlimited
+> - skins
+> - no direct tower packs
+>
+> Update `project.md` / `mechanics.md` §12 to match (09-02).
 > Source: `remaining_to_do_list.md` section **C**, plus **F8** and the final-art
 > half of **D2**.
 > Completed epic delivers: real Google Play purchases and rewarded ads behind
@@ -18,8 +24,22 @@
 
 ## Task 12-00 — Decision Gate: Monetization [DECISION NEEDED]
 
-- [ ] **Catalog + prices** (store layout was set in 10-00): gem pack sizes
-      and prices, tower unlock packs, skins, bundles. Answer: ______
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Research plugins with web search** and check current Godot 4.4 support.
+>   Don't rely on memory.
+> - **Read**: `project.md` "Save Data" (server options) and `mechanics.md` §12.
+
+- [ ] **Catalog + prices** (store layout was set in 10-00). **Follow
+      `epic_09_content.md` 09-00.1 "Store rule"**:
+      - material chests: 3/day, key included, capped at one energy bar's
+        worth, chance of an unowned tower
+      - energy refills: unlimited
+      - skins
+      - no direct tower packs
+
+      Still to answer: gem pack sizes and prices, chest and refill gem
+      prices, bundles. Answer: ______
 - [ ] **Rewarded ad placements** named in the list: energy refill / double
       run rewards / revive. Which ones, and any daily cap? Answer: ______
 - [ ] **Revive** (if chosen): how much HP, how many times per run?
@@ -40,6 +60,12 @@
 ---
 
 ## Task 12-01 — Google Play Billing
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Check**: 10-04's `StoreService` + provider interface exist, and 13-01
+>   (Android export) is done.
+> - **Remember**: product IDs = `StoreItemDefinition.id`.
 
 **Covers**: C1 · **Files**: the `StoreService` provider from 10-04, export
 preset (13-01)
@@ -67,6 +93,12 @@ with license-test accounts.
 
 ## Task 12-02 — Server-Side Purchase Validation
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Needs**: the backend chosen in 12-00.
+> - **Watch out**: never put keys in the repo; document the location in
+>   `BUILD_NOTES.md`.
+
 **Covers**: F8 · **Blocked by**: 12-00 backend choice.
 
 - [ ] The client sends the purchase token to the backend. The backend checks
@@ -87,6 +119,11 @@ with license-test accounts.
 
 ## Task 12-03 — Consent / Privacy (before any ad code runs)
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Check**: the ad plugin's UMP support, and the privacy row reserved in
+>   10-09.
+
 **Covers**: C5
 
 - [ ] Show the Google UMP consent form (via the chosen ad plugin, if it
@@ -105,6 +142,13 @@ with license-test accounts.
 ---
 
 ## Task 12-04 — Rewarded Ads
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `scenes/main/game_world.gd` `_on_tower_died` (revive).
+>   - `scenes/ui/victory_screen.gd` / `defeat_screen.gd`.
+>   - The 10-07 refill button and the 10-01 overlay host.
 
 **Covers**: C2 · **Blocked by**: 12-00 placements, 12-03 consent.
 
@@ -135,6 +179,15 @@ buttons in the editor.
 
 ## Task 12-05 — Tower Skins
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `scenes/ui/widget/tower_preview_3d/tower_preview_3d.gd`.
+>   - The tower star scenes.
+>   - `scenes/component/hit_flash_component.gd`.
+> - **Watch out**: hit flash uses `material_overlay`, so a skin tint must not
+>   fight it.
+
 **Covers**: C3
 
 - [ ] `SkinDefinition` `.tres`: `tower_id`, name, price/source, and per-star
@@ -162,6 +215,10 @@ viewed in the editor.
 
 ## Task 12-06 — Battle Pass
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Nothing to read.** Record the decision only.
+
 **Covers**: C4 · **Default**: post-launch per the docs, unless 12-00 says
 otherwise.
 
@@ -177,6 +234,10 @@ otherwise.
 ---
 
 ## Task 12-07 — Store Art (replace placeholders)
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Use** the placeholder list in 10-04 / 12-04, and update `ui_assets.md`.
 
 **Covers**: D2 (final art)
 
@@ -194,6 +255,10 @@ otherwise.
 ---
 
 ## Task 12-08 — Integration Test
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Needs** license-test accounts on the Play Console.
 
 - [ ] On a device with license-test accounts: buy every item; kill the app
       mid-purchase; reinstall and restore; decline and accept consent; watch

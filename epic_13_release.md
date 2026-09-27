@@ -17,6 +17,11 @@
 
 ## Task 13-00 — Decision Gate: Release [DECISION NEEDED]
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Research** each provider's current Godot 4.4 support with web search
+>   before the user picks.
+
 - [ ] **G6 — Final game name.** "Tower's Last Stand" is the working title.
       Answer: ______
 - [ ] **Package name** (permanent once published, e.g. `com.<you>.<game>`).
@@ -36,6 +41,16 @@
 ---
 
 ## Task 13-01 — Android Export (AAB) + Signing
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Verify**: no `export_presets.cfg` exists (as of 2026-09-27) and
+>   `project.godot` uses the mobile renderer.
+> - **Watch out**:
+>   - Check where Godot 4.4 stores keystore passwords and make sure that file
+>     is git-ignored.
+>   - Never run git; tell the user what to ignore.
+> - **Godot exe**: `F:\Godot\Godot_v4.4-stable_win64.exe` (not on PATH).
 
 **Covers**: F1 · Confirmed today: no `export_presets.cfg` exists.
 
@@ -69,6 +84,11 @@
 
 ## Task 13-02 — Target API Level
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Web-check** Play's current target-API rule and Godot 4.4's template
+>   support.
+
 **Covers**: F2 · The docs only set min SDK 24.
 
 - [ ] Look up Play's **current** target-API requirement for new apps. The list
@@ -84,6 +104,13 @@
 ---
 
 ## Task 13-03 — Mobile Input Pass
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**: the `project.godot` `[display]` section (1080×1920,
+>   `stretch/mode = canvas_items`).
+> - **Audit**: every screen scene in `scenes/ui/` + the HUD in
+>   `scenes/main/game_world.tscn`.
 
 **Covers**: F4
 
@@ -112,6 +139,13 @@ in `ui_reference/`.
 
 ## Task 13-04 — Performance Pass on a Real Device
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `scripts/combat_utils.gd` `MAX_PARTICLE_BUDGET` (~219).
+>   - The `DirectionalLight3D` in `scenes/main/game_world.tscn`.
+>   - `skills/godot3d-vfx-audio/SKILL.md` "Mobile 3D performance checklist".
+
 **Covers**: F3
 
 - [ ] Measure on a mid-range Android phone during the heaviest wave, with
@@ -133,6 +167,11 @@ in `ui_reference/`.
 ---
 
 ## Task 13-05 — Cloud Save
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**: `project.md` "Save Data".
+> - **Check**: 09-01 `save_version` is in place.
 
 **Covers**: F5 · **Blocked by**: 13-00 provider.
 
@@ -156,6 +195,10 @@ signed-out states via a knob).
 
 ## Task 13-06 — Crash Reporting + Analytics
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**: `autoloads/event_bus.gd`. Analytics listens there only.
+
 **Covers**: F7 · **Blocked by**: 13-00 provider.
 
 - [ ] Crash/error reporting from release builds.
@@ -173,6 +216,11 @@ signed-out states via a knob).
 
 ## Task 13-07 — Localization
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**: `resources/theme/ui_theme.tres` (fonts).
+> - **Grep** every `.gd` / `.tscn` for hardcoded player-facing text.
+
 **Covers**: F9 · **Blocked by**: 13-00 answer (skip if post-launch).
 
 - [ ] All player-facing text goes through `tr()` with translation files. Grep
@@ -189,6 +237,10 @@ signed-out states via a knob).
 ---
 
 ## Task 13-08 — App Icon, Feature Graphic, Screenshots
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Placeholder source**: `assets/ui/garage/icon_tower_ancient.png`.
 
 **Covers**: D3
 
@@ -213,6 +265,10 @@ the device's home screen.
 
 ## Task 13-09 — Play Console Setup, Policy & Listing
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Needs**: the G2 URL to go into the `Constants` value that 10-09 reads.
+
 **Covers**: G1, G2, G3, G4
 
 Mostly your own steps. Claude prepares the text and checklists.
@@ -234,6 +290,11 @@ Mostly your own steps. Claude prepares the text and checklists.
 
 ## Task 13-10 — Closed Testing
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Web-check** the current closed-testing rule (12 testers / 14 days when
+>   written).
+
 **Covers**: G5
 
 - [ ] New personal developer accounts must run a closed test before
@@ -251,6 +312,11 @@ Mostly your own steps. Claude prepares the text and checklists.
 ---
 
 ## Task 13-11 — Final Pre-Launch Check (on device)
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Run on a real device from the Play closed track.** Back up nothing:
+>   this is a fresh install.
 
 - [ ] Fresh install from the Play closed track: tutorial → chapter 1 → unlock
       chapter 2 → garage upgrade → codex rank-up → store purchase (test

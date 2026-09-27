@@ -16,6 +16,11 @@
 
 ## Task 11-00 — Sound List & Placeholder Policy
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**: `assets.md` §6 (base sound list) and `autoloads/event_bus.gd`.
+> - **Verify**: `assets/audio/` is still empty.
+
 **Covers**: E1 (planning half)
 
 - [ ] One list of every sound the game needs, in this task. Start from
@@ -41,6 +46,11 @@
 
 ## Task 11-01 — Audio Buses
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Verify**: no `default_bus_layout.tres` exists (as of 2026-09-27), and
+>   check the `project.godot` `[audio]` section.
+
 **Covers**: E3
 
 - [ ] `default_bus_layout.tres`: `Master` with a limiter, and `Music` + `SFX`
@@ -58,6 +68,13 @@ buses.
 ---
 
 ## Task 11-02 — AudioManager
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `autoloads/audio_manager.gd` (25-line stub, `pass` bodies).
+>   - `skills/godot3d-vfx-audio/SKILL.md`.
+>   - `autoloads/meta_manager.gd` `music_volume` / `sfx_volume`.
 
 **Covers**: E2 · **File**: `autoloads/audio_manager.gd`
 
@@ -83,6 +100,15 @@ buses.
 ---
 
 ## Task 11-03 — EventBus Wiring
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `autoloads/event_bus.gd`.
+>   - The cast path in `scenes/game_object/tower/tower.gd`.
+>   - `scenes/component/hurtbox_component.gd` `apply_hit()`.
+>   - Button widgets: `widget/primary_button/`, `secondary_button/` (both use
+>     `shadow_button.gd`), `nav_button/`, and `scenes/ui/draft_card.gd`.
 
 **Covers**: E4
 
@@ -116,6 +142,10 @@ buses.
 
 ## Task 11-04 — Volume Controls Hookup
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Check**: the `volume_slider_row` widget from 10-08 exists.
+
 **Covers**: E4 (settings side)
 
 - [ ] The `volume_slider_row` from 10-08 / 10-09 calls the 11-02 setters.
@@ -131,6 +161,10 @@ buses.
 
 ## Task 11-05 — Audio Preview Scene
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Check**: the 11-00 list is approved.
+
 - [ ] `scenes/ui/audio_preview.tscn`: a dev-only screen listing every sound
       from 11-00. Each row has a play button and shows file present /
       missing. It's the "preview" for audio (rule 2): open it, press F6, and
@@ -145,6 +179,11 @@ buses.
 ---
 
 ## Task 11-06 — Source the Real Sounds
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**: `assets.md` §7 for sources.
+> - **Remember**: add credits to the 10-09 credits page.
 
 **Covers**: E1 (asset half)
 
@@ -165,6 +204,10 @@ as "present".
 ---
 
 ## Task 11-07 — Integration Test
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Needs** a device build (13-01) for the background/focus test.
 
 - [ ] Full run + every meta screen with sound on: every event has its sound,
       no doubles, no clipping in a big AoE hit, and the music crossfades

@@ -20,6 +20,13 @@
 
 ## Task 10-00 — Decision Gate: Meta [DECISION NEEDED]
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Re-read** the Epic 09 answers first; some affect these questions (e.g.
+>   09-00.1 "Store rule": gem chests, 3/day, key included, may hold an unowned tower).
+> - **Ask one at a time**, the same way as 09-00, and write answers into the
+>   file.
+
 **Covers**: B4, B10 and the design inputs this epic needs.
 
 - [ ] **Store entry point.** Options:
@@ -30,15 +37,27 @@
 
   Answer: ______
 - [ ] **What the store sells at launch** (layout only here, real prices in
-      Epic 12): gem packs / energy / tower unlocks (if A2 includes store) /
-      skins / chests / offers. Answer: ______
-- [ ] **Where chests come from**: run rewards / store / daily reward /
-      keys. Also what's inside them (materials, scrolls, gems, tower
-      material…). Answer: ______
+      Epic 12). **Mostly decided in 09-00.1 "Store rule"**:
+      - gems buy **material chests** (3/day, key included, may contain an
+        unowned tower)
+      - **energy refills** (no limit)
+      - **skins**
+      - no direct tower purchase, no separate keys
+
+      Still to answer: gem pack sizes and whether there are bundles/offers.
+      Answer: ______
+- [ ] **Where chests come from and what's inside**. The **store** part is
+      decided in 09-00.1: materials capped at one energy bar's worth, plus a
+      chance of an unowned tower. Still to answer: do chests **also** come
+      from runs or daily rewards (each with its key included), and which
+      chapter "one energy bar" is measured at (Claude suggested the highest
+      cleared chapter)? Answer: ______
 - [ ] **B4 — Daily rewards**: login calendar? streak? daily quests?
       achievements? Pick the launch scope. Answer: ______
 - [ ] **Energy refill**: gem cost? rewarded ad (Epic 12)? both? how much per
-      refill? Answer: ______
+      refill? **Decided in 09-00.1: no daily limit on gem refills.**
+      Still to answer: price, ad refill yes/no, energy per refill.
+      Answer: ______
 - [ ] **Pause menu Restart**: does restarting a run cost energy again?
       Answer: ______
 - [ ] **B10 — Dead code**: remove or keep each of
@@ -58,6 +77,15 @@
 ---
 
 ## Task 10-01 — Overlay Screen Host (one mechanism for every popup screen)
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `scenes/ui/world_map.gd` (Track slide, `InputBlocker`, `LoadingScreen`,
+>     `CONTENT_SCENES`, `_ensure_instanced`).
+>   - `scenes/ui/world_map.tscn` node order (later siblings draw on top).
+> - **Art**: the X button already exists at
+>   `assets/ui/common/ui_button_x_red_square_clean_transparent.png`.
 
 **Files**: `scenes/ui/world_map.tscn` / `.gd`, new
 `scenes/ui/widget/overlay_screen/overlay_screen.tscn` / `.gd`
@@ -91,6 +119,16 @@ and the X over a sample child.
 ---
 
 ## Task 10-02 — Home Screen Entry Points (+ preview)
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `scenes/ui/world_map_content.tscn` / `.gd`.
+>   - `scenes/ui/widget/nav_button/nav_button.gd` badge code (`badge_visible`
+>     …). Share it, don't copy it.
+> - **Store icon**: three versions exist (`nav/icon_nav_store.png`,
+>   `_v2_blue`, `_v3_purple`). **The user picks**; never choose a version
+>   yourself.
 
 **Files**: `scenes/ui/world_map_content.tscn` / `.gd`, new
 `scenes/ui/widget/home_side_button/`
@@ -126,6 +164,16 @@ on) in the editor. `home_side_button.tscn` previews on its own.
 
 ## Task 10-03 — Premium Currency (Gems)
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Check first**: 09-01 must already have put `premium_currency` into
+>   `SaveData`.
+> - **Read**:
+>   - `scenes/ui/widget/top_bar/top_bar.tscn` (2 pills; materials uses
+>     `icon_scale = 0.82`).
+>   - `scenes/ui/widget/currency_pill/currency_pill.gd` + `pill_base.gd`.
+>   - Every screen that sets pills: grep `set_amount`.
+
 **Covers**: B2 · **Files**: `MetaManager`, `SaveData` (field added in 09-01),
 `widget/top_bar/`
 
@@ -148,6 +196,15 @@ purple → final `topbar/icon_currency_gems.png`.
 ---
 
 ## Task 10-04 — Store Screen
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `scripts/resource_dir.gd` and `scenes/ui/widget/cost_chip/cost_chip.gd`.
+>   - The codex `ScrollContainer` in `scenes/ui/spell_codex_content.tscn`
+>     (`horizontal_scroll_mode = 0`).
+>   - `addons/ui_icon_cap/plugin.gd` `SIZE_RULES`.
+> - **Remember**: `ui_panel_dark_v2.png` is 0.73 aspect; keep it.
 
 **Covers**: B1, D2 (placeholders) · **Blocked by**: 10-00 (entry point, catalog).
 **Files**: new `scenes/ui/store_content.tscn` / `.gd`,
@@ -196,6 +253,13 @@ price type.
 
 ## Task 10-05 — Reward Popup + Chests
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Art**: all reward icons are in `assets/ui/rewards/`.
+>   `icon_mat_tower_rare` has a `_v2`; **the user picks**.
+> - **Read**: `scripts/weighted_table.gd` and `scenes/ui/victory_screen.gd`.
+> - **Apply**: the 09-00.1 "Store rule" (3/day, key included, materials capped at one energy bar, chance of an unowned tower).
+
 **Covers**: B3 · **Blocked by**: 10-00 (chest sources/contents).
 **Files**: `scenes/ui/widget/reward_popup/`, `resources/chests/chest_definition.gd`
 + `chest_common/rare/epic.tres`, new `scenes/ui/chests_content.tscn`
@@ -211,6 +275,19 @@ price type.
       closed → open swap and then the `reward_popup`.
 - [ ] Chest sources wired as decided in 10-00, each calling one
       `MetaManager.award_chest(id)`.
+- [ ] **Store chests follow `epic_09_content.md` 09-00.1 "Store rule"**:
+  - bought with gems, **max 3 per day** (daily counter in `SaveData` +
+    migration)
+  - **the key comes with the chest**; keys are never sold separately. If
+    chests with keys make keys pointless everywhere, keys can be dropped
+    entirely; ask the user.
+  - materials capped at **one full energy bar's worth** (5 runs), using
+    09-12's chapter reward numbers. Which chapter to measure at is the
+    10-00 question.
+  - a **chance of a random tower the player doesn't own**, through 09-05's
+    single `MetaManager.unlock_tower()`. Once every tower is owned,
+    materials only.
+  - drop odds are set in balancing (09-17).
 
 **Placeholders**: none needed for chests, since all 16 reward icons exist
 (`rewards/icon_chest_*`, `icon_key_*`, `icon_mat_scroll_*`,
@@ -227,6 +304,11 @@ price type.
 ---
 
 ## Task 10-06 — Daily Rewards / Login Bonus
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Nothing exists yet.**
+> - **Read**: `scripts/save_data.gd` (09-01 migration rule).
 
 **Covers**: B4 · **Blocked by**: 10-00 answer for B4.
 
@@ -249,6 +331,14 @@ price type.
 ---
 
 ## Task 10-07 — Energy Countdown + Refill
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `autoloads/meta_manager.gd`: `_apply_offline_energy_regen()` (~123), which
+>     only runs on load; and `spend_energy()`.
+>   - `Constants.ENERGY_REGEN_INTERVAL_SEC = 1200`, `MAX_ENERGY = 5`.
+>   - `world_map_content.gd`: `_show_out_of_energy()`.
 
 **Covers**: B5 · **Files**: `MetaManager`, `widget/top_bar/` or
 `widget/currency_pill/`, world map
@@ -278,6 +368,18 @@ art.
 ---
 
 ## Task 10-08 — Pause Menu (+ Android back button)
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read first**: `components.md` §7 "Who is allowed to pause".
+> - **Read**:
+>   - `scenes/main/hud.gd` (`_on_pause_pressed`, `_on_phase_changed`).
+>   - `scenes/ui/widget/pause_button/pause_button.gd` (process_mode ALWAYS).
+>   - `scenes/main/game_world.gd` (`_unhandled_input`, `run_is_over`).
+> - **Facts**:
+>   - `project.godot` input map: `ui_cancel` is not bound anywhere (as of
+>     2026-09-27).
+>   - `SaveData.music_volume` / `sfx_volume` already exist.
 
 **Covers**: B6 · **Files**: new `scenes/ui/pause_menu.tscn` / `.gd`,
 `scenes/main/hud.gd`, `scenes/main/game_world.gd`
@@ -317,6 +419,11 @@ must not become a 5th writer that fights the others)
 
 ## Task 10-09 — Settings Screen
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**: `scripts/save_data.gd` and `resources/theme/ui_theme.tres`
+>   (fonts Baloo 2 + Nunito, for the credits page).
+
 **Covers**: B7 · **Files**: new `scenes/ui/settings_content.tscn` / `.gd`
 
 - [ ] Music / SFX: the same `volume_slider_row` as 10-08.
@@ -343,6 +450,11 @@ must not become a 5th writer that fights the others)
 
 ## Task 10-10 — Tutorial / First-Time Experience
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**: `autoloads/event_bus.gd`, the signal list tutorial steps can
+>   trigger on.
+
 **Covers**: B8 · **Blocked by**: 10-00 tutorial content.
 
 - [ ] `SaveData`: tutorial steps completed (+ migration). A step never shows
@@ -368,6 +480,14 @@ knobs showing a sample step.
 
 ## Task 10-11 — Wave Fallback Timer Warning
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `scenes/manager/wave_manager.gd`: `_wave_timer.start(Constants.WAVE_DURATION_MAX)`
+>     (~line 49), boss spawn (~51), `_on_wave_timeout` (~142), `_on_watchdog_tick`.
+>   - `Constants.WAVE_DURATION_MAX = 60` and its comments (~lines 11–23).
+>   - `scenes/main/hud.gd`.
+
 **Covers**: B9 · **Files**: `scenes/manager/wave_manager.gd`, `hud.gd`,
 `game_world.tscn` (close in editor first), `Constants.gd`
 
@@ -391,6 +511,14 @@ it reads like a bug.
 ---
 
 ## Task 10-12 — HP Bar Tween / Colour Shift (optional)
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Read**:
+>   - `scenes/ui/widget/value_bar_3d/value_bar_3d.gd` (`_refresh`, `region_rect`).
+>   - `bar_3d_style.gd` (same folder).
+>   - `resources/ui/enemy_bar_style.tres` / `boss_bar_style.tres`.
+>   - Its long doc comment about the MSDF / outline history.
 
 **Covers**: D1 · **Files**: `scenes/ui/widget/value_bar_3d/value_bar_3d.gd`,
 `bar_3d_style.gd`
@@ -416,6 +544,18 @@ colour at the previewed fraction.
 
 ## Task 10-13 — Dead Code Cleanup
 
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Grep list**:
+>   - `starting_spell_id`: `tower_definition.gd:23`, `tower.gd:32/48`,
+>     `draft_manager.gd:78`, `tower_ancient_tower.tres`.
+>   - `SynergyTag`, `tag_counts`, `add_tag`: `Constants.gd`, `game_state.gd`,
+>     `draft_card.gd` pill labels.
+>   - `synergy_banner.*` and `tag_row_widget.*` in `scenes/ui/`.
+>   - `model_path` (Tower/Enemy definitions) and `arena_model_path`.
+> - **Watch out**: `passive_script` is **no longer dead**. 09-13 may use it.
+>   Don't remove it.
+
 **Covers**: B10 · **Blocked by**: 10-00 answer per item.
 
 - [ ] Remove or keep each item exactly as answered.
@@ -433,6 +573,10 @@ colour at the previewed fraction.
 ---
 
 ## Task 10-14 — Integration Test
+
+> **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
+>
+> - **Back up the save first.** Open every preview scene from Epic 10.
 
 - [ ] Fresh save: home → every entry point opens and closes; buy one of each
       store item (fake provider); open each chest; claim a daily; refill
