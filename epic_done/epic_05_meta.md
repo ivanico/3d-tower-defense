@@ -218,9 +218,7 @@
 - [ ] On `load()` (app start), compute elapsed time since
 	  `last_energy_timestamp`, grant `floor(elapsed / regen_interval)`
 	  energy capped at `Constants.MAX_ENERGY`, update the timestamp.
-- [ ] This is the only energy regen mechanism needed at v1 — no in-session
-	  live-ticking energy regen UI countdown required yet (**[LATER]**,
-	  polish-tier feature).
+> ⤷ **Not done — moved to `remaining_to_do_list.md` ("OLD EPICS tasks not done yet").**
 
 **Acceptance criteria**:
 - [ ] Manually setting `last_energy_timestamp` to several hours in the past,
