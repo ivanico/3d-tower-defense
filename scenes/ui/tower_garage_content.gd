@@ -18,6 +18,7 @@ extends Control
 
 const TowerSlotScene := preload("res://scenes/ui/widget/tower_slot/tower_slot.tscn")
 const CombatUtilsScript := preload("res://scripts/combat_utils.gd")
+const ChapterRegistry := preload("res://scripts/chapter_registry.gd")
 
 @onready var preview: Control = $Preview3D
 @onready var star_row: HBoxContainer = $StarRow
@@ -32,6 +33,7 @@ const CombatUtilsScript := preload("res://scripts/combat_utils.gd")
 # global script class cache.
 @onready var base_chip: HBoxContainer = $ActionBar/BaseChip
 @onready var rare_chip: HBoxContainer = $ActionBar/RareChip
+@onready var unlock_label: Label = $ActionBar/UnlockLabel
 @onready var energy_pill: Control = $HeaderRow/TopBar/EnergyPill
 @onready var materials_pill: Control = $HeaderRow/TopBar/MaterialsPill
 # Garage-only — a sibling of the shared top_bar inside a wrapping HBoxContainer
@@ -64,7 +66,7 @@ func set_active(active: bool) -> void:
 # Built once. Which cell is highlighted, and each cell's star count, change often;
 # which cells EXIST does not, so nothing here is redone by _refresh.
 func _build_grid() -> void:
-	# tower_garage_content.tscn holds six placeholder cells purely so the grid is
+	# tower_garage_content.tscn holds five placeholder cells purely so the grid is
 	# visible in the editor. Clear them before building the real ones.
 	for placeholder in tower_grid.get_children():
 		tower_grid.remove_child(placeholder)
@@ -78,10 +80,10 @@ func _build_grid() -> void:
 		# real size before the properties below are applied.
 		tower_grid.add_child(slot)
 		slot.icon_texture = tower_def.icon
-		# One call answers both "does this tower exist as content" (unlocked) and
-		# "has the player earned it" (owned_towers). Locked slots grey out, show the
-		# padlock and refuse presses on their own — no guard needed in the handler.
-		slot.locked = not TowerRegistry.is_playable(tower_def.tower_id)
+		# Real towers stay tappable even before they're earned, so the player can
+		# look at one and see "Beat Chapter N" (09-05). Whether a slot is locked
+		# (not owned) is set in _refresh, since a victory can unlock one.
+		slot.viewable = tower_def.unlocked
 		slot.slot_pressed.connect(_on_slot_pressed.bind(tower_def.tower_id))
 		_slots[tower_def.tower_id] = slot
 
@@ -117,9 +119,17 @@ func _refresh() -> void:
 	for tower_id in _slots:
 		var slot: Button = _slots[tower_id]
 		slot.selected = tower_id == _viewing_id
+		slot.locked = not TowerRegistry.is_playable(tower_id)
 		slot.stars = _star_of(tower_id)
 
 	var playable: bool = TowerRegistry.is_playable(_viewing_id)
+	# A tower not earned yet: no Upgrade, just how to get it (09-05).
+	unlock_label.visible = not playable
+	upgrade_button.visible = playable
+	base_chip.visible = playable
+	rare_chip.visible = playable
+	if not playable:
+		unlock_label.text = _unlock_text(tower_def)
 	if at_max:
 		upgrade_button.text = "MAX"
 		upgrade_button.disabled = true
@@ -142,6 +152,18 @@ func _refresh() -> void:
 		upgrade_button.text = "Upgrade"
 		upgrade_button.disabled = not (base_affordable and rare_affordable) or not playable
 
+# "Beat Chapter N to unlock". N = the chapter's place in play order
+# (ChapterRegistry). A chapter not built yet falls back to the number in its id
+# ("chapter_03" -> 3).
+func _unlock_text(tower_def: Resource) -> String:
+	var chapter_id: String = tower_def.unlock_chapter_id
+	if chapter_id.is_empty():
+		return "Locked"
+	var number: int = ChapterRegistry.number_of(chapter_id)
+	if number == 0:
+		number = chapter_id.get_slice("_", 1).to_int()
+	return "Beat Chapter %d to unlock" % number
+
 func _star_of(tower_id: String) -> int:
 	return MetaManager.tower_stars.get(tower_id, 1)
 
@@ -158,11 +180,12 @@ func _set_stat(pill: Control, base_value: float, star: int, at_max: bool) -> voi
 	var next: float = CombatUtilsScript.calculate_star_scaled_value(base_value, star + 1)
 	pill.delta_text = "(+%d)" % int(round(next - current))
 
-# tower_slot swallows presses on locked cells, so anything arriving here is a
-# tower the player owns and can take into a run.
+# Any real tower can be tapped to look at it; only an owned one also becomes the
+# tower that goes into a run.
 func _on_slot_pressed(tower_id: String) -> void:
 	_viewing_id = tower_id
-	MetaManager.selected_tower_id = tower_id
+	if TowerRegistry.is_playable(tower_id):
+		MetaManager.select_tower(tower_id)
 	_refresh()
 
 func _on_upgrade_pressed() -> void:

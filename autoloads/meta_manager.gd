@@ -15,6 +15,12 @@ var selected_tower_id: String = "ancient_tower"
 var music_volume: float = 1.0
 var sfx_volume: float = 1.0
 
+# True when the save on disk was written by a NEWER game version than this
+# one. Its values are still used, but save() refuses to write, so this build
+# can never overwrite (and lose) data it doesn't understand.
+var _read_only: bool = false
+var _read_only_logged: bool = false
+
 func _ready() -> void:
 	self.load()
 
@@ -45,6 +51,28 @@ func award_scroll_material(damage_type: int, amount: int) -> void:
 	scroll_materials[damage_type] = get_scroll_material(damage_type) + amount
 	save()
 	EventBus.scroll_material_earned.emit(damage_type, amount)
+
+## THE one way a tower becomes owned (09-05): a chapter's first victory
+## (unlock_towers_for_chapter) or, later, a gem-chest drop (10-05). Never touches
+## chapter progress. Returns true only if the tower was newly unlocked.
+func unlock_tower(tower_id: String) -> bool:
+	if tower_id in owned_towers:
+		return false
+	owned_towers.append(tower_id)
+	save()
+	EventBus.tower_unlocked.emit(tower_id)
+	return true
+
+## Unlocks every tower whose TowerDefinition.unlock_chapter_id is this chapter.
+## Returns the ids that were NEW, so the victory screen can announce them once
+## (a replayed chapter returns nothing). 09-10's mark_chapter_cleared() will be
+## the caller once chapter progress exists.
+func unlock_towers_for_chapter(chapter_id: String) -> Array[String]:
+	var newly: Array[String] = []
+	for tower in TowerRegistry.all_towers:
+		if tower.unlock_chapter_id == chapter_id and unlock_tower(tower.tower_id):
+			newly.append(tower.tower_id)
+	return newly
 
 ## Dual cost: Base Material (common) + Tower Material (rare). Both must be
 ## affordable or nothing is deducted.
@@ -81,7 +109,15 @@ func upgrade_spell_rank(spell_id: String, damage_type: int) -> bool:
 	return true
 
 func save() -> void:
+	if _read_only:
+		if not _read_only_logged:
+			_read_only_logged = true
+			push_error("MetaManager: save is from a newer game version; not saving so it isn't overwritten.")
+		return
 	var data := SaveData.new()
+	data.save_version = Constants.SAVE_VERSION
+	data.premium_currency = premium_currency
+	data.selected_tower_id = selected_tower_id
 	data.owned_towers = owned_towers
 	data.tower_stars = tower_stars
 	data.spell_ranks = spell_ranks
@@ -118,7 +154,46 @@ func load() -> void:
 	last_energy_timestamp = data.last_energy_timestamp
 	music_volume = data.music_volume
 	sfx_volume = data.sfx_volume
+	premium_currency = data.premium_currency
+	selected_tower_id = data.selected_tower_id
+	var version: int = data.save_version
+	if version > Constants.SAVE_VERSION:
+		_read_only = true
+		push_error("MetaManager: savegame is version %d, this game only knows up to %d. Loaded read-only." % [version, Constants.SAVE_VERSION])
+	elif version < Constants.SAVE_VERSION:
+		_migrate_from(version)
+		save()
+	# A selection must always be a tower the player owns (e.g. a hand-edited or
+	# future save); fall back to the starting tower rather than start a run with
+	# something locked.
+	if not selected_tower_id in owned_towers:
+		selected_tower_id = "ancient_tower"
 	_apply_offline_energy_regen()
+
+## Runs every upgrade step between an old save's version and the current one,
+## in order. Each step is a `_migrate_N_to_N+1()` method below and only fills in
+## defaults for the fields its version introduced.
+func _migrate_from(version: int) -> void:
+	for v in range(version, Constants.SAVE_VERSION):
+		var step := "_migrate_%d_to_%d" % [v, v + 1]
+		if has_method(step):
+			call(step)
+		else:
+			push_error("MetaManager: missing save migration step %s" % step)
+	print("MetaManager: savegame migrated from version %d to %d" % [version, Constants.SAVE_VERSION])
+
+# v2: premium_currency joins the save (it existed in memory but was never written).
+func _migrate_1_to_2() -> void:
+	premium_currency = 0
+
+# v3: the garage selection is saved (it used to reset to Ancient on every launch).
+func _migrate_2_to_3() -> void:
+	selected_tower_id = "ancient_tower"
+
+## The garage's pick for the next run. Saved at once, so it survives a restart.
+func select_tower(tower_id: String) -> void:
+	selected_tower_id = tower_id
+	save()
 
 func _apply_offline_energy_regen() -> void:
 	var now: int = int(Time.get_unix_time_from_system())

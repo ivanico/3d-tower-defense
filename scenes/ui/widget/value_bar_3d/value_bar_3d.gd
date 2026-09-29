@@ -8,7 +8,7 @@ const BarTexture := preload("res://scenes/ui/widget/bar_texture.gd")
 ## copies, the MSDF/depth-sort debugging history behind all of it) lives in
 ## `outlined_label_3d.gd` now, not here — it was extracted out of this script
 ## so a second consumer (the planned `DamageNumber3D`, see
-## `epic_08_polish.md` Task 08-01) can reuse it instead of duplicating it.
+## `epic_done/epic_08_polish.md` Task 08-01) can reuse it instead of duplicating it.
 ## See that script's doc comment for the full history if touching `_value`.
 const OutlinedLabel3D := preload("res://scenes/ui/widget/outlined_label_3d/outlined_label_3d.tscn")
 

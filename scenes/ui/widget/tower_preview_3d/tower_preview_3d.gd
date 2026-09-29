@@ -30,11 +30,15 @@ const ConstantsScript := preload("res://autoloads/constants.gd")
 ## instance and any instance call on it dies with "Attempt to call a method on a
 ## placeholder instance", which is why the preview showed no model in the editor.
 const TowerRegistryScript := preload("res://autoloads/tower_registry.gd")
+const ModelTint := preload("res://scripts/model_tint.gd")
 
 ## Where a star level's decoration scene lives, by convention:
 ##   scenes/game_object/tower/<id>/<id>_lvl<star>/<id>_lvl<star>_fx.tscn
 const EFFECTS_PATH := "res://scenes/game_object/tower/%s/%s_lvl%d/%s_lvl%d_fx.tscn"
 
+## Shown as a dropdown in the Inspector (see _validate_property), filled from
+## every real tower in resources/towers/, so a new tower .tres appears in it
+## with no edit here. Still a plain String underneath: the garage sets it in code.
 @export var tower_id: String = "ancient_tower":
 	set(value):
 		tower_id = value
@@ -172,6 +176,24 @@ var _model: Node3D
 var _spin: float = 0.0
 
 
+# Turns the tower_id text field into a dropdown of real towers (unlocked = true
+# content, so the "Coming Soon" placeholders are left out). Built once per
+# instance; reopen the scene to pick up a tower added meanwhile.
+var _tower_id_choices: String = ""
+
+func _validate_property(property: Dictionary) -> void:
+	if property.name != "tower_id":
+		return
+	if _tower_id_choices.is_empty():
+		var ids: PackedStringArray = []
+		for tower in TowerRegistryScript.load_sorted():
+			if tower.unlocked:
+				ids.append(tower.tower_id)
+		_tower_id_choices = ",".join(ids)
+	property.hint = PROPERTY_HINT_ENUM
+	property.hint_string = _tower_id_choices
+
+
 func _ready() -> void:
 	set_process(spin_speed_deg != 0.0)
 	# Framing depends on the panel's real size, and at _ready() that is still the
@@ -214,6 +236,9 @@ func _reload_model() -> void:
 		return
 	_model = packed.instantiate()
 	_model_root.add_child(_model)
+	var def = TowerRegistryScript.find_definition(tower_id)
+	if def != null:
+		ModelTint.apply(_model, def.model_tint)
 	_add_effects()
 	_start_idle()
 	_apply()

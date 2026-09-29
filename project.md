@@ -76,7 +76,7 @@ We copy this exactly:
 | `mechanics.md` | Every gameplay mechanic, with priority labels and v1-vs-later scope |
 | `components.md` | Every Godot scene, script, autoload, and resource — component-based, no monolith scripts |
 | `assets.md` | Required assets only: models, materials, UI, audio. Includes the Archero-reference setup guide (camera angle, sizes, proportions). No "how it should look" art direction beyond what's needed to match Archero's *staging*. |
-| `epic_01_foundation.md` → `epic_08_polish.md` | Build epics, in order, scrum-style with tasks and acceptance criteria |
+| `epic_done/epic_01_foundation.md` → `epic_done/epic_08_polish.md` (built), `epic_09_content.md` → `epic_13_release.md` (open work) | Build epics, in order, scrum-style with tasks and acceptance criteria |
 | `skills/` | Godot/GDScript reference skills for Claude Code to consult while implementing |
 
 ---
@@ -120,7 +120,7 @@ how to scale from 3 spells to 25, or 1 tower to 5, without re-architecting.
 | Target platforms | Android first, iOS second | |
 | Min Android | API 24 (Android 7.0) | Reasonable device floor for Mobile-renderer 3D |
 | Art pipeline | **Meshy AI** generates 3D models directly → imported into Godot as real meshes (`.glb`/`.gltf`) | No render-to-sprite step. Real meshes, real materials, real animation. |
-| Shadows | Real-time `DirectionalLight3D` shadow + baked light where possible for performance | Mobile renderer supports this; tune shadow distance/resolution for perf (see `epic_08_polish.md`) |
+| Shadows | Real-time `DirectionalLight3D` shadow + baked light where possible for performance | Mobile renderer supports this; tune shadow distance/resolution for perf (see `epic_done/epic_08_polish.md`) |
 
 ---
 
@@ -176,7 +176,13 @@ World Map
 **Tower**: Fixed at arena center. Auto-attacks. Chosen before run. 1 tower at
 launch, architected for more.
 
-**Chapters**: 1 chapter at launch (~10–20 waves), architected for more.
+**Chapters**: **Decided (09-00.2, 09-07, 09-08):** 10 chapters at launch,
+each 5 regular enemies + 2 bosses, **20 waves** (runs stay at 12 while
+Epic 09 is built; the switch is at the start of 09-17). Themes: Ch1 Nature
+"Ancient Ruins" (built), Ch2 Frost "Frozen Wastes", Ch3 Void, Ch4 Poison,
+Ch5 Fire, Ch6–10 mixed (2–3 enemy themes each). Chapters 3–10 are
+placeholders reusing chap1/chap2 models until real ones exist. Beating
+chapter N unlocks N+1.
 
 **Waves**: Kill-based (wave ends when all enemies dead, not purely on a timer —
 fallback timer still exists so a run can never stall forever). Enemies scale per
@@ -192,11 +198,17 @@ Each fires independently on its own cooldown. Architected for many more.
 **Synergy Tags**: Every card has 1–2 tags. Hitting tag thresholds unlocks passive
 bonuses for the run. Generic system, 2–3 real tags wired at launch.
 
-**Meta**: Materials earned from runs. Spent to star up towers and rank up spells.
-Stars improve stats and enhance passives. Ranks add new behaviors to spells.
+**Meta**: Materials earned from runs (Base, Tower, 5 school Scrolls; later
+chapters pay more, no second chapter material, 09-00.8). Spent to star up
+towers and rank up spells. Stars give +10% HP/damage each and power up the
+tower's ult at star 3 / 5. Ranks give +8% damage each and unlock a behavior
+at rank 3 / 5 (09-00.7).
 
-**Monetization**: Energy system (5/day), cosmetic tower skins, tower unlock packs
-(time-saving not power), battle pass (later, not v1).
+**Monetization**: **"capped pay-to-skip"** (09-00.1 Store rule): gem
+material chests, 3/day with key included, capped at one energy bar's worth
+of materials and may contain an unowned tower (towers are never sold
+directly); unlimited gem energy refills; cosmetic skins; battle pass later.
+Energy: 5 max, 20 min regen. Mildly pay-to-win, accepted by the user.
 
 ---
 
@@ -219,7 +231,8 @@ new damage types or armor types are added — the lookup itself is generic.
 > counterplay comes from each enemy's *resisted school*
 > (`SCHOOL_RESIST_MULT`, halves damage and status — `spells.md` Section 3),
 > not from the armor table. Void's row must always stay ≥ 1.0× and can never
-> be a resisted school: nothing resists Void.
+> be a resisted school: nothing resists Void. *(Superseded by v2 below: the
+> WC3 table is now the counterplay, and resist is boss-only.)*
 
 > **Extend later by:** adding new `DamageType` / `ArmorType` enum entries and
 > new rows/columns to this table — the damage-calculation code reads the table
@@ -261,14 +274,13 @@ WC3's Frozen Throne table for the mapped attack type:
 > (appended after `HEAVY`, not inserted before it — existing enemy `.tres`
 > files store `armor_type` as a raw int, so reordering would have silently
 > reclassified them). `CombatUtils.DAMAGE_TABLE` carries these percentages.
-> This applies on top of, not instead of, the existing per-enemy
-> `resisted_school` / `SCHOOL_RESIST_MULT` mechanic — both multipliers stack
-> on the same hit; nothing has been removed.
+> The per-enemy `resisted_school` / `SCHOOL_RESIST_MULT` multiplies on top
+> of this on the same hit. **Decided (09-00.5): only bosses have a resist**;
+> regular enemies' counterplay is this table alone (`spells.md` §3).
 >
-> **Still to do:** no enemy `.tres` currently sets `armor_type` to
-> `LIGHT`/`MEDIUM`/`FORTIFIED` (only `UNARMORED`/`HEAVY` are used in
-> `scenes/game_object/chap1/`) — the new columns exist but nothing exercises
-> them yet.
+> **In use** (checked in each `.tres`, 2026-09-29): chap1 enemy_01/02/03
+> Light, enemy_04 Heavy, enemy_05 Medium, both bosses Fortified. Nothing
+> uses Unarmored yet.
 
 ---
 
@@ -289,12 +301,25 @@ WC3's Frozen Throne table for the mapped attack type:
 
 ## Tower (v1)
 
-[ADDED] Only one tower ships at launch. Base attack and passive are still
-defined now so the "tower has personality" hook exists from day one.
+**Decided (09-00.1, 09-00.6, 09-13).** 5 towers, one per school. The tower
+has **no attack of its own**: all damage comes from drafted spells, and any
+tower can use any spell. What makes a tower different is its **ult**, a big
+ability that charges over time and gets stronger at star 3 and star 5.
+Towers are **sidegrades** (different, not stronger), because one can come
+from a paid chest. The old "every 5th shot → 3-way burst" passive is
+obsolete (it predates spells).
 
-| Tower | Base Attack | Passive |
-|-------|-------------|---------|
-| Ancient Tower (`tower_id="ancient_tower"`) | Single targeted Normal bolt | Every 5th shot fires in a small burst (3-way spread) instead of one bolt |
+| Tower | Unlocked by | Ult | Star 3 | Star 5 |
+|---|---|---|---|---|
+| Ancient (Nature) | owned from the start | **Barkskin**: shield 25% max HP, 6 s | 40%, 8 s | + leftover shield heals |
+| Frost | beating Ch1 | **Snare** every on-screen enemy (can't move, still attacks); bosses immune | longer | + damage |
+| Void | beating Ch2 | **Void Rupture**: burst damage to every on-screen enemy | more damage | + shield = damage dealt, 8 s |
+| Poison | beating Ch3 | **Plague Cloud** around the tower, 6 s | bigger + longer | poison spreads on death |
+| Fire | beating Ch4 | **Ring of Fire** around the tower, 6 s | longer | ring +25% vs burning |
+
+Ults are designed in `epic_09_content.md` 09-13 and not built yet. The
+auto-fire vs tap-to-fire trigger is picked after play-testing both. Poison and
+Fire borrow the Ancient model until they get their own.
 
 > **Extend later by:** adding a new `TowerDefinition` resource + a new `.glb`
 > model + (optionally) a passive override script. See `components.md` Section
@@ -385,7 +410,7 @@ res://
 Full file list with node types and script signatures: see `components.md`.
 Full asset list: see `assets.md`.
 Full mechanic descriptions: see `mechanics.md`.
-Full build plan: see `epic_01_foundation.md` through `epic_08_polish.md`.
+Full build plan: see `epic_done/epic_01_foundation.md` through `epic_done/epic_08_polish.md` (built) and `epic_09_content.md` through `epic_13_release.md` (open work).
 Godot/GDScript implementation patterns for Claude Code: see `skills/`.
 
 ---

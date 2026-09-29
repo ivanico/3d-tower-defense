@@ -67,7 +67,7 @@ next to the camera rig (Epic 01 acceptance criteria covers this check).
   mobile performance in Epic 08 (shadow distance, shadow map size). This is
   the actual problem that sank the 2D version — in 3D, Godot computes real
   shadows for free, so this category of pain goes away as long as the light
-  and shadow settings are kept mobile-reasonable (see `epic_08_polish.md`).
+  and shadow settings are kept mobile-reasonable (see `epic_done/epic_08_polish.md`).
 
 ---
 

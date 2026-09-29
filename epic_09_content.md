@@ -122,6 +122,11 @@
 >   - 6th garage slot → 09-04
 >   - 12 → 20 wave timing → 09-17
 >   - boss resist values → 09-11
+> - **Update 2026-09-28**: all three are now answered, inside those build
+>   tasks (the 6th slot is removed; the switch to 20 waves happens at the
+>   start of 09-17; each boss resists its themed set's school, Void none).
+>   The 2026-09-28 session also answered every build-task question (09-04,
+>   09-07, 09-08, 09-11, 09-13, 09-16, 09-17). See each task.
 
 Split into 8 sub-tasks, one per question, answered one at a time. Nothing is
 built in any of them: Claude explains what the question means against the
@@ -132,11 +137,11 @@ depends on it).
 
 | Sub-task | Question | Feeds | Status |
 |---|---|---|---|
-| 09-00.1 | A2 — tower unlock method | 09-03, 09-04, 09-05, 10-04, 10-05, 12-00 | ✅ answered (6th garage slot deferred) |
-| 09-00.2 | A4 — chapters at launch | 09-08, 09-17 | ✅ answered (12→20 timing deferred to 09-17) |
+| 09-00.1 | A2 — tower unlock method | 09-03, 09-04, 09-05, 10-04, 10-05, 12-00 | ✅ answered (6th slot: removed, 09-04, 2026-09-28) |
+| 09-00.2 | A4 — chapters at launch | 09-08, 09-17 | ✅ answered (12→20: at the start of 09-17, answered 2026-09-28) |
 | 09-00.3 | A11a — AoE Area / Lance stacking | 09-15 | ✅ confirmed |
 | 09-00.4 | A11b — fill the 5 empty grid spells | 09-15 | ✅ confirmed — no new spells |
-| 09-00.5 | A13 — enemy resistances | 09-11 | ✅ answered — WC3 table + boss-only resist (boss values deferred to 09-11) |
+| 09-00.5 | A13 — enemy resistances | 09-11 | ✅ answered — WC3 table + boss-only resist (boss values: 09-11, answered 2026-09-28) |
 | 09-00.6 | Tower passives + star 3 / 5 | 09-13 | ✅ answered — time charge; trigger tested in 09-13; ults designed in 09-13 |
 | 09-00.7 | Spell rank behaviors | 09-14 | ✅ answered — rank 3 / 5 unlocks, per spell |
 | 09-00.8 | Second material per chapter | 09-12 | ✅ answered — no new material; per-chapter reward scaling |
@@ -147,7 +152,7 @@ depends on it).
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
-> - ✅ Answered. Unlock order (A); Ancient model is the Poison/Fire placeholder; 6th slot deferred to 09-04.
+> - ✅ Answered. Unlock order (A); Ancient model is the Poison/Fire placeholder; 6th slot removed (09-04, 2026-09-28).
 > - **Read before asking**:
 >   - `resources/towers/*.tres`: `tower_ancient_tower.tres` plus the
 >     `tower_locked_02–06.tres` "Coming Soon" placeholders.
@@ -207,8 +212,8 @@ Epics 10 and 12:
   chap1/chap2 models (rule 1).
 - **Poison and Fire towers have no models.** They borrow an existing tower
   line (09-04) until real ones exist.
-- **5 towers vs 6 garage slots**: one slot stays "Coming Soon" or is removed.
-  To confirm.
+- **5 towers vs 6 garage slots**: ✅ the 6th slot is removed (09-04,
+  2026-09-28).
 - 09-05: a tower unlocks on the chapter's first victory (tied to 09-10's
   `mark_chapter_cleared`) **or** from a chest. Both call one `MetaManager`
   unlock function. The garage shows "Beat Chapter N" on locked towers.
@@ -253,7 +258,8 @@ Epics 10 and 12:
    Answer (2026-09-27): **the Ancient Tower model as the placeholder**
    (tinted to the school) until their real models exist.
    **Deferred** ("the rest can wait"): whether the 6th garage slot stays
-   "Coming Soon" or is removed. Decide when 09-04 is built.
+   "Coming Soon" or is removed. **Answered 2026-09-28 in 09-04: removed**
+   (`tower_locked_06.tres` deleted; re-added only with a real 6th tower).
 
 **Acceptance criteria**:
 - [x] All questions answered or explicitly deferred.
@@ -265,7 +271,7 @@ Epics 10 and 12:
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
-> - ✅ Answered. The 12 → 20 wave switch is deferred to 09-17.
+> - ✅ Answered. The 12 → 20 wave switch happens at the start of 09-17 (answered 2026-09-28).
 > - **Read**:
 >   - `autoloads/Constants.gd`: `TOTAL_WAVES = 12`, `WAVE_DURATION_MAX`,
 >     `MATERIAL_CHECKPOINT_WAVES = [3, 6, 9, 12]`.
@@ -273,10 +279,13 @@ Epics 10 and 12:
 >   - `scenes/manager/wave_manager.gd`: `_get_wave_composition()`, where
 >     `enemy_pool[1]` is the "fast" enemy.
 
-**Status**: draft answer below, waiting on the open questions.
+**Status**: ✅ answered (all open questions answered; the last, 12 → 20 timing, on 2026-09-28).
 
 **Draft answer (user, 2026-09-27)**:
-- **About 10 chapters at launch** ("10 or something like that"). More content
+- **About 10 chapters at launch** ("10 or something like that"). **Update
+  2026-09-28 (09-08):** Epic 09 builds all 10. Chapters 3–10 are
+  placeholders mixing chap1 (Nature) and chap2 (Frost) enemies until real
+  models exist. More content
   gets added over time, so the chapter list must stay open-ended: adding a
   chapter = new `.tres` + arena, no code change (09-06 already builds it that
   way).
@@ -332,6 +341,9 @@ answer implies):
    keeping 12 while building? Answer (2026-09-27): **deferred ("can wait").**
    Keep 12 while building. 09-17 already lists the switch, so it's decided
    there at the latest.
+   **Answered 2026-09-28: at the start of 09-17.** Everything before it is
+   built at 12. New chapters (09-07 / 09-08) set `wave_count = 12` until
+   then.
 
 **Acceptance criteria**:
 - [x] All questions answered or explicitly deferred.
@@ -423,13 +435,13 @@ Areas (`spells.md` §4 "Extend later by").
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
-> - ✅ Answered. Boss resist values are deferred to 09-11. Both chap1 bosses
+> - ✅ Answered. Boss resist values answered 2026-09-28 (table in 09-11). Both chap1 bosses
 >   currently have `resisted_school = 4` (Nature) in
 >   `scenes/game_object/chap1/chap1_boss_01/chap1_boss_01.tres` and
 >   `chap1_boss_02/chap1_boss_02.tres`.
 > - **Code involved** (line numbers as of 2026-09-27): see 09-11's note.
 
-**Status**: draft answer below, waiting on the open question.
+**Status**: ✅ answered (boss values answered 2026-09-28, see 09-11).
 
 **Context found while asking (2026-09-27)**: there are **two** damage layers
 today, and they multiply on every hit:
@@ -484,6 +496,8 @@ from each enemy's armor type, like in WC3.
    it, or set it per boss when chapters are built/balanced?
    Answer (2026-09-27): **deferred ("can wait").** The bosses keep Nature
    for now; each boss's resist is set when 09-11 is built.
+   **Answered 2026-09-28**: a boss resists its chapter's school (Ch1 Nature,
+   Ch2 Frost, …). Full table in 09-11.
 
 ---
 
@@ -496,6 +510,10 @@ from each enemy's armor type, like in WC3.
 
 **Status**: ✅ answered (2026-09-27). Left for 09-13: the trigger mode (tested + researched there)
 and each tower's actual ult (designed there).
+**Update 2026-09-28**: the research is done and all 5 ults are designed (see
+09-13's table): Ancient Barkskin, Frost AoE snare, Void Rupture, Poison
+Plague Cloud, Fire Ring of Fire. The auto-vs-tap pick is **consciously left
+to play-testing**; 09-13 builds both modes.
 
 Covers **5 towers** (Ancient, Frost, Void, Poison, Fire), per 09-00.1.
 
@@ -640,7 +658,7 @@ currency.
 
 ---
 
-## Task 09-01 — Save Versioning & Migration (moved here from F6)
+## Task 09-01 — Save Versioning & Migration (moved here from F6) ✅ DONE (2026-09-29)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -666,15 +684,15 @@ currency.
 > each of those is a chance to silently wipe or corrupt an existing save.
 > Doing this before any of them costs one small task.
 
-- [ ] Add `@export var save_version: int` to `SaveData` and a
+- [x] Add `@export var save_version: int` to `SaveData` and a
       `Constants.SAVE_VERSION` (starts at 2; saves with no field count as 1).
-- [ ] `MetaManager.load()` runs an ordered list of small migration steps
+- [x] `MetaManager.load()` runs an ordered list of small migration steps
       (`_migrate_1_to_2()`, …) on older saves, then saves. Each step only
       fills in defaults for fields it introduced.
-- [ ] Fix the existing gap found while writing this epic:
+- [x] Fix the existing gap found while writing this epic:
       `MetaManager.premium_currency` exists but **is not in `SaveData`**, so it
       never persists. Add it here, as migration 1 → 2.
-- [ ] Rule for every later task that adds a save field: bump
+- [x] Rule for every later task that adds a save field: bump
       `SAVE_VERSION` and add a migration step. This rule is repeated in each
       task that touches `SaveData`.
 
@@ -682,15 +700,37 @@ currency.
 round-trip on a **backed-up copy** of the real save (memory: tests write to the
 real `user://savegame.tres`).
 
+**Done (2026-09-29)**:
+- `Constants.SAVE_VERSION = 2`
+- `SaveData.save_version` (default 1, so an old file with no field = v1) +
+  `premium_currency`
+- `MetaManager.load()` runs `_migrate_from()`, which calls each
+  `_migrate_N_to_N+1()` by name and then saves once. A newer version sets
+  `_read_only`, and `save()` then refuses and logs once. The rule comment
+  is in `save_data.gd` and next to `SAVE_VERSION`.
+- Verified headless on a backup of the real save: 16/16 checks (every old
+  value kept, the file now says v2, gems round-trip, a v99 file is
+  byte-identical after save() + spend_energy()). The real save was
+  restored, then the game booted headless for 600 frames with no errors,
+  and the save migrated to v2 with all values intact.
+- **Addendum 2026-09-29 (user request, after 09-05)**: `selected_tower_id`
+  is saved now.
+  - Save **version 3** (`_migrate_2_to_3` → "ancient_tower").
+  - `MetaManager.select_tower(id)` sets and saves; the garage calls it on
+    tap.
+  - `load()` falls back to Ancient if the saved pick isn't owned.
+  - Tested without writing the real save (temp file + `_read_only`). The
+    user's save migrated 2 → 3 with the Frost unlock intact.
+
 **Acceptance criteria**:
-- [ ] A save file written before this change loads with every old value
+- [x] A save file written before this change loads with every old value
       intact and `save_version` = current.
-- [ ] A save with a *higher* version than the game knows is not overwritten
+- [x] A save with a *higher* version than the game knows is not overwritten
       (it's loaded read-only or refused, and the problem is logged).
 
 ---
 
-## Task 09-02 — Docs Cleanup (moved here from H1)
+## Task 09-02 — Docs Cleanup (moved here from H1) ✅ DONE (2026-09-29)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -718,14 +758,14 @@ real `user://savegame.tres`).
 > now some of them are wrong, so a task following them would build the wrong
 > thing.
 
-- [ ] Fix every stale spot listed in H1:
+- [x] Fix every stale spot listed in H1:
   - synergy tags (bookkeeping only)
   - starting spell (`spells.md` §6.2 — no free spell; first-spell draft)
   - enemy pooling (enemies `queue_free()`, not pooled)
   - "resistances not used yet" (`spells.md` §6.5 — they are)
   - the missing `HUD.tscn` (the HUD is inline in `game_world.tscn`)
   - `spells.md` §6.7
-- [ ] Also fix the ones found this session:
+- [x] Also fix the ones found this session:
   - `project.md` says no enemy uses Light/Medium/Fortified. Check each
     enemy `.tres` and correct it.
   - `components.md` §6 says one `CooldownComponent` per spell. `tower.gd`
@@ -734,7 +774,7 @@ real `user://savegame.tres`).
     `area_entered`. Fix this in `mechanics.md` §5 and the `godot3d-combat`
     skill.
   - References to `epic_0N_*.md` now point to `epic_done/`.
-- [ ] Write the **09-00 decisions** into the design docs, so they stop
+- [x] Write the **09-00 decisions** into the design docs, so they stop
       contradicting the plan:
   - `project.md` "Tower (v1)": drop the obsolete Ancient passive. Towers get
     ults (09-00.6). Towers unlock per chapter (09-00.1).
@@ -749,17 +789,69 @@ real `user://savegame.tres`).
     Fire then mixed, 20 waves target (09-00.2).
 
   Only write what's confirmed in 09-00; open items stay marked open.
-- [ ] Verify each claim against the code before writing it (memory: verify,
+  - Also the **2026-09-28 answers** that touch design docs:
+    - chapter plan: 10 chapters (5 regular + 2 bosses each), names so far
+      Ancient Ruins / Frozen Wastes / Void / Poison / Fire (09-07, 09-08)
+    - boss resist rule: each boss resists its themed set's school, Void
+      none (09-11) → `spells.md` §3
+    - the 5 tower ults (09-13) → `project.md` "Tower (v1)"
+    - boss phases + "BOSS" banner (09-16) → `mechanics.md` §1 / §3
+    - 20 waves from 09-17 on
+- [x] Verify each claim against the code before writing it (memory: verify,
       don't generalize).
 
 **Placeholders**: none · **Preview**: none.
 
+**Done (2026-09-29)**. Each fix and the code it was checked against:
+- **Synergy tags are bookkeeping only**: `game_state.gd` ~127–131
+  (`add_tag`, no `_apply_synergy_bonus`). Fixed in `spells.md` §6.7 and
+  `components.md` §0 / §3 (the §2 constants block is marked a historical
+  snapshot).
+- **No starting spell**: `tower.gd` ~29–35 and `game_world.gd` ~25–32
+  (`"first_spell"` draft). Fixed in `spells.md` §6.2 / §6.10 and
+  `components.md` §5 (`starting_spell_id` marked dead).
+- **Enemies are not pooled**: `death_fx_component.gd:12` (`queue_free`),
+  `wave_manager.gd` `_spawn_enemy()`. Fixed in `mechanics.md` §3 / §8 / §9
+  and the `godot3d-combat` skill (pooling section rewritten).
+- **Resistances are in use**: all 7 chap1 `.tres` have
+  `resisted_school = 4`; `hurtbox_component.gd:17–24`. Fixed in
+  `spells.md` §3 / §6.5 and `project.md` v1/v2 notes, with the boss-only
+  decision and the boss rule.
+- **No HUD.tscn**: only `scenes/main/hud.gd` exists. Fixed in the
+  `components.md` §1 tree.
+- **Armor types in use**: chap1 enemy_01–03 Light, 04 Heavy, 05 Medium,
+  bosses Fortified (each `.tres`). Fixed in `project.md` v2 note and
+  `mechanics.md` §5.
+- **No CooldownComponent in use**: `tower.gd:15` `_spell_timers`,
+  `enemy.gd:13` `_attack_timer`, grep = no instances. Fixed in
+  `components.md` §4 / §6 and `mechanics.md` §8.
+- **Hybrid hit detection**: `hurtbox_component.gd:16` `apply_hit()`,
+  `standard_bolt.gd` ~45–87, all 5 archetypes call it; no `area_entered`.
+  Fixed in `mechanics.md` §5, `components.md` §4 and the `godot3d-combat`
+  skill (Hitbox/Hurtbox, AoE and Targeting sections rewritten; targeting is
+  random, `targeting_component.gd:42–44`).
+- **Also found**: `HitboxComponent` is instanced nowhere (grep). Documented
+  as unused, left for 10-13.
+- **`epic_0N` references → `epic_done/`**: 7 docs and 6 code comments
+  (`hurtbox_component.gd`, `tower.gd`, `damage_number_3d.gd`,
+  `outlined_label_3d.gd`, `pause_button.gd`, `value_bar_3d.gd`). The audio
+  reference now points to `epic_11_audio.md`.
+- **09-00 and 2026-09-28 decisions written in**:
+  - `project.md`: Core summary (chapters / meta / monetization) and Tower
+    section (ult table; old passive dropped).
+  - `mechanics.md`: §1 camera (no shake, banner only), §3 boss phases, §11
+    meta, §12 store rule.
+  - `spells.md`: §3 resist, §4 20 spells final, §6.4 short-range decision,
+    §6.6 new stack caps, S-04 / S-05 stacking notes.
+- Checked: the game boots headless (world map, and `game_world.tscn` for 900
+  frames) with no errors. Code changes are comments only.
+
 **Acceptance criteria**:
-- [ ] Each fix above cites the file and line it was checked against.
+- [x] Each fix above cites the file and line it was checked against.
 
 ---
 
-## Task 09-03 — Frost Tower & Void Tower (playable)
+## Task 09-03 — Frost Tower & Void Tower (playable) ✅ DONE (2026-09-29)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -790,27 +882,64 @@ real `user://savegame.tres`).
 Models already exist: `assets/models/towers/frost_tower/frost_tower_lvl1–5.glb`,
 `void_tower/void_tower_lvl1–5.glb`.
 
-- [ ] For each of `frost_tower` and `void_tower`: create
+- [x] For each of `frost_tower` and `void_tower`: create
       `scenes/game_object/tower/<id>/<id>_lvl1..5/<id>_lvl<N>.tscn`. Follow the
       structure `ancient_tower_lvlN.tscn` already uses (shared `tower.gd` +
       component scenes + `HealthBar3D`), with the model `ext_resource` swapped.
       The script is shared, not copied.
-- [ ] Idle animation: `tower.gd._play_idle()` already no-ops on models
+- [x] Idle animation: `tower.gd._play_idle()` already no-ops on models
       without an `idle` clip. Check which levels have one and note it. Don't
       add idle to every level (deliberate, see the "Removed" list).
-- [ ] `resources/towers/tower_frost_tower.tres` / `tower_void_tower.tres` replace
+- [x] `resources/towers/tower_frost_tower.tres` / `tower_void_tower.tres` replace
       `tower_locked_02` / `tower_locked_03` (keep their `sort_order` 1 and 2).
       Stats start as a copy of Ancient's numbers and get tuned in 09-17.
       `starting_spell_id` stays empty (dead field, B10).
-- [ ] Ownership follows 09-00.1: each tower is unlocked by **beating its
+- [x] Ownership follows 09-00.1: each tower is unlocked by **beating its
       chapter** (or from a gem chest), wired in 09-05. Until 09-05 the towers
       exist as content (`unlocked = true`) but aren't owned, so the garage
       greys them out through the existing `TowerRegistry.is_playable()`. To
       play-test before 09-05, add them to `owned_towers` in a throwaway
       headless script on a backed-up save.
-- [ ] Towers must be **sidegrades**, not strictly stronger, because they can
+- [x] Towers must be **sidegrades**, not strictly stronger, because they can
       come from a paid chest (09-00.1). Keep the base stats close to
       Ancient's; differences come from the ults (09-13).
+
+**Built (2026-09-29)**:
+- **Shared base scene** (user's choice, no-duplicate rule):
+  `scenes/game_object/tower/tower.tscn` (unused before) now holds everything
+  common to every tower level: collision, Health/Targeting/HitFlash
+  components, `HealthBar3D`, `AttackRangeArea`. Every `<id>_lvlN.tscn` is an
+  **inherited** scene that only adds its model (Ancient lvl5 also keeps its
+  `WaterfallFX`). All 5 Ancient scenes were converted too (same UIDs, same
+  model transform). 15 level scenes total; 09-04 adds Poison/Fire the same
+  way.
+- `resources/towers/tower_frost_tower.tres` (sort 1, Frost icon) and
+  `tower_void_tower.tres` (sort 2, **Ancient icon as placeholder**, user's
+  choice) replace `tower_locked_02/03.tres` (deleted). Stats = Ancient's.
+  `icon_tower_void.png` was added to `ui_assets.md` STILL TO MAKE.
+- **Idle**: no Frost or Void level has an `idle` clip (checked every
+  `.glb`); Ancient has one on lvl3–5 only. Left as is.
+- All 15 models share Ancient's normalised box (~1.91 tall), so one model
+  transform fits. Void lvl1 is a bit shorter (its lowest point measured
+  0.18 vs 0.06), so it may sit slightly high. Check it in the preview.
+- **Verified**:
+  - Headless: garage order Ancient / Frost / Void; Frost and Void greyed
+    (not owned until 09-05); all 15 garage preview models resolve; all 15
+    start a real run with the right model, all components, correct star and
+    HP (1000 → 1400).
+  - Ancient lvl5 measured 0.23 in that ground check. The old and new scenes
+    were compared and are identical (same meshes, same positions), so it's
+    a measurement quirk, not a change.
+  - Windowed screenshots: Frost s1, Void s5 and Ancient s5 standing in a
+    run; garage grid with the Frost icon + Void placeholder.
+- **Not verified**: actual combat with Frost/Void (same `tower.gd` as
+  Ancient, so expected identical); the garage 3D preview visually (open
+  `tower_preview_3d.tscn`, set `tower_id` / `star`).
+- Added on request: `tower_preview_3d`'s `tower_id` is an Inspector
+  **dropdown** of every real tower (`_validate_property`, filled from the
+  new static `TowerRegistry.load_sorted()`, which `_ready()` now uses too).
+- Leftover: the 5 `ancient_tower_lvlN.tres` next to the scenes are still
+  orphaned (loaded nowhere); left for 10-13.
 
 **Placeholders**:
 - Frost icon: `garage/icon_tower_frost_selection.png` exists, so use it.
@@ -824,17 +953,18 @@ Models already exist: `assets/models/towers/frost_tower/frost_tower_lvl1–5.glb
   by ID convention).
 
 **Acceptance criteria**:
-- [ ] Garage grid shows Ancient, Frost, Void in slots 1–3 with correct icons;
+- [x] Garage grid shows Ancient, Frost, Void in slots 1–3 with correct icons;
       the 3D preview shows every star level of each.
-- [ ] With the tower owned and selected, a run starts with that tower's model
+- [x] With the tower owned and selected, a run starts with that tower's model
       at each star level, and combat works exactly as with Ancient.
 
 ---
 
-## Task 09-04 — Extra Tower Slots Reuse Existing Models (for towers without their own model, e.g. Poison & Fire per 09-00.1)
+## Task 09-04 — Extra Tower Slots Reuse Existing Models (for towers without their own model, e.g. Poison & Fire per 09-00.1) ✅ DONE (2026-09-29)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
+> - **Status (2026-09-28)**: ✅ All answered (2026-09-28): delete `tower_locked_06.tres`. Nothing left to ask.
 > - **Read**: `resources/towers/tower_definition.gd` and
 >   `autoloads/tower_registry.gd` → `static func get_preview_model()`
 >   (~line 55).
@@ -842,11 +972,11 @@ Models already exist: `assets/models/towers/frost_tower/frost_tower_lvl1–5.glb
 
 **Covers**: A1 (beyond the 3 real models)
 
-- [ ] Add `@export var preview_model_id: String = ""` to `TowerDefinition`.
+- [x] Add `@export var preview_model_id: String = ""` to `TowerDefinition`.
       `TowerRegistry.get_preview_model()` uses it when set, instead of the
       tower's own ID. This is how a new tower borrows an existing tower line's
       `.glb` for the garage preview.
-- [ ] Per 09-00.1, the two towers without models are **Poison Tower**
+- [x] Per 09-00.1, the two towers without models are **Poison Tower**
       (`poison_tower`, replaces `tower_locked_04`, `sort_order 3`) and **Fire
       Tower** (`fire_tower`, replaces `tower_locked_05`, `sort_order 4`).
       Each gets its own `<id>_lvlN.tscn` gameplay scenes (09-03 pattern)
@@ -854,24 +984,66 @@ Models already exist: `assets/models/towers/frost_tower/frost_tower_lvl1–5.glb
       Q8), tinted to its school. The real model arrives
       later as one `ext_resource` change per scene plus clearing
       `preview_model_id`.
-- [ ] The 6th slot (`tower_locked_06`): stays "Coming Soon" or is removed.
-      Deferred in 09-00.1 Q8; ask when building this task.
+- [x] **Delete `resources/towers/tower_locked_06.tres`** (the 6th "Coming
+      Soon" slot). ✅ Answered (user, 2026-09-28): **remove it; a 6th cell
+      comes back only when a real 6th tower exists.**
+  - Why no code change: `TowerRegistry` scans `resources/towers/` and the
+    garage grid is built from `TowerRegistry.all_towers`. A grep on
+    2026-09-28 found `locked_06` referenced only inside its own `.tres`. It
+    was never ownable, so no save holds it and no migration is needed.
+  - Result: the grid (`columns = 4`) shows Ancient, Frost, Void, Poison on row
+    1 and Fire on row 2.
+  - Adding a 6th tower later = a new `tower_<id>.tres` with `sort_order = 5`,
+    no code.
+  - Follow-up for the preview: `tower_garage_content.tscn` holds 6
+    editor-only placeholder cells (`Slot1`–`Slot6`), which `_build_grid()`
+    deletes at runtime. Drop `Slot6` so the editor preview matches the real
+    5-tower grid. 09-05 edits these same placeholder cells (locked /
+    unlockable / owned states), so do it there if this task doesn't.
+    Close the scene in the editor first.
+
+**Built (2026-09-29)**:
+- `tower_locked_04/05/06.tres` deleted. The garage has exactly 5 towers
+  (4 + 1 grid). The editor preview `Slot6` was removed from
+  `tower_garage_content.tscn` (comment in `.gd` updated).
+- `TowerDefinition` got `preview_model_id` and `model_tint`
+  (alpha 0 = none).
+  - `TowerRegistry.get_preview_model()` uses `preview_model_id` (via the new
+    static `find_definition()`).
+  - A shared `scripts/model_tint.gd` (`material_overlay` on
+    `MeshInstance3D`s only, so HP-bar billboards are untouched) is applied
+    by `tower.gd._ready()` **and** `tower_preview_3d`, so the game and the
+    garage match.
+- `tower_poison_tower.tres` (sort 3, tint = Poison green, alpha 0.45) and
+  `tower_fire_tower.tres` (sort 4, Fire orange, alpha 0.45). Both borrow
+  `ancient_tower` models and use Ancient's icon (user's choice, same as
+  Void). 10 inherited level scenes as in 09-03 (Ancient's lvl3–5 idle
+  plays; no lvl5 waterfall). Stats = Ancient's.
+- Placeholder art added to `ui_assets.md` STILL TO MAKE (icons + models).
+- **Verified**:
+  - Headless: registry = exactly the 5 in order; the preview dropdown
+    lists all 5; all 25 tower levels start a run with the right model;
+    the tint is on Poison/Fire only (game + preview).
+  - Windowed screenshots: garage 5 slots, Poison s1 and Fire s5 in a run,
+    Fire s3 in the preview.
+- Tune the look: change `model_tint` in the two `.tres` (colour and
+  alpha = strength).
 
 **Placeholders**: borrowed tower model + tinted Ancient icon → final
 `assets/models/towers/<id>/<id>_lvl1–5.glb` and `garage/icon_tower_<id>.png`.
 **Preview**: same as 09-03.
 
 **Acceptance criteria**:
-- [ ] A borrowed-model tower is playable and previewable. Swapping the real
+- [x] A borrowed-model tower is playable and previewable. Swapping the real
       `.glb` in touches no `.gd` file.
 
 ---
 
-## Task 09-05 — Tower Unlock Method
+## Task 09-05 — Tower Unlock Method ✅ DONE (2026-09-29, user confirmed: winning ch1 unlocked Frost)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
-> - **Blocked** until 09-00.1's open questions are answered.
+> - ✅ Not blocked: 09-00.1 is fully answered (order A, 2026-09-27).
 > - **Read**:
 >   - `scenes/ui/tower_garage_content.gd` (action bar with Select/Upgrade +
 >     `cost_chip`s).
@@ -880,26 +1052,72 @@ Models already exist: `assets/models/towers/frost_tower/frost_tower_lvl1–5.glb
 >   - `autoloads/tower_registry.gd` (`is_playable`).
 
 **Covers**: A2 · **Based on**: 09-00.1 (towers unlock by beating a chapter,
-or from a gem chest). **Needs** 09-00.1 open question 1 answered: order
-(A) or (B).
+or from a gem chest). Order ✅ **(A)**: ch1 → Frost, ch2 → Void, ch3 →
+Poison, ch4 → Fire.
 
-- [ ] `TowerDefinition` gets `@export var unlock_chapter_id: String`, the
+- [x] `TowerDefinition` gets `@export var unlock_chapter_id: String`, the
       chapter whose **first victory** unlocks this tower. Ancient stays owned
-      from a fresh save. Filled per 09-00.1 Q1 (A or B). The mapping is data,
-      so changing the order is a `.tres` edit.
-- [ ] One `MetaManager.unlock_tower(tower_id)` (adds to `owned_towers`, saves,
+      from a fresh save. Filled per 09-00.1 Q1 **(A)**: `frost_tower` →
+      `chapter_01`, `void_tower` → `chapter_02`, `poison_tower` →
+      `chapter_03`, `fire_tower` → `chapter_04`; Ancient empty (owned from
+      the start). The mapping is data, so changing the order is a `.tres`
+      edit.
+- [x] One `MetaManager.unlock_tower(tower_id)` (adds to `owned_towers`, saves,
       emits an `EventBus` signal). It's called from:
       - chapter victory (09-10's `mark_chapter_cleared` → any tower whose
         `unlock_chapter_id` matches)
       - a gem-chest tower drop (10-05)
 
       No second unlock path.
-- [ ] Chapter progress is **not** unlocked by getting a tower from a chest.
-- [ ] Garage: a not-owned tower shows "Beat Chapter N" (from
+- [x] Chapter progress is **not** unlocked by getting a tower from a chest.
+- [x] Garage: a not-owned tower shows "Beat Chapter N" (from
       `unlock_chapter_id`) in the action bar, where Select/Upgrade are.
-- [ ] Victory screen: "New tower unlocked: <name>!" the first time.
-- [ ] No new save field (uses `owned_towers`), so no migration needed unless
+      Build note (found 2026-09-28): today `tower_slot` swallows presses on
+      **every** locked cell (`tower_garage_content.gd` `_on_slot_pressed`
+      comment), so a not-owned tower can't be viewed. Cells that exist as
+      content (`unlocked = true`) but aren't owned must become tappable
+      (view only; Select stays disabled).
+- [x] Victory screen: "New tower unlocked: <name>!" the first time.
+- [x] No new save field (uses `owned_towers`), so no migration needed unless
       something else is added.
+
+**Built (2026-09-29)**:
+- `TowerDefinition.unlock_chapter_id`: Frost `chapter_01`, Void
+  `chapter_02`, Poison `chapter_03`, Fire `chapter_04`; Ancient empty.
+- `MetaManager.unlock_tower(id)` is the one unlock path (append + save +
+  new `EventBus.tower_unlocked`). `unlock_towers_for_chapter(chapter_id)`
+  returns only NEW unlocks.
+- Victory hook: `game_world.gd._on_boss_died()` calls it with
+  `wave_manager.chapter.chapter_id` and hands the result to the victory
+  screen. **09-10 must move this call inside `mark_chapter_cleared()`.**
+- Victory screen: new `StatsPanel/UnlockLabel` ("New tower unlocked:
+  <name>!"), shown only when something new unlocked. The placeholder text
+  shows in the editor preview.
+- Garage (`tower_garage_content`, the live one inside `world_map`):
+  - `tower_slot` got `viewable`, so an unowned real tower is tappable
+    (still grey + padlock). Tapping shows it but never makes it the run's
+    tower.
+  - The action bar swaps Upgrade + chips for `ActionBar/UnlockLabel`
+    "Beat Chapter N to unlock". N is parsed from the chapter id until
+    ChapterRegistry exists: **09-06 / 09-09 should switch it to the
+    chapter's own number**.
+  - Locked state is refreshed in `_refresh()`, so a new unlock shows
+    without rebuilding.
+- **Verified** (headless, 19/19): fresh save = only Ancient; ch1–4 each
+  unlock exactly their tower, once; ch5 nothing; all survive a reload; a
+  fake chest `unlock_tower("void_tower")` grants only Void and touches
+  nothing else; the garage view/label behaviour; a real chapter-1 victory
+  → "New tower unlocked: Frost Tower!" and Frost owned. Screenshots: the
+  victory line; the real garage showing Frost with "Beat Chapter 1 to
+  unlock".
+- **Found**: `scenes/ui/tower_garage.tscn/.gd` (and the standalone
+  `spell_codex.tscn` nav target) are an **older standalone copy** of the
+  garage. The game uses `tower_garage_content.tscn` inside `world_map`
+  (`world_map.gd:29`). The old one did **not** get these changes. Listed
+  for 10-13 (dead code).
+- **Test lesson**: the user plays while tests run, so tests must set
+  `MetaManager._read_only = true` instead of backing up and restoring the
+  real save.
 
 **Placeholders**: any lock/price badge art → drawn stand-in, final
 `garage/ui_tower_unlock_badge.png` (only if you want art there).
@@ -907,15 +1125,15 @@ or from a gem chest). **Needs** 09-00.1 open question 1 answered: order
 one unlockable, and one owned cell, so all three states show in the editor.
 
 **Acceptance criteria**:
-- [ ] Fresh save: only Ancient owned. Beating each tower's chapter unlocks
+- [x] Fresh save: only Ancient owned. Beating each tower's chapter unlocks
       exactly that tower, once; it stays owned after a restart and can be
       selected and played.
-- [ ] Calling the unlock from a (fake) chest grants a tower without touching
+- [x] Calling the unlock from a (fake) chest grants a tower without touching
       chapter progress.
 
 ---
 
-## Task 09-06 — Chapter Plumbing (arena per chapter, chapter registry)
+## Task 09-06 — Chapter Plumbing (arena per chapter, chapter registry) ✅ DONE (2026-09-29)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -940,26 +1158,26 @@ one unlockable, and one owned cell, so all three states show in the editor.
 Today `game_world.tscn` hard-instances `chap1_arena.tscn`, and
 `ChapterDefinition.arena_model_path` is a dead string.
 
-- [ ] Add `@export var arena_scene: PackedScene` and `@export var sort_order: int`
+- [x] Add `@export var arena_scene: PackedScene` and `@export var sort_order: int`
       to `ChapterDefinition`. `game_world.gd` instances the pending chapter's
       arena and falls back to the baked chap1 arena when run standalone (F6),
       the same way `pending_tower_def` already falls back. Leave
       `arena_model_path` for B10.
-- [ ] `ChapterRegistry` autoload: loads `resources/chapters/*.tres` via the
+- [x] `ChapterRegistry` autoload: loads `resources/chapters/*.tres` via the
       shared `scripts/resource_dir.gd` (**do not copy the scan loop** —
       `TowerRegistry` already uses it) and sorts by `sort_order`. Same shape as
       `TowerRegistry`.
-- [ ] Document in `wave_manager.gd` and `components.md` that
+- [x] Document in `wave_manager.gd` and `components.md` that
       `_get_wave_composition()` treats `enemy_pool[1]` as the "fast" enemy.
       Every chapter's pool order must follow that rule.
-- [ ] Close `game_world.tscn` in the editor before editing it (rule 3).
+- [x] Close `game_world.tscn` in the editor before editing it (rule 3).
 
 **Placeholders**: none · **Preview**: none new (chapter 1 must look and play
 identically).
 
 **Acceptance criteria**:
-- [ ] Chapter 1 plays exactly as before, now reached through `arena_scene`.
-- [ ] `ChapterRegistry` lists chapter_01 and picks up a new `.tres` with no
+- [x] Chapter 1 plays exactly as before, now reached through `arena_scene`.
+- [x] `ChapterRegistry` lists chapter_01 and picks up a new `.tres` with no
       code change.
 
 ---
@@ -968,6 +1186,22 @@ identically).
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
+> - **Before starting (added 2026-09-29, end of the build session)**:
+>   - 09-01 → 09-06 are ✅ DONE. Read their "Built" notes, because they
+>     change how you build this task:
+>     - Chapters: `ChapterRegistry` is `scripts/chapter_registry.gd`
+>       (static, preload, NOT an autoload). A chapter needs `arena_scene` +
+>       `sort_order` in its `.tres`; `game_world.gd._swap_arena()` loads it.
+>     - Save is version 3 (`selected_tower_id`); adding a save field =
+>       bump + `_migrate_N_to_N+1`.
+>     - `game_world.gd._on_boss_died()` calls
+>       `MetaManager.unlock_towers_for_chapter()`. Winning `chapter_02`
+>       will unlock Void automatically.
+>   - Tests: set `MetaManager._read_only = true` in every test script. The
+>     user plays while tests run. Never back up and restore the real save.
+>   - First, ask the user: the chap2 enemy roles (fast / flyer) and armor
+>     (their animations were due 2026-09-30).
+> - **Status (2026-09-28)**: Answered 2026-09-28: names (ch1 renamed "Ancient Ruins", ch2 "Frozen Wastes"), boss resist = Frost. **One item consciously left to build time**: each chap2 enemy's role (fast/flyer) and armor. Ask the user at the start of this task, once the chap2 animations exist.
 > - **Copy from** `scenes/game_object/chap1/chap1_enemy_01–05/` and
 >   `chap1_boss_01–02/` (`.tscn` + `.tres` each).
 > - **Models**: `assets/models/chap2/*.glb`, with their own jpg/png textures
@@ -1005,10 +1239,25 @@ Models: `assets/models/chap2/chap2_enemy_01–05.glb`, `chap2_boss_01–02.glb`.
       enemy (09-06).
 - [ ] **Theme: Ice / Frost** (09-00.2): chapter name, arena colours (blues)
       and map art follow it.
+- [ ] **Names** ✅ answered (user, 2026-09-28):
+  - Chapter 2 is **"Frozen Wastes"** (`chapter_02.tres` `chapter_name`).
+  - Chapter 1 is renamed from "The Plains" to **"Ancient Ruins"**. That's a
+    one-field edit in `resources/chapters/chapter_01.tres` (`chapter_name`),
+    done in this task. The world map title reads it from the `.tres`, so no
+    code changes.
 - [ ] **Armor & resist** (09-00.5): regular enemies get an armor type
       (Unarmored/Light/Medium/Heavy/Fortified) and **no** resisted school.
-      Bosses may get a resisted school; which one is the user's pick.
       Record the mix in 09-11's table.
+  - **Each chap2 enemy's role and armor**: which model is the fast one
+    (`enemy_pool[1]`), whether any is a flyer (`is_flying` + `hold_height`,
+    like `chap1_enemy_05`), and each one's armor type.
+    **Consciously left to build time** (user, 2026-09-28): "I will decide
+    when I make the animation". Ask at the start of this task, once the
+    chap2 animations exist. It's the only open item here, and nothing else
+    in 09-07 waits on it except the enemy `.tres` values.
+  - **Boss resist** ✅ answered (user, 2026-09-28): a boss resists **its
+    chapter's school**. Both chap2 bosses get `resisted_school = 1`
+    (Frost). The general rule and the chapter-3 Void case are in 09-11.
 - [ ] `wave_count`: same as chapter 1 for now (12 while building; 20 later,
       per 09-00.2 Q3).
 - [ ] Per-model `HealthBar3D.height_offset` set to that model's height.
@@ -1018,7 +1267,7 @@ Models: `assets/models/chap2/chap2_enemy_01–05.glb`, `chap2_boss_01–02.glb`.
       `sort_order = 1`, `map_image`.
 
 **Placeholders**: map image = `chapter_01_image_v2.png` → final
-`world_map/chapter_02_image.png`. Chapter name "Chapter 2" until you pick one.
+`world_map/chapter_02_image.png`. (Name picked: "Frozen Wastes".)
 
 **Preview**: `scenes/game_object/chap2/chap2_lineup_preview.tscn`, an editor-only
 scene with the arena, the camera rig and every chap2 enemy + boss standing in
@@ -1036,8 +1285,7 @@ to be run.
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
-> - **Needs**: 09-00.2's open answers (count, themes, when to switch to 20
->   waves).
+> - **Status (2026-09-28)**: Answered 2026-09-28: build **all chapters 3–10** as placeholders (5 regular + 2 bosses each), ch3–5 named "Void"/"Poison"/"Fire", ch6–10 "Chapter N" until named, mixed chapters draw from 2–3 themed sets. **One item left to build time**: exact enemy picks per chapter, asked together with 09-07's chap2 roles.
 > - **Remember**: a chapter's `enemy_pool` can reference any existing enemy
 >   `.tres` in any chapter folder, so only copy a folder when a variant is
 >   needed.
@@ -1045,12 +1293,54 @@ to be run.
 **Covers**: A4 · **Based on**: 09-00.2 (about 10 chapters, open-ended;
 enemies mixed across chapters; 20 waves target) and its theme table.
 
-| Chapter | Theme | Built from |
-|---|---|---|
-| 3 | Void | reused chap1/chap2 enemies, Void tint + arena colours |
-| 4 | Poison | reused, Poison tint + arena colours |
-| 5 | Fire | reused, Fire tint + arena colours |
-| 6–10 | mixed | enemies from several themes combined in one pool |
+**Scope** ✅ answered (user, 2026-09-28, revised the same session): **build
+ALL chapters 3–10 now as placeholders**, "so we have more things to see and
+test". Their rosters **mix the existing Nature (chap1) and Frost (chap2)
+enemies**, so extra chapters are ready to go when real models arrive.
+- Superseded: an earlier answer the same session ("build only 3–5, leave
+  6–10 until real content exists").
+- Epic 09 therefore ships **10 chapters**, matching 09-00.2's "about 10 at
+  launch".
+- Chapters 3–5 still carry their school theme (tint + arena colours + boss
+  resist). Chapters 6–10 are the "mixed" ones (09-00.2).
+- Every chapter's roster is swapped to real models later, one `ext_resource`
+  per enemy (rule 1). The model-borrow table below records what to swap.
+
+**Names** ✅ answered (user, 2026-09-28): plain school-type placeholder names
+("we will change when we have the models"):
+
+| Chapter | Theme | `chapter_name` (placeholder) | Built from |
+|---|---|---|---|
+| 3 | Void | "Void" | reused chap1/chap2 enemies, Void tint + arena colours |
+| 4 | Poison | "Poison" | reused, Poison tint + arena colours |
+| 5 | Fire | "Fire" | reused, Fire tint + arena colours |
+| 6–10 | mixed | "Chapter 6" … "Chapter 10" until named | chap1 + chap2 enemies mixed |
+
+**Mixed chapters and names** ✅ answered (user, 2026-09-28): "when a chapter
+is mixed it will use 2 or 3 types of enemies, and it will be named when we
+get there".
+- **Every chapter, themed or mixed, has the same shape as chapters 1 and
+  2: 5 regular enemies + 2 bosses** (clarified by the user, 2026-09-28).
+- **Themed sets**: each theme has its own set of enemies (Nature = chap1,
+  Frost = chap2, and Void / Poison / Fire = the tinted placeholder sets
+  built for chapters 3 / 4 / 5 from the chap1 and chap2 models).
+- A **mixed** chapter (6–10) takes its 5 + 2 from **2 or 3 of those themed
+  sets** ("the void enemies, nature enemies, frost enemies"). Mixed
+  chapters reference the existing themed `.tres`/scenes and need no new
+  variants.
+- Themed placeholder chapters 3–5 mix chap1 + chap2 models, tinted to
+  their school, because those are the only models that exist.
+- **Names of chapters 6–10 are consciously deferred** until their real
+  content exists. For the build, `chapter_name` = "Chapter 6" … "Chapter 10"
+  as a placeholder, which is enough for the carousel.
+- **Exact enemy picks per chapter** (which models make up the Void / Poison /
+  Fire sets, and which themed sets and enemies each mixed chapter uses) are
+  decided at the start of this task, **together with
+  09-07's chap2 roles/armor**. That's the same moment, because the chap2
+  enemies need roles before anyone can pick from them. It's the only open
+  item left in 09-08. Constraint: `pool[1]` = a fast enemy.
+
+(Chapter 1 is "Ancient Ruins" and chapter 2 is "Frozen Wastes"; see 09-07.)
 
 - [ ] **Chapters 3–5 (themed)**: a themed enemy is a small **variant scene**
       in `scenes/game_object/chap<N>/…` that instances an existing chap1/chap2
@@ -1058,10 +1348,15 @@ enemies mixed across chapters; 20 waves target) and its theme table.
       fight `hit_flash_component.gd`, which also uses `material_overlay`).
       Only make a variant where the tint or stats must differ. Otherwise
       reference the existing enemy `.tres` directly.
-- [ ] **Chapters 6–10 (mixed)**: `enemy_pool` / `boss_pool` list **existing**
+- [ ] **Chapters 6–10 (mixed, built in this task per the scope answer
+      above)**: `enemy_pool` / `boss_pool` list **existing**
       enemy `.tres` files from any chapter folder. No new scenes unless a
       variant is needed. Keep the `enemy_pool[1]` = fast-enemy rule (09-06).
 - [ ] Armor mix per chapter and boss resists per 09-00.5 (09-11's table).
+      ✅ Boss resists decided (2026-09-28): each themed set's bosses resist
+      that set's school (Void none), and mixed chapters reuse them
+      unchanged. Themed boss variants = a new `.tres` with its own
+      `resisted_school`.
 - [ ] Rewards per chapter via 09-12's multipliers.
 - [ ] Each chapter gets `chapter_0N.tres`, an arena copy with its own colours,
       and a lineup preview. More chapters later = more `.tres` + arenas, no
@@ -1161,6 +1456,7 @@ enemies mixed across chapters; 20 waves target) and its theme table.
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
+> - **Status (2026-09-28)**: ✅ All answered (2026-09-28): the boss-resist table is in this task. A boss resists its themed set's school, Void bosses none, and mixed chapters reuse them unchanged.
 > - **Exact code** (line numbers as of 2026-09-27, re-grep `resisted_school` /
 >   `SCHOOL_RESIST_MULT` first):
 >   - `resources/enemies/enemy_definition.gd:14`
@@ -1186,6 +1482,41 @@ bosses**.
       stays as is.
 - [ ] Each boss's resisted school follows the 09-00.5 answer to open
       question 2.
+  - **Rule** ✅ answered (user, 2026-09-28): **a boss resists the school
+    its chapter is themed on.**
+    - Ch1 (Nature): both chap1 bosses keep `resisted_school = 4` (Nature).
+      No change.
+    - Ch2 (Frost): both chap2 bosses get `resisted_school = 1` (Frost).
+    - Ch3 (Void) ✅ answered (user, 2026-09-28): **no resist**,
+      `resisted_school = -1`. Nothing resists Void
+      (`hurtbox_component.gd:18` ignores Void anyway), so the Void
+      chapter's bosses are the one set with no resist. The "nothing
+      resists Void" design rule stays unchanged.
+    - Ch4 (Poison): `resisted_school = 3`. Ch5 (Fire):
+      `resisted_school = 0`. Both follow directly from the rule.
+    - Chapters 6–10 (mixed) ✅ answered (user, 2026-09-28): **each boss
+      keeps its own theme's resist**, wherever it appears. A Frost-set
+      boss resists Frost, a Void-set boss resists nothing, and so on.
+      Mixed chapters reuse the themed boss `.tres` files as they are, so
+      there are no extra files.
+  - **Build note**: the resist lives on the boss's **`.tres`**
+    (`EnemyDefinition.resisted_school`), not its scene. A themed set that
+    reuses another chapter's boss model gets its own small variant `.tres`
+    (e.g. `chap4_boss_01.tres`, resist Poison, `scene` = the tinted
+    variant scene from 09-08). `wave_manager.gd._spawn_enemy()` assigns
+    `enemy.definition = definition` after instancing, so the `.tres` alone
+    decides the resist.
+  - **Final boss resist table** (by themed set):
+
+    | Themed set | Bosses | `resisted_school` |
+    |---|---|---|
+    | Nature (chap1) | chap1_boss_01, _02 | 4 (Nature), already set |
+    | Frost (chap2) | chap2_boss_01, _02 | 1 (Frost) |
+    | Void (ch3 placeholders) | the ch3 bosses | -1 (none) |
+    | Poison (ch4 placeholders) | the ch4 bosses | 3 (Poison) |
+    | Fire (ch5 placeholders) | the ch5 bosses | 0 (Fire) |
+    | Mixed (ch6–10) | reused from the sets above | unchanged from their set |
+    - `DamageType` enum: FIRE 0, FROST 1, VOID 2, POISON 3, NATURE 4.
 - [ ] Update the comments and docs to say "resist is a boss-only
       mechanic": `EnemyDefinition.resisted_school`,
       `hurtbox_component.gd`, `combat_utils.gd`, `spells.md` §3 and §6.5,
@@ -1251,6 +1582,7 @@ editor.
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
+> - **Status (2026-09-28)**: ✅ All answered (2026-09-28): research written up; all 5 ults designed (table below). The auto-vs-tap final pick is consciously left to play-testing (build both).
 > - **Read**:
 >   - `scenes/game_object/tower/tower.gd`: no passive code today;
 >     `TowerDefinition.passive_script` is read by nothing.
@@ -1280,6 +1612,43 @@ tested):
       comparable mobile tower-defense/roguelite games), write up the
       findings here with sources, then play-test both modes. You make the
       final pick; record it in 09-00.6.
+  - ✅ **Research done (2026-09-28)**. Findings:
+    - **No clear winner; preference is personal.** Some players want
+      control, others want the game to handle it
+      ([itch.io thread](https://itch.io/post/10092386)).
+    - **Many games offer both**:
+      - Arknights marks each skill as either "Manual Trigger" (fires on
+        the player's command once charged) or "Auto Trigger" (fires as soon
+        as it's charged and has a target)
+        ([Arknights wiki, Skill](https://arknights.fandom.com/wiki/Skill),
+        [GamePress, Auto Trigger](https://ak.gamepress.gg/skill-activation/auto-trigger)).
+      - AFK Arena's Auto mode fires ultimates "as soon as they are
+        available". Guides say manual timing matters most for **defensive
+        / support** ults (shields, heals), which auto mode wastes
+        ([BlueStacks AFK Arena guide](https://www.bluestacks.com/blog/game-guides/afk-arena/afka-bluestack-setup-en.html)).
+    - **Tower-defense players ask for auto once there's a lot to watch.**
+      Bloons TD 6 abilities are manual. Players complain about "mashing
+      ability hotkeys in late game" and ask for per-ability auto toggles
+      ([Steam: Smart Ability System](https://steamcommunity.com/app/960090/discussions/0/3053989511988854517/)).
+      The game sells auto-activation as a paid power, the Tech Bot
+      ([Bloons wiki, Tech Bot](https://bloons.fandom.com/wiki/Tech_Bot)),
+      and there are community "auto ability" mods.
+      Legion TD 2 units attack and cast automatically
+      ([Legion TD 2 manual](https://beta.legiontd2.com/manual/)).
+    - **What it means for this game** (implications, not a pick):
+      - The tower already auto-fires everything; the only in-run input is
+        drafting. **Tap mode** would be the one moment of active skill
+        during a wave.
+      - **Auto mode** fits the auto-battler feel and one-handed mobile
+        play.
+      - Per the AFK Arena point, tap mode matters most for ults whose
+        value depends on timing (heals, shields, "hit the big pack").
+        Pure damage-on-cooldown ults lose little on auto.
+      - The common compromise is **tap by default + an auto toggle**
+        (Arknights, AFK Arena, BTD6 Tech Bot). It's cheap here, because
+        the framework already builds both modes behind one switch.
+    - **Final pick: still after play-testing both modes** (09-00.6 Q1),
+      recorded in 09-00.6 when made.
 - [ ] Star 3 / star 5: the base exposes "power tier" 1 / 2 / 3 (star 1–2 / 3–4
       / 5) that each ult reads for its stronger version. No branches in
       `tower.gd`.
@@ -1294,15 +1663,110 @@ here before building):
 
 | Tower | Ult (what it does) | Star 3 | Star 5 | Status |
 |---|---|---|---|---|
-| Ancient (Nature) | ______ | ______ | ______ | to design |
-| Frost | ______ | ______ | ______ | to design |
-| Void | ______ | ______ | ______ | to design |
-| Poison | ______ | ______ | ______ | to design |
-| Fire | ______ | ______ | ______ | to design |
+| Ancient (Nature) | **Barkskin**: a shield worth **25% of max HP** for **6 s**. Enemy hits drain the shield before HP | shield **40%** of max HP, **8 s** | as star 3, and **leftover shield heals the tower** when it expires | ✅ designed (user, 2026-09-28) |
+| Frost | **AoE freeze (snare)**: roots **every enemy on screen** in place for a short time. They can't move but **still attack**. **Bosses are immune** | **longer** freeze | as star 3, and the freeze **also deals damage** | ✅ designed (user, 2026-09-28) |
+| Void | **Void Rupture**: a burst of Void damage to **every enemy on screen** | **more damage** | as star 3, and the tower gets a **shield equal to the damage the burst dealt**, lasting 8 s | ✅ designed (user, 2026-09-28) |
+| Poison | **Plague Cloud**: a poison cloud around the tower for **6 s**, poisoning and slowing everything inside | **bigger and longer** cloud | as star 3, and enemies that **die inside the cloud spread the poison** to nearby enemies | ✅ designed (user, 2026-09-28) |
+| Fire | **Ring of Fire**: a ring of flame circles the tower for **6 s**, burning any enemy that crosses it | ring **lasts longer** | as star 3, and **the ring hits **already-burning** enemies for **+25%** | ✅ designed (user, 2026-09-28) |
 
 - [ ] Each ult is a small subclass that `extends` the base and overrides only
       its effect. Attached via `passive_script` or as a component in that
       tower's scenes.
+
+**Ult notes, per tower** (answers + consequences):
+- **Ancient, Barkskin** (Claude's recommendation built on the user's
+  "a shield or something like that", accepted 2026-09-28):
+  - Numbers (25% / 6 s, 40% / 8 s) are **starting values**, to be kept in
+    `Constants` / the tower `.tres` and tuned in 09-17 with the charge time.
+  - Role: Ancient is the **defensive** tower (sidegrade rule, 09-00.1).
+    The star-5 leftover-into-heal ties it to Nature's lifesteal identity.
+  - **Build hook**: all tower damage goes through
+    `GameState.take_damage(amount)` (`autoloads/game_state.gd` ~113, after
+    `armor_damage_reduction`). The shield must absorb there, before
+    `tower_hp` drops, via a small shield value/component that `take_damage`
+    consults. It must be generic ("absorb N damage"), not an Ancient
+    branch. The star-5 heal goes through `GameState.heal()`, which already
+    emits `tower_healed`.
+  - HUD / 3D: show the remaining shield (e.g. a second colour on the
+    tower's `value_bar_3d`, or a bubble using the Nature school shader).
+    The exact look is tuned in the preview. No new art (placeholder rule).
+  - Tap-vs-auto: the ult most sensitive to timing (e.g. tapped before the
+    boss heavy attack), so it's the main test case for the 09-00.6 trigger
+    play-test.
+- **Frost, AoE freeze** (user's design, 2026-09-28):
+  - Role: the **control** tower.
+  - "On screen" = enemies inside the camera frustum. `wave_manager.gd`
+    already uses `camera.is_position_in_frustum()`; reuse that idea, don't
+    copy it. Enemies still walking in from off-screen aren't frozen.
+  - **Bosses are immune** (the user's "bosses not"). Check `definition.is_boss`
+    on the enemy.
+  - Freeze duration: short. Starting value ~2 s (star 1–2) and ~3 s
+    (star 3+), kept in `Constants` / `.tres` and tuned in 09-17.
+  - Star-5 damage: a Frost-school hit on each frozen enemy through
+    `HurtboxComponent.apply_hit()`, so the WC3 table applies (Frost =
+    Siege: 150% vs Unarmored/Fortified, 50% vs Medium). Amount tuned in
+    09-17.
+  - Build hook: the freeze is a status on the existing
+    `StatusEffectComponent` (a full stop, beside its slow). Movement stops
+    via `MoveToTargetComponent`, the same path slows already use.
+  - ✅ **It's a snare, not a stun** (user, 2026-09-28): frozen enemies
+    **can't move but keep attacking**. An enemy already at the tower keeps
+    hitting it; the ult only holds back enemies still walking in. So the
+    freeze touches **movement only**, and `enemy.gd`'s attack timer is
+    left alone.
+- **Void, Void Rupture** (user's design, 2026-09-28; the user replaced the
+  example's star-5 "extra vs bosses" with a shield):
+  - Role: the **damage** tower.
+  - "Every enemy on screen" = the same frustum rule as Frost, and here it
+    **includes bosses** (the user excluded bosses only for Frost). Hits go
+    through `HurtboxComponent.apply_hit()` as Void damage: 100% vs every
+    armor, never resisted.
+  - Star-5 shield = the **total damage actually dealt** by that burst
+    (sum of the final amounts after the table). It uses **the same generic
+    shield mechanism as Ancient's Barkskin**: one shared shield
+    component/value in `GameState.take_damage()`, not a second copy
+    (no-duplicate rule).
+  - Balance: a full screen at wave 11 (up to 60 enemies) could make a huge
+    shield. The damage and any shield cap are tuning numbers for 09-17.
+  - ✅ **Shield duration** (user, 2026-09-28): "same as Barkskin", i.e. a
+    timed shield lasting **8 s** (Barkskin's star-5 duration; the user
+    wrote "88 sec", read as 8). When time runs out, any leftover simply
+    disappears; it doesn't heal (that stays Ancient's star-5 feature).
+    Shares Barkskin's duration constant/mechanism.
+- **Poison, Plague Cloud** (the user picked Claude's example, 2026-09-28):
+  - Role: the **damage-over-time / spreading** tower.
+  - A zone centred on the tower that applies Poison's normal perk (DoT +
+    slow via `CombatUtils.apply_school_perk()` / `StatusEffectComponent`)
+    to every enemy inside it, ticking like the AoE Area archetype
+    (`aoe_area.gd`: body_entered/exited list + tick). **Reuse or extend
+    that, don't copy it** (no-duplicate rule).
+  - Starting values (tuned in 09-17): radius ~4 m, 6 s. Star 3+: a bigger
+    radius **and** a longer duration (e.g. ~5 m, 8 s).
+  - Star 5 spread: when a poisoned enemy dies inside the cloud, re-apply
+    the poison to enemies within a small radius of it (reuse Chain Bolt's
+    "nearest enemies within radius" idea, `CHAIN_BOUNCE_RADIUS`-style).
+    The hit goes through `apply_hit()` so the table applies. Hooks the
+    enemy's `HealthComponent.died` / `EventBus.enemy_died(enemy, position)`.
+  - Bosses: not excluded (only Frost excludes bosses).
+  - Visual: a ground disc with the Poison school shader, like the AoE Area
+    decal. No new art.
+- **Fire, Ring of Fire** (the user picked Claude's example, 2026-09-28):
+  - Role: the **wall / burn** tower. Unlike Poison's filled cloud, this is
+    a thin **ring** at a fixed radius (starting ~4 m, tuned in 09-17).
+    Enemies take the hit + burn when they **cross** it, so it punishes
+    anything walking in.
+  - Hit = a Fire-school hit through `apply_hit()` (table: Fire = Magic,
+    200% vs Heavy, 35% vs Fortified), which applies Fire's normal burn
+    perk. An enemy is hit once per crossing (a per-enemy "already hit"
+    set, like the lance's).
+  - Starting values: 6 s; star 3+ ~9 s (09-17).
+  - Visual: a ring decal with the Fire school shader. No new art.
+  - Bosses: not excluded.
+  - ✅ **Star-5 "extra damage"** (user, 2026-09-28): **from the ring only**.
+    When the ring hits an enemy that is **already burning**, that ring hit
+    deals **+25%**. The user's starting value is a `Constants` number,
+    tuned in 09-17. Spells are unaffected. Needs a "is burning?" query on
+    `StatusEffectComponent`.
 
 **Placeholders**:
 - ult icon: a school-coloured drawn circle → final
@@ -1426,6 +1890,7 @@ tower, showing the wider lance hits and a 3-zone Blizzard / 5-lance volley.
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
+> - **Status (2026-09-28)**: ✅ All answered (2026-09-28): "BOSS" banner only (no camera), 2 phases at 50% HP (heavy attack only in phase 2).
 > - **Read**:
 >   - `scenes/component/boss_heavy_attack_component.gd`
 >   - `chap1_boss_01/02.tscn`
@@ -1442,9 +1907,46 @@ tower, showing the wider lance hits and a 3-zone Blizzard / 5-lance volley.
       Attached only to boss scenes, next to `BossHeavyAttackComponent`.
 - [ ] Phase change tell: a reuse of the existing heavy-attack telegraph
       (scale pulse / flash), no new art.
-- [ ] **[DECISION NEEDED]** Boss intro: camera zoom/pan, a "BOSS" banner, both,
-      or none? Camera shake is on your "not wanted" list, so ask before
-      touching `camera_rig.gd`.
+- [ ] **Phase design** ✅ answered (user, 2026-09-28; the user's idea "simple
+      attacks first, then add the heavy hit", in Claude's recommended
+      form):
+  - **2 phases, split at 50% HP**, the same rule for every boss.
+  - **Phase 1 (100% → 50%)**: normal attacks only. The heavy attack is
+    **off**.
+  - **Phase 2 (< 50%)**: the heavy attack turns **on**, exactly as today
+    (every `BOSS_HEAVY_ATTACK_EVERY_N` = 4th attack, ×2.5, 0.5 s
+    telegraph).
+  - Crossing 50% plays one scale pulse (`BossHeavyAttackComponent._telegraph()`
+    reused, not copied).
+  - Nothing else changes: speed and attack cooldown stay the same.
+  - Build: `boss_phase_component.gd` listens to the sibling
+    `HealthComponent.health_changed` and enables the heavy attack at the
+    threshold. `BossHeavyAttackComponent.perform_attack()` needs an
+    "enabled" flag; while disabled, every attack is a normal
+    `GameState.take_damage(base_damage)`.
+  - The threshold (`BOSS_PHASE_2_HP_FRACTION = 0.5`) goes in `Constants`.
+    The component stays able to hold more thresholds later.
+  - Known side effect: bosses get **easier than today** in their first
+    half (the heavy hit is active from the start today). Compensate in
+    09-17 if needed.
+- [ ] **Boss intro** ✅ answered (user, 2026-09-28): **a "BOSS" banner only.
+      No camera move, no shake.** `camera_rig.gd` is not touched.
+  - Why (Claude's recommendation, accepted):
+    - The fixed camera always shows the whole arena, and the boss spawns
+      off-screen at a random edge, so a zoom/pan would hide the arena and
+      chase the boss.
+    - The boss wave is only the boss, so a banner is enough.
+    - It's cheap.
+  - Trigger: listen to `EventBus.boss_spawned` (emitted in
+    `wave_manager.gd` `start_wave()`; nothing listens to it today). The
+    HUD shows a big "BOSS" text banner for ~2 s, then it goes away. The
+    game keeps running, with no new `get_tree().paused` writer.
+  - Reuse `synergy_banner.gd`'s show / fade / queue mechanism (its synergy
+    job was removed) by extending it or sharing a helper. Don't write a
+    second banner script (no-duplicate rule). Check 10-13 (dead code
+    cleanup) doesn't delete it first.
+  - Text: "BOSS" only. Bosses have no display name field. Using the banner
+    for phase changes too was offered as optional and **not** chosen.
 
 **Placeholders**: banner = drawn `Label` → optional final `hud/ui_boss_banner.png`.
 **Preview**: any chosen banner is its own `.tscn`, previewable on its own.
@@ -1460,6 +1962,7 @@ Phases are verified in a run.
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
+> - **Status (2026-09-28)**: ✅ All answered (2026-09-28): 20 waves as the length target; switch at the start of this task; difficulty curve (ch1–5 even climb, ch6–10 steeper); short-range spells: check after the switch, with a fallback. Only play-test numbers remain.
 > - **Do last**. It tunes everything above.
 > - **Read**:
 >   - `autoloads/Constants.gd` (`ENEMY_HP_SCALE`, `ENEMY_DMG_SCALE`,
@@ -1471,10 +1974,47 @@ Phases are verified in a run.
 
 - [ ] Write down the targets first, with you: rough run length, how often a
       fresh star-1 tower should clear chapter 1, and the step up per chapter.
+  - ✅ **Run length** (user, 2026-09-28): **no minute target; a run is
+    20 waves** ("making it 20 waves will make it good enough").
+    - Today a chapter-1 run takes **under 5 min** (user).
+    - The user wanted "about one Archero chapter" but wasn't sure how long
+      that is. The research couldn't pin it down: one unverified
+      farming-guide figure says ~4–7 min
+      ([HubPages](https://discover.hubpages.com/games-hobbies/Archero-Farming-Guide));
+      speedruns take ~2.5–3 min
+      ([speedrun.com](https://www.speedrun.com/archero)); chapters have up
+      to 50 stages
+      ([Archero wiki](https://archero.fandom.com/wiki/Frequently_Asked_Questions)).
+    - So the target is the **wave count**, not a time. Measure the real
+      20-wave run time in play-tests and record it here.
+    - Consequence: the 20-wave ramp must actually get longer and harder.
+      Today the enemy count (`3 × 1.5^(w−1)`, capped at 60) hits its cap at
+      wave 9, so waves 9–19 would all be 60-enemy waves. Reshaping that
+      ramp is part of "Switch to 20 waves" below.
+  - ✅ **Difficulty curve** (user, 2026-09-28): **the requirement climbs
+    chapter by chapter** (option B: chapter 1 is beatable with a fresh
+    star-1 tower; the top chapters need at least star 3, ideally star 5).
+    - **Chapters 1–5 (themed)**: an even, gentle climb. Each chapter needs
+      **about the same amount of extra upgrading** as the one before
+      ("the first 5 … about the same amount of upgrades to finish").
+      Rough shape: ch1 fresh star 1 → ch5 around star 3.
+    - **Chapters 6–10 (mixed, 2–3 enemy themes each)**: steeper. They need
+      a **well-upgraded combination**: tower stars, ranked spells and
+      good drafting across schools ("good upgraded combination of tower
+      and spells and the rest"). Top chapters are star 3 at least, star 5
+      to be comfortable.
+    - Knock-on: a newly unlocked tower starts at star 1, so it usually
+      needs upgrading before it can clear the next chapter. That's
+      accepted as part of the climb.
+    - Per-chapter scaling lives on `ChapterDefinition` (HP/damage
+      multipliers, bullet below). The exact numbers come from
+      play-testing against this curve.
 - [ ] Per-chapter scaling lives on `ChapterDefinition` (e.g. HP/damage
       multipliers on top of `ENEMY_HP_SCALE`), so chapters differ by data.
-- [ ] **Switch to 20 waves** (09-00.2) here at the latest, unless the user
-      chose to switch earlier. Update together:
+- [ ] **Switch to 20 waves** (09-00.2). ✅ **Timing answered** (user,
+      2026-09-28): **at the start of this task**. Every task before it
+      (09-01 → 09-16) is built and tested at 12 waves; this task switches
+      first, then tunes everything at 20. Update together:
       - `Constants.TOTAL_WAVES`
       - every chapter's `wave_count`
       - `MATERIAL_CHECKPOINT_WAVES` / `_REWARDS` / `_CHANCES`
@@ -1488,11 +2028,21 @@ Phases are verified in a run.
       - armor mixes (09-11)
 - [ ] Check towers stay **sidegrades** (09-00.1): no tower should clearly
       beat the others at the same star.
-- [ ] **[DECISION NEEDED]** The known issue: short-range spells rarely fire
-      because enemies die before closing to 6.5 / 4 m (`spells.md` §6.4).
-      Options include spawning enemies further out, lowering long-range
-      damage, raising lance/AoE ranges, or leaving it. Claude lists the
-      options and you pick.
+- [ ] The known issue: short-range spells rarely fire because enemies die
+      before closing to 6.5 / 4 m (`spells.md` §6.4). ✅ **Answered**
+      (user, 2026-09-28, Claude's recommendation): **do nothing now; check
+      it in this task after the 20-wave switch.**
+  - Why:
+    - At 20 waves (up to 60 enemies, ×3–7 HP), enemies will reach close
+      range far more often.
+    - 09-15 (wider lance, multi-cast), 09-14 (rank unlocks) and the ults
+      (Frost snare, Poison cloud, Fire ring) all change it too.
+    - The range ladder is deliberate.
+  - **Check**: after the switch, play a few runs with Lances and
+    Blizzard / Rain of Fire drafted and see whether they fire regularly.
+  - **Fallback if they still rarely fire**: first raise their ranges in
+    each spell's `.tres` (AoE 6.5 → ~8 m, Lance 4 → ~6 m). Only if that's
+    not enough, look at enemy toughness. Record what you land on here.
 - [ ] Balance every tower × chapter combination by play-testing. Record the
       numbers you land on in this task.
 

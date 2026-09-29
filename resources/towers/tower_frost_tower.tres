@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=8 format=3]
+
+; Frost Tower. Replaces tower_locked_02.tres (same sort_order). Stats start as a copy
+; of Ancient's and get tuned in 09-17 (towers are sidegrades, 09-00.1).
+; Frost icon exists.
+; Owned only once 09-05 wires the unlock (beat its chapter, or a gem chest).
+
+[ext_resource type="Script" uid="uid://bhj88b4e7miwt" path="res://resources/towers/tower_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/tower/frost_tower/frost_tower_lvl1/frost_tower_lvl1.tscn" id="2_lvl1"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/tower/frost_tower/frost_tower_lvl2/frost_tower_lvl2.tscn" id="3_lvl2"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/tower/frost_tower/frost_tower_lvl3/frost_tower_lvl3.tscn" id="4_lvl3"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/tower/frost_tower/frost_tower_lvl4/frost_tower_lvl4.tscn" id="5_lvl4"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/tower/frost_tower/frost_tower_lvl5/frost_tower_lvl5.tscn" id="6_lvl5"]
+[ext_resource type="Texture2D" uid="uid://bp8ei0a4h0c4p" path="res://assets/ui/garage/icon_tower_frost_selection.png" id="7_icon"]
+
+[resource]
+script = ExtResource("1")
+tower_id = "frost_tower"
+tower_name = "Frost Tower"
+icon = ExtResource("7_icon")
+unlocked = true
+unlock_chapter_id = "chapter_01"
+sort_order = 1
+base_hp = 1000.0
+base_damage = 20.0
+base_fire_rate = 1.0
+base_range = 8.0
+base_armor = 0.0
+star_level_scenes = Array[PackedScene]([ExtResource("2_lvl1"), ExtResource("3_lvl2"), ExtResource("4_lvl3"), ExtResource("5_lvl4"), ExtResource("6_lvl5")])

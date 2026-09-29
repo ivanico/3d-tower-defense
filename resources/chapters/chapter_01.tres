@@ -1,15 +1,16 @@
-[gd_resource type="Resource" script_class="ChapterDefinition" load_steps=11 format=3 uid="uid://c5el3moeg23y4"]
+[gd_resource type="Resource" script_class="ChapterDefinition" load_steps=12 format=3 uid="uid://c5el3moeg23y4"]
 
 [ext_resource type="Script" uid="uid://2lg8t0bqpiqy" path="res://resources/chapters/chapter_definition.gd" id="1"]
 [ext_resource type="Script" uid="uid://cyyhy46hf81wm" path="res://resources/enemies/enemy_definition.gd" id="1_ba2tk"]
 [ext_resource type="Resource" uid="uid://ctf25bxy33piq" path="res://scenes/game_object/chap1/chap1_enemy_01/chap1_enemy_01.tres" id="2"]
 [ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_enemy_02/chap1_enemy_02.tres" id="3"]
 [ext_resource type="Resource" uid="uid://bwgh5150o227u" path="res://scenes/game_object/chap1/chap1_boss_01/chap1_boss_01.tres" id="4"]
-[ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_enemy_03/chap1_enemy_03.tres" id="5"]
+[ext_resource type="Resource" uid="uid://bmk3deb032nc" path="res://scenes/game_object/chap1/chap1_enemy_03/chap1_enemy_03.tres" id="5"]
 [ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_enemy_04/chap1_enemy_04.tres" id="6"]
-[ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_enemy_05/chap1_enemy_05.tres" id="7"]
+[ext_resource type="Resource" uid="uid://cedpwhujqq8xs" path="res://scenes/game_object/chap1/chap1_enemy_05/chap1_enemy_05.tres" id="7"]
 [ext_resource type="Resource" path="res://scenes/game_object/chap1/chap1_boss_02/chap1_boss_02.tres" id="8"]
-[ext_resource type="Texture2D" path="res://assets/ui/world_map/chapter_01_image_v2.png" id="9_map"]
+[ext_resource type="Texture2D" uid="uid://cnyseob4hukj2" path="res://assets/ui/world_map/chapter_01_image_v2.png" id="9_map"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap1/chap1_arena/chap1_arena.tscn" id="10_arena"]
 
 [resource]
 script = ExtResource("1")
@@ -19,4 +20,6 @@ wave_count = 12
 enemy_pool = Array[ExtResource("1_ba2tk")]([ExtResource("2"), ExtResource("3"), ExtResource("5"), ExtResource("6"), ExtResource("7")])
 boss_pool = Array[ExtResource("1_ba2tk")]([ExtResource("4"), ExtResource("8")])
 arena_model_path = ""
+arena_scene = ExtResource("10_arena")
+sort_order = 0
 map_image = ExtResource("9_map")

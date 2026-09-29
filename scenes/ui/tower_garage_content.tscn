@@ -267,19 +267,6 @@ icon_texture = ExtResource("12")
 locked = true
 star_margin_bottom = 14
 
-[node name="Slot6" parent="TowerGrid" instance=ExtResource("7")]
-custom_minimum_size = Vector2(245, 245)
-layout_mode = 2
-theme_override_styles/focus = SubResource("StyleBoxFlat_p7vbk")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_p7vbk")
-theme_override_styles/hover = SubResource("StyleBoxFlat_p7vbk")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_p7vbk")
-theme_override_styles/normal = SubResource("StyleBoxFlat_p7vbk")
-disabled = true
-icon_texture = ExtResource("12")
-locked = true
-star_margin_bottom = 14
-
 [node name="ActionBar" type="Panel" parent="."]
 offset_top = 1600.0
 offset_right = 1080.0
@@ -311,3 +298,15 @@ offset_left = 784.0
 offset_top = 47.0
 offset_right = 984.0
 offset_bottom = 83.0
+
+; Shown instead of Upgrade + cost chips while viewing a tower the player has
+; not earned yet (09-05). Hidden here; tower_garage_content.gd toggles it.
+[node name="UnlockLabel" type="Label" parent="ActionBar"]
+visible = false
+layout_mode = 0
+offset_right = 1080.0
+offset_bottom = 130.0
+theme_override_font_sizes/font_size = 44
+text = "Beat Chapter 1 to unlock"
+horizontal_alignment = 1
+vertical_alignment = 1

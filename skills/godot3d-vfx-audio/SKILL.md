@@ -155,6 +155,6 @@ When profiling on the Mobile renderer with real-time shadows:
    geometry like the arena ground/walls if absolutely needed.
 4. **Re-check after every Epic 06 art swap.** A primitive placeholder and a
    real Meshy model can have very different triangle counts and material
-   complexity. The performance pass in `epic_08_polish.md` happens after art
+   complexity. The performance pass in `epic_done/epic_08_polish.md` happens after art
    is in for exactly this reason — don't assume placeholder-stage performance
    numbers hold once real models are wired in.

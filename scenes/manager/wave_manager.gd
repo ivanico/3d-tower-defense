@@ -67,9 +67,11 @@ func _pick_boss() -> EnemyDefinition:
 func _get_wave_composition(wave_number: int) -> Array[EnemyDefinition]:
 	var exp_count := Constants.WAVE_ENEMY_COUNT_BASE * pow(Constants.WAVE_ENEMY_COUNT_GROWTH_RATE, wave_number - 1)
 	var count: int = mini(roundi(exp_count), Constants.WAVE_ENEMY_COUNT_MAX)
-	# Index 0 is the baseline enemy, index 1 is the fast/small variant (gated to
-	# later waves), indices 2+ are additional basic-tier variants available from
-	# wave 1 onward alongside index 0.
+	# RULE for every chapter .tres (09-06): enemy_pool[0] is the baseline enemy,
+	# enemy_pool[1] MUST be the fast/small variant (only from
+	# WAVE_FAST_ENEMY_MIN_WAVE, at WAVE_FAST_ENEMY_WEIGHT), and indices 2+ are
+	# more basic-tier enemies available from wave 1 alongside index 0. Order a
+	# new chapter's pool accordingly.
 	var basic_pool: Array[EnemyDefinition] = [chapter.enemy_pool[0]]
 	for i in range(2, chapter.enemy_pool.size()):
 		basic_pool.append(chapter.enemy_pool[i])

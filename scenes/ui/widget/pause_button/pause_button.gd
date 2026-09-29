@@ -15,7 +15,7 @@ extends Button
 ## Everything below is editable in the inspector and updates live.
 
 ## Size of the square panel, in pixels. Keep it at or above 80x80 — that is the
-## minimum touch target for the mobile pass (epic_08_polish.md).
+## minimum touch target for the mobile pass (epic_done/epic_08_polish.md).
 @export var button_size: Vector2i = Vector2i(96, 96):
 	set(value):
 		button_size = Vector2i(maxi(value.x, 8), maxi(value.y, 8))

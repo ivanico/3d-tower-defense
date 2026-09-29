@@ -39,6 +39,14 @@ signal slot_pressed
 		locked = value
 		_apply()
 
+## A locked slot that can still be TAPPED to look at it (a real tower the player
+## hasn't earned yet: the garage shows it plus "Beat Chapter N"). It still draws
+## greyed with the padlock; only the "ignore presses" part is lifted.
+@export var viewable: bool = false:
+	set(value):
+		viewable = value
+		_apply()
+
 ## Highlighted ring. The garage sets this on exactly one slot.
 @export var selected: bool = false:
 	set(value):
@@ -261,7 +269,7 @@ func _measure_art() -> void:
 
 
 func _on_pressed() -> void:
-	if locked:
+	if locked and not viewable:
 		return
 	slot_pressed.emit()
 
@@ -288,7 +296,7 @@ func _apply() -> void:
 
 	# Disabled rather than just ignored, so a locked slot does not take the press
 	# animation either.
-	disabled = locked
+	disabled = locked and not viewable
 
 	var icon_px: float = minf(size.x, size.y) * icon_fill
 	_icon.size = Vector2(icon_px, icon_px)

@@ -15,6 +15,7 @@ func _ready() -> void:
 	_spawn_tower()
 	if GameState.pending_chapter_def != null:
 		wave_manager.chapter = GameState.pending_chapter_def
+	_swap_arena(wave_manager.chapter)
 	wave_manager._enemy_container = $EnemyContainer
 	wave_manager.start_wave(1)
 	EventBus.wave_cleared.connect(_on_wave_cleared)
@@ -30,6 +31,22 @@ func _ready() -> void:
 	# no "start the wave after" needed since it's already going).
 	await get_tree().create_timer(1.0).timeout
 	draft_manager.open_draft("first_spell")
+
+# The scene bakes chap1's arena so it still runs standalone (F6), the same way
+# _spawn_tower() falls back to default_tower_def. A chapter with its own
+# arena_scene replaces it here; the same scene is left alone.
+func _swap_arena(chapter: ChapterDefinition) -> void:
+	if chapter == null or chapter.arena_scene == null:
+		return
+	var baked: Node3D = $Arena
+	if baked.scene_file_path == chapter.arena_scene.resource_path:
+		return
+	var arena: Node3D = chapter.arena_scene.instantiate()
+	arena.transform = baked.transform
+	remove_child(baked)
+	baked.queue_free()
+	arena.name = "Arena"
+	add_child(arena)
 
 func _spawn_tower() -> void:
 	var tower_def: TowerDefinition = GameState.pending_tower_def if GameState.pending_tower_def != null else default_tower_def
@@ -71,7 +88,11 @@ func _on_boss_died() -> void:
 	GameState.waves_cleared += 1
 	wave_manager.stop_wave()
 	GameState.end_run(true)
-	add_child(VICTORY_SCREEN_SCENE.instantiate())
+	var victory := VICTORY_SCREEN_SCENE.instantiate()
+	# First victory of this chapter unlocks its tower (09-05). 09-10 moves this
+	# call inside MetaManager.mark_chapter_cleared() once chapter progress exists.
+	victory.unlocked_tower_ids = MetaManager.unlock_towers_for_chapter(wave_manager.chapter.chapter_id)
+	add_child(victory)
 	get_tree().paused = true
 
 func _on_phase_changed(phase: int) -> void:

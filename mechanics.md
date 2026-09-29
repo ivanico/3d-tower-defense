@@ -27,9 +27,11 @@
   and the ground fills the full screen edge-to-edge, matching the Archero look.
 - The camera does not follow the tower during normal play (tower is static at
   arena center, so a static camera is correct). It MAY do small reactive moves:
-  - Screen shake (small positional jitter) on heavy hits / boss spawn — see
-    Epic 08.
-  - A brief zoom/pan on boss intro — **[LATER]**, not v1.
+  - ~~Screen shake~~ — **not wanted** (removed from the to-do list;
+    `camera_rig.gd::shake()` exists but is never called).
+  - ~~A brief zoom/pan on boss intro~~ — **decided against** (2026-09-28,
+    `epic_09_content.md` 09-16): the boss intro is a "BOSS" banner only;
+    the camera never moves.
 
 ---
 
@@ -83,14 +85,17 @@
   - `chap1_boss_01` — chapter boss. Same base movement/attack component, much
     higher stats, plus one simple boss-only mechanic (a telegraphed heavier hit
     on a longer cooldown — **[V1-SIMPLE]**; multi-phase bosses with HP-gated
-    mechanic changes are **[LATER]**).
+    mechanic changes are **[LATER]**). **Decided 2026-09-28 (09-16):** 2
+    phases split at 50% HP — normal attacks only above 50%, the heavy attack
+    turns on below it; a "BOSS" banner on spawn.
 - **Movement**: enemies move toward the tower's position on the X/Z plane using
   `CharacterBody3D.move_and_slide()`, with light separation steering against
   nearby enemies so they don't perfectly stack (check only nearby enemies
-  within a small radius — see `epic_08_polish.md` for the performance-bounded
+  within a small radius — see `epic_done/epic_08_polish.md` for the performance-bounded
   version; v1 can check against all active enemies if the wave size is small).
-- **Death**: enemy HP reaches 0 → death animation plays → object pool release
-  (no `queue_free()` on pooled enemies after Epic 02 — see Section 9).
+- **Death**: enemy HP reaches 0 → `DeathFXComponent` plays a shrink tween →
+  `queue_free()` (`death_fx_component.gd:12`). **Enemies are not pooled** —
+  each wave instantiates fresh scenes (`wave_manager.gd` `_spawn_enemy()`).
 - **Naming convention**: enemy/asset identifiers use `chap<N>_enemy_<NN>` and
   `chap<N>_boss_<NN>` (zero-padded two digits), never flavor names like
   "grunt" or "flyer," so the data files read as plain catalog entries and new
@@ -141,10 +146,20 @@
   school is mapped to a Warcraft 3 attack-type identity (Nature=Normal,
   Poison=Piercing, Frost=Siege, Fire=Magic, Void=Chaos) and `DAMAGE_TABLE`
   carries WC3's own numbers for those rows, against Unarmored/Heavy/Light/
-  Medium/Fortified armor. No enemy is assigned Light/Medium/Fortified yet —
-  the columns exist but are unused until an enemy `.tres` sets one.
-- Hit detection: every projectile/AoE/melee hit is an `Area3D` overlap check
-  against the target's `HurtboxComponent` (see Section 8 / `components.md`).
+  Medium/Fortified armor. **In use**: chapter-1 enemy_01/02/03 are Light,
+  enemy_04 Heavy, enemy_05 Medium, both bosses Fortified (each `.tres`
+  `armor_type`).
+- **Resist** (decided 2026-09-27, 09-00.5): the table is the counterplay
+  for every enemy; the extra per-enemy `resisted_school` (× 0.5 damage and
+  status, never Void) is a **boss-only** mechanic. See `spells.md` §3.
+- **Hit detection is a hybrid, not an `Area3D` overlap signal**: each
+  archetype keeps a broad-phase `body_entered/exited` list of nearby
+  enemies, does a precise `distance_to()` check in `_physics_process`, and
+  calls `HurtboxComponent.apply_hit(damage, damage_type, hit_pos)`
+  directly (e.g. `standard_bolt.gd` ~45–87). `apply_hit()`
+  (`hurtbox_component.gd:16`) is the one shared funnel: table lookup,
+  resist, `HealthComponent.damage()`, school perk, damage number. Enemy
+  melee on the tower goes through `GameState.take_damage()`.
 
 ---
 
@@ -189,12 +204,12 @@ to an existing 300-line file.
 |---|---|---|
 | `HealthComponent` | Current/max HP, `damage()`, `heal()`, emits `died`/`health_changed` | Tower, every enemy |
 | `HurtboxComponent` | `Area3D` that receives hits, reads `damage_type`, calls owner's `HealthComponent.damage()` through `CombatUtils` | Tower, every enemy |
-| `HitboxComponent` | `Area3D` that deals damage on overlap with a `HurtboxComponent` | Projectiles, AoE zones, melee swings |
+| `HitboxComponent` | `Area3D` that deals damage on overlap with a `HurtboxComponent` | **Unused** — exists in `scenes/component/` but no scene instances it; archetypes call `apply_hit()` directly |
 | `MoveToTargetComponent` | Moves a `CharacterBody3D` toward a target position on X/Z using `move_and_slide()`, with optional fixed-height hold (for flyers later) | Every enemy |
 | `TargetingComponent` | Finds the best target in range by a `TargetMode` (closest, etc.) | Tower |
-| `CooldownComponent` | Generic reusable timer-with-ready-check (used for spell cooldowns, attack cooldowns, regen ticks) | Tower spells, enemy attacks |
+| `CooldownComponent` | Generic reusable timer-with-ready-check | **Unused** — the tower uses a `_spell_timers` dict (`tower.gd:15`), enemies a float `_attack_timer` (`enemy.gd:13`) |
 | `HitFlashComponent` | Brief material-color flash on damage taken | Enemies, tower |
-| `DeathFXComponent` | Plays death animation/particles, then signals release-to-pool | Every enemy |
+| `DeathFXComponent` | Plays the death shrink tween, then `queue_free()`s the owner | Every enemy |
 
 **Rule of thumb**: if you're about to add a new `if` branch to an existing
 component to special-case one enemy or one spell, stop — that behavior
@@ -206,9 +221,11 @@ with code examples.
 
 ## 9. Object Pooling [V1]
 
-- Frequently spawned/despawned nodes (enemies, projectiles, AoE zones, damage
+- Frequently spawned/despawned nodes (projectiles, AoE zones, damage
   numbers) are pooled via the `ObjectPool` autoload, never `queue_free()`'d
-  directly once pooling is wired (Epic 02 onward).
+  directly once pooling is wired (Epic 02 onward). **Enemies are the
+  exception: not pooled**, fresh `instantiate()` per spawn and
+  `queue_free()` on death (`restructure.md` §4).
 - Pool contract: `ObjectPool.get(scene) -> Node`, `ObjectPool.release(node)`,
   `ObjectPool.preload_pool(scene, count)`.
 - Releasing a node: hide it, disable its `CollisionShape3D`(s), move it under a
@@ -239,20 +256,21 @@ with code examples.
 
 ## 11. Meta Layer [V1]
 
-- **Materials**: earned at end of run (scaled by waves cleared / victory /
-  boss kill). Single material type at v1 is acceptable
-  (**[V1-SIMPLE]** — the original design's Chapter Material vs Universal
-  Material split is **[LATER]**, add the second currency type once there's a
-  second chapter to justify it).
+- **Materials**: earned at end of run by checkpoint (waves cleared). Base
+  Material every run, plus rare Tower Material and 5 school Scrolls.
+  **Decided 2026-09-27 (09-00.8): no second chapter material.** Later
+  chapters pay more of the same materials via a per-chapter reward
+  multiplier (09-12).
 - **Tower stars**: spend materials to increase a tower's star level (1–5).
   Each star bumps base stats by a tunable percentage; star 3 and star 5 are
-  reserved hooks for passive enhancements (**[LATER]** for the actual enhanced
-  passive behavior — v1 can ship stars as pure stat bumps and add the passive
-  hook later without restructuring).
+  reserved hooks for passive enhancements. **Decided (09-00.6 / 09-13):**
+  each tower has an **ult** that charges over time; star 3 and star 5 make
+  it stronger (see `project.md` "Tower").
 - **Spell ranks**: spend materials to increase a spell's rank (1–5). Same
-  pattern — v1 can ship ranks as pure numeric scaling (damage/cooldown), with
-  "rank adds a new behavior" (the richer version from the original design)
-  as **[LATER]**.
+  pattern — ranks give +8% damage each. **Decided (09-00.7, built in
+  09-14):** rank 3 and rank 5 also unlock a behavior, per spell (Bolt
+  splash, Chain +bounces, Orb faster/bigger, AoE longer/bigger, Lance
+  bigger/trail).
 - **Energy**: 5 runs/day, regenerates over time, gates run starts.
 - **Save/load**: single save file (`user://savegame.save` or a `.tres`
   `SaveData` resource) holding owned towers, tower stars, spell ranks,
@@ -262,8 +280,13 @@ with code examples.
 
 ## 12. Monetization Hooks (Design-Only, Not a v1 Build Task) [LATER]
 
-Energy refill, cosmetic tower skins (swap the tower's model/material set —
-trivial given the data-driven model reference), tower unlock packs, battle
-pass. None of this blocks gameplay or is gated by payment beyond convenience —
-documented here for completeness; no epic builds monetization UI until the
-core loop is proven fun.
+**Decided 2026-09-27 (09-00.1 "Store rule"): capped pay-to-skip.** This
+replaces the old "convenience only" line:
+- **Material chest** (gems): 3 per day, key included, materials capped at
+  one energy bar's worth, plus a chance of a random tower the player
+  doesn't own. Towers are never sold directly.
+- **Energy refill** (gems): no limit.
+- **Skins**: look only.
+- Battle pass: later.
+
+The user accepts this is mildly pay-to-win. Built in Epics 10 and 12.

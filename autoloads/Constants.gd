@@ -36,6 +36,9 @@ const SPELL_MAX_RANK:           int   = 5
 const MAX_ENERGY:               int   = 5
 const ENERGY_COST_PER_RUN:      int   = 1
 const CAMERA_PITCH_DEGREES:     float = 60.0
+# Version of the savegame.tres layout. Bump it (and add a MetaManager
+# _migrate_N_to_N+1 step) whenever a field is added to SaveData.
+const SAVE_VERSION:             int   = 3
 
 # Balance tuning constants — never use bare literals in gameplay logic, always reference these
 const XP_LEVEL_SCALE_PER_LEVEL:          float = 1.2

@@ -3,7 +3,7 @@ extends Node3D
 
 ## Reusable outlined, billboarded 3D text/number label. Factored out of
 ## `value_bar_3d.gd`'s HP-number implementation so a second consumer (the
-## planned `DamageNumber3D`, see `epic_08_polish.md` Task 08-01 and
+## planned `DamageNumber3D`, see `epic_done/epic_08_polish.md` Task 08-01 and
 ## `components.md` Section 7) does not have to duplicate this — the outline
 ## technique below took several false starts to get right and is not worth
 ## re-deriving per caller. `value_bar_3d.gd` instances this for its own
@@ -59,7 +59,7 @@ const OUTLINE_DIRS: Array[Vector3] = [
 
 ## Default font, shared with the rest of the game's UI numbers. Overridable
 ## per-instance via `font` below — e.g. a future `DamageNumber3D` popup using
-## a different (monospaced pixel) face, per `epic_08_polish.md` Task 08-01.
+## a different (monospaced pixel) face, per `epic_done/epic_08_polish.md` Task 08-01.
 const DEFAULT_FONT := preload("res://assets/fonts/Baloo_2/static/Baloo2-ExtraBold.ttf")
 
 @export var font: FontFile = DEFAULT_FONT:

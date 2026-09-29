@@ -558,6 +558,7 @@ colour at the previewed fraction.
 
 **Covers**: B10 · **Blocked by**: 10-00 answer per item.
 
+- [ ] (added 2026-09-29, found in 09-05) Old standalone garage `scenes/ui/tower_garage.tscn/.gd` and standalone `spell_codex.tscn` — the game uses the `*_content.tscn` versions inside `world_map`; only `spell_codex.gd`'s nav still links to `tower_garage.tscn`. Also unused: `CooldownComponent`, `HitboxComponent`, the 5 `ancient_tower_lvlN.tres` (09-02 / 09-03).
 - [ ] Remove or keep each item exactly as answered.
 - [ ] Removing an `@export` from a Resource class leaves orphan values in
       `.tres` files. Strip them from every affected `.tres` (grep, then read

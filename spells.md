@@ -191,19 +191,31 @@ task, not done yet.
 
 ## 3. Resistances (armor vs. schools)
 
-- Enemies carry a **resisted school** on their armor/enemy definition
-  (extends the existing `ArmorType` / damage-table pattern — new table
-  entries, not new code).
+> **Decided 2026-09-27 (`epic_09_content.md` 09-00.5 / 09-11):** the **WC3
+> armor table** (`project.md` "Damage Type vs Armor Table (v2)") is the
+> counterplay system for **every** enemy. The per-enemy resisted school below
+> is kept, but **only bosses** use it. Regular enemies' counterplay is their
+> armor type alone.
+> **Current data (until 09-11 is built):** all 7 chapter-1 `.tres`
+> (`scenes/game_object/chap1/*/*.tres`) still have `resisted_school = 4`
+> (Nature). 09-11 clears it on the 5 regular enemies.
+
+- Each `EnemyDefinition` has a `resisted_school` (`-1` = none), copied onto
+  its `HurtboxComponent` (`hurtbox_component.gd:10`). **Rule: only boss
+  `.tres` files set it.**
 - A resisted hit deals `SCHOOL_RESIST_MULT` ≈ **0.5×** damage, and its
-  status effect (burn/slow/poison/lifesteal amount) is halved too.
+  status effect (burn/slow/poison/lifesteal amount) is halved too
+  (`hurtbox_component.gd:17–24`).
 - **Nothing ever resists Void.** Void is the "safe pick" school — its rows
-  in the damage table are always ≥ 1.0×. That's the tradeoff triangle:
+  in the damage table are always ≥ 1.0×, and `hurtbox_component.gd:18`
+  ignores a Void resist even if one is set. That's the tradeoff triangle:
   specialized schools have perks but can be countered; Void has no utility
   perk but always works.
-- Suggested v1 usage: each chapter's enemy roster mixes 2-3 different
-  resisted schools so no single non-Void school can carry a whole run —
-  which is what makes drafting a *spread* of schools (or gambling on Void)
-  an actual decision.
+- **Which school a boss resists** (decided 2026-09-28, 09-11): a boss
+  resists the school of its **themed enemy set** (Nature set → Nature,
+  Frost set → Frost, Poison → Poison, Fire → Fire; **Void-set bosses resist
+  nothing**). Mixed chapters reuse those bosses with their resist
+  unchanged.
 
 ---
 
@@ -219,7 +231,7 @@ Every school ends up with exactly 4 spells — 3 shared archetypes + 1
 signature multi-target archetype.
 
 **Status legend**: `[ ]` = not built, `[x]` = built in-engine & confirmed
-looking good. (v1 ships with only 3 spells wired — see `epic_03_draft.md` —
+looking good. (v1 ships with only 3 spells wired — see `epic_done/epic_03_draft.md` —
 the rest of this table is the content backlog that the generic
 `SpellDefinition` + `SpellRegistry` system absorbs one `.tres` at a time.)
 
@@ -281,6 +293,9 @@ the rest of this table is the content backlog that the generic
 > (measured first-fire distances: Bolt 9.95 > Chain 7.95 > AoE 6.45 >
 > Lance 3.95).
 
+> **Decided 2026-09-27 (09-00.4):** 20 spells is final for now. The 5 empty
+> grid slots below are **not** being filled.
+>
 > **Extend later by**: adding a row per spell. If you ever want to get back
 > up to 25, the 5 empty grid slots (Fire/Frost chains, Void/Poison/Nature
 > AoE Areas) are the cheapest additions — both models already exist. A 6th
@@ -522,7 +537,8 @@ of the Void, Orb of Venom, Orb of Thorns
 	  live zones.
 - [x] **Stacking**: not designed yet — exported `stack_max` shipped at `1`
 	  (duplicate picks simply won't be offered once owned). No stacking
-	  behavior invented — `[TBD]`.
+	  behavior invented — `[TBD]`. *(Designed since: cap 3, one extra zone
+	  per pick — `epic_09_content.md` 09-00.3, built in 09-15.)*
 - [x] Exported/Inspector-tunable: `damage` (per tick), `range` (cast
 	  range), `aoe_radius`, `duration`, `tick_interval`,
 	  `shard_spawn_interval`, `cooldown`. *(Defaults in
@@ -559,7 +575,8 @@ Lance, Rift Lance, Toxic Lance, Briar Lance
 	  flight axis, half `hitbox_width` sideways) with a matching
 	  `BoxShape3D` on the scene's `CollisionShape3D`.
 - [x] **Stacking**: not designed yet — exported `stack_max` shipped at
-	  `1`, behavior `[TBD]`. No stacking behavior invented.
+	  `1`, behavior `[TBD]`. No stacking behavior invented. *(Designed since:
+	  cap 5, one extra lance per pick — 09-00.3, built in 09-15.)*
 - [x] Exported/Inspector-tunable: `damage`, `range` (trigger range),
 	  `projectile_speed`, `max_travel_distance`, `cooldown`, hitbox
 	  length/width (exported on the lance scene). *(Defaults in
@@ -589,7 +606,7 @@ Lance, Rift Lance, Toxic Lance, Briar Lance
 > counts on startup: 23 spells (3 v1 + 20 catalog) + 3 stat upgrades = 26
 > draft cards.
 
-**Refs**: `mechanics.md` Section 4 (draft), `epic_03_draft.md` (DraftManager,
+**Refs**: `mechanics.md` Section 4 (draft), `epic_done/epic_03_draft.md` (DraftManager,
 SpellRegistry), `components.md` (`SpellDefinition` fields)
 
 The draft pipeline is already generic (`SpellRegistry` directory-scans
@@ -679,13 +696,14 @@ Rare 30 / Epic 10** (`RARITY_WEIGHTS` in `draft_manager.gd`).
 
 ### 6.2 The tower's base attack
 
-The tower starts every run with **Thorn Bolt** (Nature — it's the nature
-tower) at stack 1, free, no slot used. Set per tower via
-`starting_spell_id` in `tower_ancient_tower.tres` and the 5
-`ancient_tower_lvl*.tres` files. Known quirk: the draft doesn't know
-about the free copy, so Thorn Bolt can be drafted up to its `stack_max`
-(3) times but only the first two picks add volley bolts (1 free + 2
-drafted = cap).
+**There is no free starting spell any more.** The tower spawns with zero
+spells, and `game_world.gd` opens a `"first_spell"` draft (spell cards only)
+before wave 1, so the player picks their own opener (`game_world.gd` ~25–32;
+`tower.gd` ~29–35 no longer calls `_load_starting_spell()`).
+`TowerDefinition.starting_spell_id` (still `"lance_rift"` in
+`tower_ancient_tower.tres`) and `tower.gd._load_starting_spell()` are dead
+code, listed for removal in B10 / `epic_10_meta_systems.md` 10-13. The old
+"Thorn Bolt free copy" stacking quirk is gone with it.
 
 ### 6.3 The spell-slot limit
 
@@ -699,7 +717,7 @@ number in `autoloads/constants.gd`.
 
 | Archetype | Scene folder | Fires when enemy within | Behavior |
 |---|---|---|---|
-| Standard Bolt (×5) | `standard_bolt/` | **10 m** (longest) | Straight shot at nearest enemy, 1.0s cooldown |
+| Standard Bolt (×5) | `standard_bolt/` | **10 m** (longest) | Straight shot at a random enemy in range, 1.0s cooldown |
 | Chain Bolt (×3) | `chain_bolt/` | 8 m | Spinning bolt, up to 3 hits (2 bounces, 4 m jump radius), 1.6s |
 | Orb (×5) | `orb/` | — (no targeting) | Permanent body circling the tower, ticks anyone it touches every 0.5 s |
 | AoE Area (×2) | `aoe_area/` | 6.5 m | 2.5 m zone at an enemy's position, ticks everyone inside for 4 s, 6s cooldown |
@@ -709,6 +727,10 @@ The range ladder (10 > 8 > 6.5 > 4) is deliberate: bolts are the
 long-range workhorse, lances the close-range panic button. Felt
 consequence: with high long-range damage, short-range spells rarely get
 to fire — enemies die before closing to 6.5/4 m. Ranges are per-`.tres`.
+**Decided 2026-09-28 (09-17):** no change now; re-check after the switch to
+20 waves, and raise AoE/Lance ranges first if they still rarely fire.
+Targeting is a random enemy in range (`targeting_component.gd:42–44`
+shuffles), for every archetype except Orb.
 
 ### 6.5 Schools at runtime
 
@@ -717,24 +739,32 @@ per-spell code): Fire burn 30%/s for 3 s · Frost slow 40% for 2 s ·
 Void no status but ~18% higher damage baked in, never resistible ·
 Poison 15%/s for 4 s + 20% slow for 2 s · Nature heals the tower for
 18% of damage dealt. Re-applying refreshes the timer, never stacks.
-Resistances are wired but **no enemy uses one yet** — every enemy
-`.tres` has `resisted_school = -1`; set a school index and that enemy
-takes half damage + half status from it (Void exempt by code).
+Resistances are wired **and in use**: all 7 chapter-1 enemy/boss `.tres`
+currently have `resisted_school = 4` (Nature) — half damage + half status
+from Nature (Void exempt by code, `hurtbox_component.gd:18`). **Decided
+(09-00.5 / 09-11):** only bosses keep a resist; 09-11 clears it on regular
+enemies. See §3.
 
 ### 6.6 Stacking
 
 Duplicates bump a per-spell stack counter, never a second entry:
 Bolts & Chains (×3) fire one more projectile per cast as a staggered
 volley; Orbs (×8) add another orb on the same ring
-(0°→180°→90°→270°→45°→…); AoE Area & Lances (×1) are one-pick — their
-stacking is an open design decision. At `stack_max` a spell stops
-appearing in drafts for the rest of the run.
+(0°→180°→90°→270°→45°→…); AoE Area & Lances (×1) are one-pick today.
+At `stack_max` a spell stops appearing in drafts for the rest of the run.
+**Decided 2026-09-27 (09-00.3), built in 09-15:** new caps are Standard Bolt
+5, Chain 5, AoE Area 3, Lance 5, Orb 8 (unchanged). Each extra AoE/Lance pick
+fires one more per cast at a different random enemy, staggered like the Bolt
+volley. The Lance hitbox also gets wider.
 
 ### 6.7 Synergy tags
 
 Most damage spells carry `[Offense]`, the Nature/heal spells `[Armor]`,
 Glacier Lance and Blizzard `[Utility]`. Duplicate picks count too.
-Thresholds at ×3 and ×5 grant the v1 bonuses (unchanged Epic-03 system).
+**Bookkeeping only:** the ×3/×5 threshold bonuses were removed
+(`GameState._apply_synergy_bonus()` is gone; `game_state.gd` ~127–131). Tags
+only drive the draft card's pill label. Superseded by the mono-school
+mastery bonus (§2).
 
 ### 6.9 Per-school damage upgrades (the 5 "`<School> Dmg Increase`" cards)
 
@@ -808,6 +838,6 @@ fields, same pattern `SpellDefinition`'s per-archetype fields already use.
   `shard_scale` fields on the archetype scenes in `scenes/game_object/`.
 - **Slot limit / rarity weights**: `MAX_SPELL_SLOTS` in `constants.gd`,
   `RARITY_WEIGHTS` in `draft_manager.gd`.
-- **Base attack**: `starting_spell_id` in the tower `.tres` files (all 6
-  of them — base + lvl1..5).
+- **Base attack**: none — every run starts with a `"first_spell"` draft
+  (§6.2). `starting_spell_id` is dead.
 - **Remove the stat upgrade cards**: delete `resources/upgrades/upgrade_*.tres`.

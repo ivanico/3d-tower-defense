@@ -9,7 +9,7 @@ const DamageNumber3DScene := preload("res://scenes/ui/widget/damage_number_3d/da
 # -1 = resists nothing. Void can never be resisted, enforced below.
 @export var resisted_school: int = -1
 
-## `hit_world_pos` is where the floating damage number spawns (epic_08_polish.md
+## `hit_world_pos` is where the floating damage number spawns (epic_done/epic_08_polish.md
 ## Task 08-01) -- every caller already has a precise 3D hit point at the moment
 ## it calls this (its own `global_position`, or the enemy's), so it's passed
 ## in rather than approximated here.
@@ -25,7 +25,7 @@ func apply_hit(hit_damage: float, hit_damage_type: int, hit_world_pos: Vector3) 
 	_spawn_damage_number(hit_damage, final_dmg, hit_damage_type, hit_world_pos)
 
 
-## Per epic_08_polish.md Task 08-01: "Crit detection: final_damage > base_damage * 1.5".
+## Per epic_done/epic_08_polish.md Task 08-01: "Crit detection: final_damage > base_damage * 1.5".
 func _spawn_damage_number(base_dmg: float, final_dmg: float, hit_damage_type: int, hit_world_pos: Vector3) -> void:
 	if not DamageNumber3D.can_spawn():
 		return

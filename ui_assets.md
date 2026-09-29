@@ -164,6 +164,14 @@ C. REWARDS & MATERIALS — all 16 exist in `rewards/`
 - [ ] icon_tower_default.png  (portrait for the garage selection grid, +1 per
                               future tower. icon_tower_ancient.png already
                               covers tower #1 via TowerDefinition.icon)
+- [ ] garage/icon_tower_void.png (Void Tower grid icon — placeholder today:
+                              icon_tower_ancient.png, set in
+                              resources/towers/tower_void_tower.tres; Epic 09 09-03)
+- [ ] garage/icon_tower_poison.png, garage/icon_tower_fire.png (placeholder:
+                              icon_tower_ancient.png; Epic 09 09-04)
+- [ ] models: assets/models/towers/poison_tower/ and fire_tower/ lvl1–5 .glb
+                              (placeholder: ancient_tower glbs, tinted via
+                              TowerDefinition.model_tint; Epic 09 09-04)
 - [ ] bg_victory.png          (optional)
 - [ ] bg_defeat.png           (optional)
 

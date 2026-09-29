@@ -14,6 +14,20 @@ extends Resource
 ## Position in the garage grid. Explicit so renaming a .tres cannot reshuffle it.
 @export var sort_order: int = 0
 
+## The chapter whose FIRST victory unlocks this tower (09-00.1: ch1 -> Frost,
+## ch2 -> Void, ch3 -> Poison, ch4 -> Fire). Empty = not unlocked by a chapter
+## (Ancient: owned from a fresh save). Changing the order is a .tres edit.
+@export var unlock_chapter_id: String = ""
+
+## Placeholder support for towers with no model of their own yet (Epic 09 rule
+## 1). `preview_model_id` = the tower line whose .glb the garage preview borrows
+## (e.g. "ancient_tower"); empty = this tower's own id. `model_tint` washes the
+## borrowed model in a colour in game AND in the garage (alpha 0 = no tint).
+## When the real model arrives: clear both, and swap the model ext_resource in
+## each <id>_lvlN.tscn. No code change.
+@export var preview_model_id: String = ""
+@export var model_tint: Color = Color(1, 1, 1, 0)
+
 @export var model_path: String = ""
 @export var base_hp: float = 1000.0
 @export var base_damage: float = 20.0

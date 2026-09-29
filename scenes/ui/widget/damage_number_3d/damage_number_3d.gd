@@ -1,7 +1,7 @@
 class_name DamageNumber3D
 extends Node3D
 
-## Floating 3D damage number, pooled via `ObjectPool` (epic_08_polish.md
+## Floating 3D damage number, pooled via `ObjectPool` (epic_done/epic_08_polish.md
 ## Task 08-01). Follows the base pattern documented in
 ## `skills/godot3d-vfx-audio/SKILL.md`'s "Billboarded 3D UI" section, but
 ## wraps one `OutlinedLabel3D` instead of a bare `Label3D` -- that gives
@@ -16,7 +16,7 @@ extends Node3D
 
 const OutlinedLabel3DScene := preload("res://scenes/ui/widget/outlined_label_3d/outlined_label_3d.tscn")
 
-## Tune by eye per epic_08_polish.md's own instruction ("start large ... and
+## Tune by eye per epic_done/epic_08_polish.md's own instruction ("start large ... and
 ## adjust") — spec started at 48; 64 still read small in-game, so this is
 ## more than double that. World size is `font_size * pixel_size`, so this and
 ## `pixel_size` below both push the same direction if it still needs to grow.

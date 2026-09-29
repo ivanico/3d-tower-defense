@@ -10,6 +10,7 @@ class_name Tower
 const STANDARD_BOLT_SCENE := preload("res://scenes/game_object/standard_bolt/standard_bolt.tscn")
 const ORB_SCENE := preload("res://scenes/game_object/orb/orb.tscn")
 const AOE_AREA_SCENE := preload("res://scenes/game_object/aoe_area/aoe_area.tscn")
+const ModelTint := preload("res://scripts/model_tint.gd")
 
 var _active_spells: Array[SpellDefinition] = []
 var _spell_timers: Dictionary = {}
@@ -26,13 +27,15 @@ func _ready() -> void:
 	health.max_health = definition.base_hp
 	health.current_health = definition.base_hp
 	GameState.start_run(definition)
+	# Placeholder towers borrowing another model get their school tint (09-04).
+	ModelTint.apply(self, definition.model_tint)
 	# No auto-equipped starting spell any more — the tower now spawns with
 	# zero spells, and game_world.gd opens a "first_spell" draft immediately
 	# (before wave 1 starts) so the player picks their own opener instead.
 	# _load_starting_spell()/definition.starting_spell_id are unused as of
 	# this change, left in place rather than ripped out along with their
 	# five .tres values and the docs describing the old design
-	# (components.md, spells.md, epic_02/03) — ask if those should go too.
+	# (components.md, spells.md, epic_done/epic_02/03) — ask if those should go too.
 	_play_idle()
 
 func _play_idle() -> void:

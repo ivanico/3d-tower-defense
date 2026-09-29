@@ -17,12 +17,28 @@ var all_towers: Array = []
 
 
 func _ready() -> void:
-	all_towers = ResourceDir.load_all("res://resources/towers/")
-	# Explicit sort_order rather than filename order, so renaming a resource
-	# cannot silently reshuffle the grid.
-	all_towers.sort_custom(func(a, b): return a.sort_order < b.sort_order)
+	all_towers = load_sorted()
 	print("TowerRegistry: %d towers loaded (%d unlocked)" % [
 			all_towers.size(), get_unlocked().size()])
+
+
+## Every TowerDefinition in `resources/towers/`, in garage order. Explicit
+## sort_order rather than filename order, so renaming a resource cannot silently
+## reshuffle the grid. `static` so @tool scripts (the garage preview's tower
+## dropdown) can call it at editor time, where this autoload is only a
+## placeholder instance.
+static func load_sorted() -> Array:
+	var towers: Array = ResourceDir.load_all("res://resources/towers/")
+	towers.sort_custom(func(a, b): return a.sort_order < b.sort_order)
+	return towers
+
+
+## Static twin of get_by_id() for @tool / editor-time callers (see load_sorted).
+static func find_definition(tower_id: String) -> Resource:
+	for tower in load_sorted():
+		if tower.tower_id == tower_id:
+			return tower
+	return null
 
 
 func get_by_id(tower_id: String) -> Resource:
@@ -53,7 +69,12 @@ func get_unlocked() -> Array:
 ## the same trick the preview already uses for `constants.gd`. Nothing here reads
 ## `all_towers`, so there is no instance state to lose.
 static func get_preview_model(tower_id: String, star: int) -> PackedScene:
-	var path := "res://assets/models/towers/%s/%s_lvl%d.glb" % [tower_id, tower_id, star]
+	# A placeholder tower borrows another line's model (preview_model_id).
+	var def := find_definition(tower_id)
+	var model_id: String = tower_id
+	if def != null and not def.preview_model_id.is_empty():
+		model_id = def.preview_model_id
+	var path := "res://assets/models/towers/%s/%s_lvl%d.glb" % [model_id, model_id, star]
 	if not ResourceLoader.exists(path):
 		return null
 	return load(path)

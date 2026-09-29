@@ -35,18 +35,16 @@ into `Constants.gd` or the relevant `Definition` resource.
 | A synergy tag's bonus magnitude (e.g. `[Offense]×3` damage %) | The matching constant in `Constants.gd`'s "Balance tuning constants" block (Section 2) | Yes |
 | How many waves per chapter | `Constants.TOTAL_WAVES` or that chapter's `wave_count` field | Yes |
 | How much a tower star / spell rank is worth | `Constants.STAR_STAT_BONUS_PER_LEVEL` / `SPELL_RANK_DAMAGE_BONUS_PER_LEVEL` | Yes |
-| The cost curve for stars/ranks (materials needed) | `TOWER_STAR_COSTS` / `SPELL_RANK_COSTS` arrays (see `epic_05_meta.md` Task 05-05/05-06) | Yes |
+| The cost curve for stars/ranks (materials needed) | `TOWER_STAR_COSTS` / `SPELL_RANK_COSTS` arrays (see `epic_done/epic_05_meta.md` Task 05-05/05-06) | Yes |
 | The damage-type vs armor-type multiplier table | The table in `project.md` "Damage Type vs Armor Table" — `CombatUtils.calculate_damage()` just looks this up | Yes |
 | Boss heavy-attack frequency/strength | `Constants.BOSS_HEAVY_ATTACK_EVERY_N` / `_DAMAGE_MULT` / `_TELEGRAPH_SEC` | Yes |
 | Camera angle/distance | `camera_rig.tscn`'s exported `camera_pitch_degrees` / `camera_distance` / `camera_height` (Inspector, no script edit) | Yes |
 
-**The one place code-literacy still helps**: `GameState._apply_synergy_bonus()`
-contains the `match` statement that *decides which constant applies at which
-tag/threshold* — but the actual *values* it plugs in are 100% the named
-constants above, never re-typed numbers. Adding a brand-new tag (not just
-retuning an existing one) does need a new `match` branch — see
-`mechanics.md` Section 6's extension note — but retuning an *existing* tag's
-strength never does.
+~~**The one place code-literacy still helps**: `GameState._apply_synergy_bonus()`~~
+**Removed**: the synergy-tag threshold bonuses and `_apply_synergy_bonus()`
+are gone (`game_state.gd` ~127–131). Tags are bookkeeping only (the draft
+card's pill label). The synergy-tag constants in §2 below are unused. See
+`mechanics.md` §6.
 
 ---
 
@@ -95,7 +93,7 @@ res://
 │   │           ├── enemy.gd        # shared enemy script (class_name Enemy)
 │   │           └── chap1_enemy_01.tres   # co-located EnemyDefinition
 │   └── ui/
-│       ├── HUD.tscn
+│       ├── (no HUD.tscn — the HUD is inline in main/game_world.tscn, script main/hud.gd)
 │       ├── draft_ui.tscn
 │       ├── draft_card.tscn
 │       ├── synergy_banner.tscn
@@ -146,6 +144,13 @@ res://
 
 **File**: `res://autoloads/constants.gd`
 **Type**: Autoload (Node script, `class_name Constants`)
+
+> ⚠️ **Historical snapshot (Epic 01).** The block below is the original
+> plan, not the live file. Real values differ: `DamageType` is
+> `{ FIRE, FROST, VOID, POISON, NATURE }`, `ArmorType` is `{ UNARMORED,
+> HEAVY, LIGHT, MEDIUM, FORTIFIED }`, there is no `TargetMode`,
+> `WAVE_DURATION_MAX` is 60, and there is `SAVE_VERSION` (09-01). **Read
+> `autoloads/Constants.gd` itself** for real numbers.
 
 ```gdscript
 enum GamePhase      { WAVE, DRAFT, BOSS, DEFEAT, VICTORY }
@@ -256,8 +261,8 @@ to one of these, it belongs in a new method or a new autoload, not bolted on):
 - `gain_xp(amount)` — accumulate XP, handle level-up + trigger draft.
 - `take_damage(amount)` / `heal(amount)` — tower HP changes, emits
   `hp_changed` / relevant `EventBus` signals.
-- `add_tag(tag)` — increment `tag_counts[tag]`, check threshold, call
-  `_apply_synergy_bonus()`.
+- `add_tag(tag)` — increment `tag_counts[tag]` (bookkeeping only; no
+  threshold bonus any more).
 - `apply_card(card)` — dispatch to spell-add or stat-delta logic based on
   card's Resource type. For a `StatUpgradeDefinition`: `hp_bonus`/
   `fire_rate_multiplier` unchanged; `damage_multiplier` goes into
@@ -266,10 +271,8 @@ to one of these, it belongs in a new method or a new autoload, not bolted on):
   `active_upgrades` (first pick) and increments `upgrade_stacks` (every pick).
 - `get_school_damage_multiplier(damage_type)`, `get_active_upgrades()`,
   `get_upgrade_stack_count(upgrade_id)` — read-only accessors for the above.
-- `_apply_synergy_bonus(tag, level)` — the one `match` statement allowed to
-  grow over time (see `mechanics.md` Section 6); every other piece of game
-  logic should read the resulting flags/multipliers from `GameState`, not
-  duplicate this `match`.
+- ~~`_apply_synergy_bonus(tag, level)`~~ — deleted with the synergy
+  bonuses.
 - `end_run(victory)`, `reset()`.
 
 **Location**: `res://autoloads/game_state.gd` · **Autoload order**: 3
@@ -318,6 +321,18 @@ garage never reaches for `star_level_scenes` — those are gameplay scenes and
 
 ---
 
+### `ChapterRegistry` (`scripts/chapter_registry.gd` — static helpers, NOT an autoload)
+**What it does**: every `ChapterDefinition` in `resources/chapters/`, sorted by
+`sort_order` (`all()`, `get_by_id()`, `number_of()`), via the shared
+`ResourceDir` scan. Callers `preload()` it. It's deliberately not an autoload:
+that would mean editing `project.godot` while the editor is open (09-06). A
+chapter = a `.tres` with `arena_scene` + `sort_order`; `game_world.gd` swaps the
+chapter's arena in at run start (the baked chap1 arena stays for F6 runs).
+
+**Pool rule**: `enemy_pool[0]` = baseline enemy, **`enemy_pool[1]` = the fast
+enemy** (only from `WAVE_FAST_ENEMY_MIN_WAVE`), `[2+]` = more basic enemies.
+`WaveManager._get_wave_composition()` depends on this order.
+
 ### `WaveManager.gd` (run-scoped manager Node — NOT an autoload)
 **What it does**: Spawns enemies each wave by picking an enemy **scene** from a
 `WeightedTable` and `instantiate()`-ing it (fresh instance, `queue_free()`d on
@@ -355,7 +370,7 @@ pool code. **Enemies are not pooled** — they `queue_free()` on death.
 
 ### `AudioManager.gd`
 **What it does**: SFX player pool + 2-player music crossfade. Listens to
-`EventBus` for what to play (see `epic_07_audio.md` for the full signal wiring
+`EventBus` for what to play (see `epic_11_audio.md` (Epic 11, which replaced the old `epic_done/epic_07_audio.md`) for the full signal wiring
 list). No gameplay logic lives here — purely reactive to events.
 
 **Location**: `res://autoloads/audio_manager.gd` · **Autoload order**: 7
@@ -386,10 +401,14 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
 
 ### `hurtbox_component.gd`
 - **What it does**: `class_name HurtboxComponent extends Area3D`. Exports
-  `armor_type: ArmorType`. On `area_entered` from a `HitboxComponent`: reads
-  the hitbox's `damage`/`damage_type`, calls
-  `CombatUtils.calculate_damage(damage, damage_type, armor_type)`, passes the
-  result to the sibling `HealthComponent.damage()`.
+  `armor_type` and `resisted_school` (boss-only by rule, `spells.md` §3). **No
+  `area_entered` handler.** Its one public method,
+  `apply_hit(damage, damage_type, hit_world_pos)` (`hurtbox_component.gd:16`),
+  is the funnel every archetype calls directly after its own broad-phase +
+  `distance_to()` check. It does the `CombatUtils.calculate_damage()` table
+  lookup, applies the resist, calls the sibling `HealthComponent.damage()`,
+  applies the school perk (`CombatUtils.apply_school_perk()`) and spawns
+  the floating damage number.
 - **Used by**: Tower, every enemy.
 
 ### `hitbox_component.gd`
@@ -398,7 +417,9 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
   (projectile, AoE zone) right before it enters the scene tree. Pure data +
   the `Area3D` shape; no behavior beyond carrying these two values for the
   hurtbox to read.
-- **Used by**: `standard_bolt.tscn`, `Arcprojectile.tscn`, the spell archetype scenes (`chain_bolt`, `line_aoe_bolt`, `aoe_area`).
+- **Used by**: **nothing today** — no scene instances it (grep, 2026-09-29).
+  Archetypes call `HurtboxComponent.apply_hit()` directly. Candidate for
+  removal in 10-13 (dead code).
 
 ### `move_to_target_component.gd`
 - **What it does**: `class_name MoveToTargetComponent extends Node`. Exports
@@ -430,7 +451,11 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
   custom logic). Exposes `is_ready() -> bool`, `consume()` (resets the timer).
   One instance per spell-on-the-tower and per attack-on-an-enemy — cheap,
   reusable, no special-casing per spell.
-- **Used by**: Tower (one per active spell), every enemy (attack cooldown).
+- **Used by**: **nothing today** (grep, 2026-09-29). The tower keeps a
+  `_spell_timers` dictionary of float countdowns (`tower.gd:15`, ticked in
+  `_physics_process`); enemies use a float `_attack_timer` (`enemy.gd:13`),
+  because creating component nodes dynamically once caused a silent crash.
+  Candidate for removal in 10-13.
 
 ### `hit_flash_component.gd`
 - **What it does**: `class_name HitFlashComponent extends Node`. Exports
@@ -463,9 +488,11 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
 **What it does**: `class_name TowerDefinition extends Resource`. Fields:
 `tower_id`, `tower_name`, `model_path` (the `.glb` to instance),
 `base_hp`, `base_damage`, `base_fire_rate`, `base_range`, `base_armor`,
-`starting_spell_id` (the base-attack spell, fired even with zero drafted
-spells), `passive_script` (optional `Script` resource implementing the
-tower's unique passive hook — see `tower_ancient_tower.tres` for the v1 instance).
+`starting_spell_id` (**dead** — runs start with a `"first_spell"` draft
+instead, `spells.md` §6.2), `passive_script` (read by nothing today; the tower
+**ults** of `epic_09_content.md` 09-13 may use it), plus `icon`, `unlocked`
+(content exists), `sort_order` (garage position) and `star_level_scenes`
+(gameplay scene per star).
 **One `.tres` per tower.** `tower.tscn` is generic and reads whichever
 `TowerDefinition` is assigned.
 
@@ -518,11 +545,11 @@ of the new per-school `school_damage_multiplier` dict instead (see
 - **Children**: `MeshInstance3D` (model swapped at runtime from
   `TowerDefinition.model_path`), `CollisionShape3D`, `HealthComponent`,
   `HurtboxComponent`, `TargetingComponent` (+ its range `Area3D`),
-  `HitFlashComponent`, one `CooldownComponent` instanced per active spell
-  (added/removed dynamically as spells are drafted).
+  `HitFlashComponent`. **No `CooldownComponent`s**: spell cooldowns are a
+  `_spell_timers` dict inside `tower.gd`.
 - **Script** (`tower.gd`, kept intentionally thin): on `_ready()`, applies the
   assigned `TowerDefinition`'s base stats to `GameState`; on
-  `_physics_process()`, ticks each spell's `CooldownComponent` and fires when
+  `_physics_process()`, ticks each spell's `_spell_timers` entry and fires when
   ready by delegating to a small `_fire_spell(spell_def)` that switches on
   `spell_category` to pick `projectile.tscn`/`Arcprojectile.tscn`/AoE/passive
   — and nothing else. All the "how do I take damage," "how do I find a
@@ -533,12 +560,12 @@ of the new per-school `school_damage_multiplier` dict instead (see
 - **Root**: `CharacterBody3D`, group `"enemies"`.
 - **Children**: `MeshInstance3D`, `CollisionShape3D`, `AnimationPlayer`,
   `HealthComponent`, `HurtboxComponent`, `MoveToTargetComponent`,
-  `CooldownComponent` (attack cooldown), `HitFlashComponent`,
+  (attack cooldown is a float timer in `enemy.gd`, not a component), `HitFlashComponent`,
   `DeathFXComponent`, an `Area3D` "melee range" trigger.
 - **Script** (`enemy.gd`, thin): on spawn, applies the assigned
   `EnemyDefinition`'s stats to its components; on melee-range trigger enter,
-  flips from "moving" to "attacking" state and ticks the attack
-  `CooldownComponent`, dealing tower damage on expiry. That's the entire
+  flips from "moving" to "attacking" state and ticks its float
+  `_attack_timer`, dealing tower damage on expiry. That's the entire
   script — movement, health, damage-taking, flashing, and dying are all
   delegated.
 

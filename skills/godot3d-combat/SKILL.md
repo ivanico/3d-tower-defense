@@ -1,6 +1,6 @@
 ---
 name: godot3d-combat
-description: Use this skill whenever implementing or modifying combat-related code in this project — projectiles, AoE zones, hitboxes/hurtboxes, damage calculation, targeting, object pooling for combat entities, or wave/enemy spawning. Trigger this before writing any new spell behavior, any new damage-dealing code path, or any code that spawns/despawns enemies or projectiles. Also trigger when something says "queue_free" near an enemy or projectile, since pooling should be used instead once Epic 02 is complete.
+description: Use this skill whenever implementing or modifying combat-related code in this project — projectiles, AoE zones, hurtboxes/apply_hit, damage calculation, targeting, object pooling for projectiles, or wave/enemy spawning. Trigger this before writing any new spell behavior, any new damage-dealing code path, or any code that spawns/despawns enemies or projectiles. Enemies queue_free (not pooled); projectiles are pooled.
 ---
 
 # Godot 3D Combat Systems
@@ -40,41 +40,36 @@ step, read from `GameState` flags — they don't get baked into the table
 itself, since they're temporary per-run state, not permanent type
 relationships.
 
-## Hitbox / Hurtbox — who does what
+## Hitbox / Hurtbox — how hits actually land (hybrid, verified 2026-09-29)
 
-- **`HitboxComponent`** (`Area3D`): pure data. `damage`, `damage_type`. No
-  logic. Attached to the thing dealing damage (projectile, AoE zone, melee
-  swing).
-- **`HurtboxComponent`** (`Area3D`): the thing that *receives* the hit. On
-  `area_entered`, reads the hitbox's damage/type, calls
-  `CombatUtils.calculate_damage()`, applies the result to its sibling
-  `HealthComponent`. Attached to the thing taking damage (tower, every
-  enemy).
+This project does **not** use `area_entered` for hits. `HitboxComponent`
+exists in `scenes/component/` but no scene instances it. The real path:
 
-This split means a projectile never needs to know what kind of armor its
-target has, and a hurtbox never needs to know what spell fired the hit that's
-currently overlapping it. Each side only knows its own half.
+1. **Broad phase**: each archetype (`standard_bolt.gd`, `chain_bolt.gd`,
+   `orb.gd`, `aoe_area.gd`, `line_aoe_bolt.gd`) keeps a short list of nearby
+   enemies via its own `body_entered` / `body_exited`, so it never scans
+   every enemy each frame.
+2. **Precise check**: in `_physics_process`, a `distance_to()` test (or a
+   segment test for the lance) against that list.
+3. **The one funnel**: call the target's
+   `HurtboxComponent.apply_hit(damage, damage_type, hit_world_pos)`.
 
 ```gdscript
-# hurtbox_component.gd
-extends Area3D
-class_name HurtboxComponent
-
-@export var armor_type: int  # Constants.ArmorType
-
-@onready var health: HealthComponent = $"../HealthComponent"
-
-func _ready() -> void:
-    area_entered.connect(_on_area_entered)
-
-func _on_area_entered(area: Area3D) -> void:
-    if not area.has_method("get_damage_payload"):
-        return
-    var dmg: float = area.damage
-    var dtype: int = area.damage_type
-    var final_amount := CombatUtils.calculate_damage(dmg, dtype, armor_type)
-    health.damage(final_amount)
+# hurtbox_component.gd (real code, trimmed)
+func apply_hit(hit_damage: float, hit_damage_type: int, hit_world_pos: Vector3) -> void:
+    var resist_mult := 1.0
+    if hit_damage_type == resisted_school and hit_damage_type != Constants.DamageType.VOID:
+        resist_mult = Constants.SCHOOL_RESIST_MULT   # boss-only by data rule
+    var final_dmg := CombatUtils.calculate_damage(hit_damage, hit_damage_type, armor_type) * resist_mult
+    health.damage(final_dmg)
+    CombatUtils.apply_school_perk(final_dmg, hit_damage_type, get_parent(), resist_mult)
+    _spawn_damage_number(...)
 ```
+
+**Any new hit source** (rank-5 splash, lance trail, ult damage) must call
+`apply_hit()` too, so the table, resist, perk and damage number all apply
+in one place. Why not `area_entered`: overlap signals proved unreliable for
+fast, small or runtime-resized `Area3D`s in Godot 4.4.
 
 ## Real 3D projectile movement
 
@@ -118,70 +113,38 @@ Don't reach for Godot's rigid-body physics/gravity simulation for this —
 explicit parabola math gives predictable, designer-tunable arcs instead of
 physics-sim unpredictability.
 
-## AoE — query overlapping areas, don't iterate every enemy
+## AoE — keep a nearby list, tick it, hit through `apply_hit()`
 
-```gdscript
-func _apply_damage() -> void:
-    for area in get_overlapping_areas():
-        if area is HurtboxComponent and area.get_parent().is_in_group("enemies"):
-            var final := CombatUtils.calculate_damage(damage, damage_type, area.armor_type)
-            area.health.damage(final)
-```
-
-Let the `Area3D`'s own collision shape define "what's in range" — don't
-manually loop over every active enemy and do a distance check unless you have
-a specific reason `Area3D` overlap won't work (e.g. checking against a much
-larger group where the overlap check itself becomes the bottleneck — that's
-a `epic_08_polish.md`-stage optimization concern, not a default).
+`aoe_area.gd` (Blizzard / Rain of Fire) keeps the enemies inside its radius
+via `body_entered` / `body_exited`, and every `tick_interval` calls
+`apply_hit()` on each of them. Damage is computed at tick time, so mid-run
+upgrades apply to live zones. Reuse or extend this for any new zone (e.g.
+the Poison ult's Plague Cloud); don't copy it.
 
 ## Targeting
 
-`TargetingComponent` maintains a list via a range-trigger `Area3D`'s
-`body_entered`/`body_exited`, not by scanning all enemies every frame:
+`TargetingComponent` keeps an in-range list via its range `Area3D`'s
+`body_entered` / `body_exited` (no full scan per frame).
+`get_targets(count, max_distance)` returns up to `count` **random** distinct
+enemies within the spell's own `range` (`targeting_component.gd:42–44`,
+`shuffle()`), and `get_target()` = `get_targets(1)`. There is **no target
+mode**: `TargetMode.CLOSEST` was removed after it turned out to be unwired
+(`mechanics.md` §2). If a mode is wanted again, wire it all the way through.
+Orb doesn't target at all.
 
-```gdscript
-var _enemies_in_range: Array[Node3D] = []
+## Object pooling — projectiles yes, enemies no
 
-func _on_range_entered(body: Node3D) -> void:
-    if body.is_in_group("enemies"):
-        _enemies_in_range.append(body)
+Projectiles, AoE zones and damage numbers go through `ObjectPool`
+(`acquire(scene)` / `release(node)`; `release()` calls `_on_pool_released()`
+if the node has one). **Enemies are deliberately not pooled**: each wave
+`instantiate()`s fresh enemy scenes (`wave_manager.gd` `_spawn_enemy()`),
+and `DeathFXComponent` `queue_free()`s them after the death tween
+(`restructure.md` §4). `queue_free()` on an enemy is correct, not a
+regression. `queue_free()` on a pooled projectile/zone/damage number is.
 
-func _on_range_exited(body: Node3D) -> void:
-    _enemies_in_range.erase(body)
-
-func get_target() -> Node3D:
-    match mode:
-        Constants.TargetMode.CLOSEST:
-            return _closest_of(_enemies_in_range)
-    return null
-```
-
-New target modes are new `match` cases. Resist the urge to write a generic
-"sortable by any criteria" targeting framework before you actually need a
-second mode — `mechanics.md` explicitly scopes v1 to closest-only.
-
-## Object pooling — never `queue_free()` a combat entity after Epic 02
-
-```gdscript
-# get
-var proj: Node3D = ObjectPool.get(preload("res://scenes/game_object/projectile/projectile.tscn"))
-proj.global_position = start_pos
-proj.initialize(start_pos, target_pos, spell)
-
-# release — inside the projectile/enemy's own script, on its terminal condition
-func _on_screen_exited() -> void:
-    ObjectPool.release(self)
-```
-
-`ObjectPool.release()` must, at minimum: hide the node, disable every
-`CollisionShape3D` child (a 3D-specific detail — don't forget this is
-`CollisionShape3D` not `CollisionShape2D`), and return it to the pool's
-available list. Whatever owns the node needs a `reset()` method that
-restores it to a clean state before reuse (full HP, cleared velocity, fresh
-`Definition` applied if it's being reused for a different enemy type).
-
-If you ever see `queue_free()` called on an enemy, projectile, AoE zone, or
-damage number after Epic 02 is complete, that's a regression — flag it.
+`ObjectPool.release()` must hide the node, disable every `CollisionShape3D`
+child and return it to the pool. The owner needs a `reset()` that restores
+a clean state before reuse.
 
 ## Deferred calls for structural changes mid-physics-step
 
