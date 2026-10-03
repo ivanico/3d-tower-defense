@@ -15,7 +15,7 @@
 [resource]
 script = ExtResource("1")
 chapter_id = "chapter_01"
-chapter_name = "The Plains"
+chapter_name = "Ancient Ruins"
 wave_count = 12
 enemy_pool = Array[ExtResource("1_ba2tk")]([ExtResource("2"), ExtResource("3"), ExtResource("5"), ExtResource("6"), ExtResource("7")])
 boss_pool = Array[ExtResource("1_ba2tk")]([ExtResource("4"), ExtResource("8")])

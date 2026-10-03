@@ -1182,7 +1182,7 @@ identically).
 
 ---
 
-## Task 09-07 — Chapter 2 Content
+## Task 09-07 — Chapter 2 Content ✅ DONE (2026-10-03, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -1225,7 +1225,7 @@ identically).
 
 Models: `assets/models/chap2/chap2_enemy_01–05.glb`, `chap2_boss_01–02.glb`.
 
-- [ ] `scenes/game_object/chap2/chap2_enemy_01..05/` and `chap2_boss_01..02/`:
+- [x] `scenes/game_object/chap2/chap2_enemy_01..05/` and `chap2_boss_01..02/`:
       copy the matching chap1 folder, swap the model `ext_resource`, and
       re-point the hand-authored `walk`/`attack` animation tracks, which target
       the model node by name (`chap1_enemy_01:position` → `chap2_enemy_01:…`).
@@ -1234,18 +1234,18 @@ Models: `assets/models/chap2/chap2_enemy_01–05.glb`, `chap2_boss_01–02.glb`.
     model has no `attack_heavy` clip; if not, it falls back to the scale-pulse
     telegraph.
   - Shared `enemy.gd`, not copied.
-- [ ] Co-located `.tres` per enemy. Stats start as the chap1 counterpart's
+- [x] Co-located `.tres` per enemy. Stats start as the chap1 counterpart's
       values, tuned in 09-17. Order `enemy_pool` so index 1 is the fast
       enemy (09-06).
-- [ ] **Theme: Ice / Frost** (09-00.2): chapter name, arena colours (blues)
+- [x] **Theme: Ice / Frost** (09-00.2): chapter name, arena colours (blues)
       and map art follow it.
-- [ ] **Names** ✅ answered (user, 2026-09-28):
+- [x] **Names** ✅ answered (user, 2026-09-28):
   - Chapter 2 is **"Frozen Wastes"** (`chapter_02.tres` `chapter_name`).
   - Chapter 1 is renamed from "The Plains" to **"Ancient Ruins"**. That's a
     one-field edit in `resources/chapters/chapter_01.tres` (`chapter_name`),
     done in this task. The world map title reads it from the `.tres`, so no
     code changes.
-- [ ] **Armor & resist** (09-00.5): regular enemies get an armor type
+- [x] **Armor & resist** (09-00.5): regular enemies get an armor type
       (Unarmored/Light/Medium/Heavy/Fortified) and **no** resisted school.
       Record the mix in 09-11's table.
   - **Each chap2 enemy's role and armor**: which model is the fast one
@@ -1255,16 +1255,148 @@ Models: `assets/models/chap2/chap2_enemy_01–05.glb`, `chap2_boss_01–02.glb`.
     when I make the animation". Ask at the start of this task, once the
     chap2 animations exist. It's the only open item here, and nothing else
     in 09-07 waits on it except the enemy `.tres` values.
+  - **Q1 fast enemy** ✅ answered (user, 2026-10-03): "as they are
+    numbered", so **chap2 enemy 2** is the fast one, the same slot as
+    chap1.
+    - Consequence: `chapter_02.tres` `enemy_pool` is in number order
+      (01, 02, 03, 04, 05), with `chap2_enemy_02` at index 1.
+    - Consequence: chap2 enemy 2's `.tres` starts from chap1 enemy 2's
+      fast stats.
+  - **Q2 flyer** ✅ answered (user, 2026-10-03): **chap2 enemy 5 flies**
+    (like chap1 enemy 5), and **chap2 enemy 3 also floats** above the
+    ground.
+    - Code check: `is_flying` only changes movement. In
+      `move_to_target_component.gd` ~33–35 the enemy holds `hold_height`
+      with a small sine bob. No spell or targeting code treats flyers
+      differently (grep), so "float" and "fly" are the same setting.
+    - Consequence: both `.tres` get `is_flying = true`. `hold_height`
+      starts at chap1 enemy 5's 1.0 for both and is tuned in the lineup
+      preview or a run (enemy 3's model is long and flat, 0.8 tall).
+  - **Q3 armor per enemy** ✅ answered (user, 2026-10-03), then **revised
+    the same day**:
+    - The first answer was "same as chap1".
+    - The user then didn't want three Light enemies in a row and changed
+      it for **both chapters**:
+
+      | Enemy | Armor (ch1 and ch2) | `armor_type` | Was in ch1 |
+      |---|---|---|---|
+      | Enemy 1 | **Medium** | 3 | Light |
+      | Enemy 2 (fast) | Light | 2 | same |
+      | Enemy 3 | Light | 2 | same |
+      | Enemy 4 | Heavy | 1 | same |
+      | Enemy 5 (flyer) | **Fortified** | 4 | Medium |
+      | Boss 1 | Fortified | 4 | same |
+      | Boss 2 | **Medium** | 3 | Fortified |
+
+    - Consequence: three chap1 `.tres` change (`chap1_enemy_01`,
+      `chap1_enemy_05`, `chap1_boss_02`). The docs that list chap1 armor
+      (`project.md` v2 note, `mechanics.md` §5, see 09-02) and 09-11's
+      table need the same update.
+    - Also said: the regular enemies should **resist Frost**, "just like
+      chap 1 is res to Nature".
+    - ⚠ This conflicted with 09-00.5 / 09-11 ("resist is boss-only").
+    - **Resolved** (user, 2026-10-03): the user asked how strong chap1's
+      Nature resist is.
+      - Code check: `Constants.SCHOOL_RESIST_MULT = 0.5`
+        (`Constants.gd:156`), applied in `hurtbox_component.gd:18–19`. A
+        resisted school does half damage and half status effect, and Void
+        is never resisted.
+      - User: "if it's 0.5 then yes add it to enemies of chap 2 as well".
+      - So **regular enemies resist their chapter's school too** (option
+        B). All 5 chap2 regulars and both bosses get
+        `resisted_school = 1` (Frost). Chap1 keeps Nature (4) on all 7.
+    - Consequence: this **replaces the "boss-only" part of 09-00.5 for
+      regular enemies**. 09-11's "clear `resisted_school` on regular
+      enemies" step no longer applies. The 09-11 note is updated, and
+      `spells.md` §3 / §6.5 (written in 09-02 as boss-only) need the same
+      fix.
+  - **Bosses** (user, 2026-10-03): no animations on the chap2 bosses for
+    now. The heavy attack uses the scale-pulse warning.
   - **Boss resist** ✅ answered (user, 2026-09-28): a boss resists **its
     chapter's school**. Both chap2 bosses get `resisted_school = 1`
     (Frost). The general rule and the chapter-3 Void case are in 09-11.
-- [ ] `wave_count`: same as chapter 1 for now (12 while building; 20 later,
+- [x] `wave_count`: same as chapter 1 for now (12 while building; 20 later,
       per 09-00.2 Q3).
-- [ ] Per-model `HealthBar3D.height_offset` set to that model's height.
-- [ ] `chap2_arena/chap2_arena.tscn`: copy `chap1_arena`, new `color_1–4`
+- [x] Per-model `HealthBar3D.height_offset` set to that model's height.
+- [x] `chap2_arena/chap2_arena.tscn`: copy `chap1_arena`, new `color_1–4`
       (e.g. blues, as `arena.gd` intends).
-- [ ] `resources/chapters/chapter_02.tres`: name, pools, `arena_scene`,
+- [x] `resources/chapters/chapter_02.tres`: name, pools, `arena_scene`,
       `sort_order = 1`, `map_image`.
+
+**Built (2026-10-03)**:
+- Step 1 was the scene folders.
+- The user asked for the chap2 folders first, so the animations can be
+  made in them.
+- `scenes/game_object/chap2/chap2_enemy_01–05/`, `chap2_boss_01–02/` and
+  `chap2_arena/` exist, `.tscn` only.
+- How they were made:
+  - Each scene is generated from its chap1 counterpart: model swapped,
+    node names and animation tracks renamed to chap2, and a new scene uid.
+  - The chap2 `.glb`s have **no clips and no skeleton**. The enemies carry
+    chap1's hand-made `walk`/`attack` as placeholders for the user to
+    replace.
+  - The bosses have no `AnimationPlayer`, same as chap1. Their heavy
+    attack falls back to the scale-pulse warning.
+  - If a hand-made boss `AnimationPlayer` is added without an
+    `attack_heavy` clip, `anim.play("attack_heavy")` logs an error.
+  - Dropped from the chap1 enemy_01 and enemy_02 copies: the editor-baked
+    mesh + unshaded texture override. Chap2 uses each `.glb`'s own
+    material, like chap1 enemy_03–05.
+  - The bosses dropped chap1's Armature/Skeleton pose overrides.
+  - Every model is normalised to ~1.91 m, so chap1's scales were kept.
+    `chap2_enemy_03` is long and flat (0.8 tall); check it in the preview.
+- Arena: blue `color_1–4`, tunable in the Inspector.
+- Headless check: all 8 load, every model has its mesh, and 0 animation
+  tracks point at a missing node.
+- **Steps 1–7 built (2026-10-03), approved by the user**:
+  1. chap1 armor: enemy_01 Medium, enemy_05 Fortified, boss_02 Medium.
+  2. `chapter_01.tres` renamed "Ancient Ruins".
+  3. 7 chap2 `.tres`: chap1 stats; Q3 armor; Frost resist on all 7;
+     enemies 3 and 5 `is_flying`, `hold_height = 1.0`.
+  4. `chapter_02.tres`: Frozen Wastes, pool in number order, 12 waves,
+     `sort_order = 1`, blue arena, placeholder map image.
+  5. `chap2_lineup_preview.tscn`:
+     - Arena, camera at the runtime spot, the game's light.
+     - Two rows so all 7 fit the portrait camera: 5 enemies in front,
+       bosses behind. Flyers sit at 1.0.
+  6. Docs: `project.md`, `mechanics.md` §5 and `spells.md` §3 / §6.5 got
+     the new armor plus "every themed enemy resists its set's school".
+     `ui_assets.md` lists `world_map/chapter_02_image.png`.
+  7. Tests (`_read_only = true`, save never written):
+     - Headless full ch2 run: 68/68 checks. Registry order, all armor and
+       resist values, the blue arena swap.
+     - The same run: all 5 types spawn, walk, attack and die. 3 and 5
+       float at ~0.98; the others stay grounded.
+     - A live Frost hit does exactly table ×0.5 on every type.
+     - A boss spawns on wave 12. Victory unlocks Void, and Continue goes
+       back to the map.
+     - The defeat screen's Map button goes back to the map.
+     - Ch1 still uses the green arena with the new armor and Nature resist.
+     - Windowed run (2×): 0 fails. Screenshots of the lineup, a ch2 wave,
+       a flyer, the boss wave, the victory screen ("New tower unlocked:
+       Void Tower!"), the defeat screen and ch1.
+     - "Target object freed… aborting Tweener" warnings show up in ch1 at
+       the same rate. They're pre-existing, not from chap2.
+- **Not verifiable by the tests**:
+  - How the enemies look while moving (the user checks in the editor or
+    a run).
+  - Ch2 can't be picked from the world map yet: `world_map_content.gd`
+    `CHAPTER_IDS` only has ch1. Picking a chapter comes with 09-09.
+- **Changes after the build, at the user's request**:
+  - chap2 enemy 2's walk is enemy 5's walk, with its scale keys
+    × 0.32/0.45 so the squash keeps the same %. Its attack is unchanged.
+  - chap2 enemy 5 is **20% bigger**; the user looked at 20% and kept it
+    over 30%. Everything was scaled by 1.2:
+    - model 0.45 → 0.54
+    - the RESET / attack / walk scale keys
+    - body and hurtbox collision
+    - `HealthBar3D.height_offset` 0.9 → 1.08
+  - Tested: headless (tracks OK) and windowed. In a live run it flies at
+    ~1.1, and its scale matches the new keys.
+  - No animations on the chap2 bosses for now (user). Their heavy attack
+    uses the scale-pulse warning.
+- **Look at**: the boss HP bars use chap1's `height_offset` (2.4 / 2.3)
+  and sit fairly high above the chap2 bosses.
 
 **Placeholders**: map image = `chapter_01_image_v2.png` → final
 `world_map/chapter_02_image.png`. (Name picked: "Frozen Wastes".)
@@ -1275,9 +1407,9 @@ a row. It shows scale, facing and HP-bar heights at a glance. It isn't meant
 to be run.
 
 **Acceptance criteria**:
-- [ ] A full chapter-2 run works: every enemy walks, attacks, dies; a boss
+- [x] A full chapter-2 run works: every enemy walks, attacks, dies; a boss
       appears on the final wave; victory and defeat both return to the map.
-- [ ] The lineup preview shows all 7 at believable relative sizes.
+- [x] The lineup preview shows all 7 at believable relative sizes.
 
 ---
 
@@ -1473,9 +1605,13 @@ get there".
 every enemy. The per-enemy resisted school is kept, but used **only on
 bosses**.
 
-- [ ] Clear `resisted_school` (set to none, `-1`) in every **regular enemy**
+- [ ] ~~Clear `resisted_school` (set to none, `-1`) in every **regular enemy**
       `.tres`, in every chapter (read each file, not a sample). Today that's
-      chap1 enemy_01 to enemy_05.
+      chap1 enemy_01 to enemy_05.~~
+      **Superseded (user, 2026-10-03, during 09-07)**: regular enemies
+      **keep** a resist of their chapter's school (×0.5). Chap1 has Nature
+      on all 7; chap2 has Frost on all 7. See 09-07 Q3. This task's title
+      and "boss-only" wording need revisiting when 09-11 starts.
 - [ ] **Bosses keep the mechanic**: their `.tres` may set a resisted school
       (× 0.5 damage and status via `SCHOOL_RESIST_MULT`; Void never). The
       code in `hurtbox_component.gd` / `enemy.gd` / `apply_school_perk()`

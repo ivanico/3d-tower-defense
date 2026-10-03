@@ -146,12 +146,13 @@
   school is mapped to a Warcraft 3 attack-type identity (Nature=Normal,
   Poison=Piercing, Frost=Siege, Fire=Magic, Void=Chaos) and `DAMAGE_TABLE`
   carries WC3's own numbers for those rows, against Unarmored/Heavy/Light/
-  Medium/Fortified armor. **In use**: chapter-1 enemy_01/02/03 are Light,
-  enemy_04 Heavy, enemy_05 Medium, both bosses Fortified (each `.tres`
-  `armor_type`).
-- **Resist** (decided 2026-09-27, 09-00.5): the table is the counterplay
-  for every enemy; the extra per-enemy `resisted_school` (× 0.5 damage and
-  status, never Void) is a **boss-only** mechanic. See `spells.md` §3.
+  Medium/Fortified armor. **In use** (chap1 and chap2 alike): enemy_01
+  Medium, enemy_02/03 Light, enemy_04 Heavy, enemy_05 Fortified, boss_01
+  Fortified, boss_02 Medium (each `.tres` `armor_type`).
+- **Resist** (revised 2026-10-03, 09-07): on top of the table, **every
+  enemy of a themed set** (regular and boss) resists its set's school via
+  `resisted_school` (× 0.5 damage and status, never Void). Chap1 = Nature,
+  chap2 = Frost. See `spells.md` §3.
 - **Hit detection is a hybrid, not an `Area3D` overlap signal**: each
   archetype keeps a broad-phase `body_entered/exited` list of nearby
   enemies, does a precise `distance_to()` check in `_physics_process`, and

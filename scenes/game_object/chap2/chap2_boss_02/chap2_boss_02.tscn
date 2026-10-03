@@ -1,0 +1,66 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://cyqmuqp4txg3o" path="res://assets/models/chap2/chap2_boss_02.glb" id="1_glb"]
+[ext_resource type="Resource" path="res://resources/ui/boss_bar_style.tres" id="BossBarStyle"]
+[ext_resource type="PackedScene" uid="uid://cxjfi50df3rsr" path="res://scenes/component/death_fx_component.tscn" id="Comp_death"]
+[ext_resource type="PackedScene" path="res://scenes/component/hit_flash_component.tscn" id="Comp_flash"]
+[ext_resource type="PackedScene" uid="uid://ds0gb6fxku8hl" path="res://scenes/component/health_component.tscn" id="Comp_health"]
+[ext_resource type="PackedScene" path="res://scenes/component/boss_heavy_attack_component.tscn" id="Comp_heavy"]
+[ext_resource type="PackedScene" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
+[ext_resource type="PackedScene" path="res://scenes/component/move_to_target_component.tscn" id="Comp_mover"]
+[ext_resource type="PackedScene" path="res://scenes/component/status_effect_component.tscn" id="Comp_status"]
+[ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/game_object/enemy/enemy.gd" id="Script_enemy"]
+[ext_resource type="PackedScene" uid="uid://bams3a7gi1gqd" path="res://scenes/ui/widget/value_bar_3d/value_bar_3d.tscn" id="Widget_hpbar"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_body"]
+
+[sub_resource type="SphereShape3D" id="Shape_melee"]
+radius = 1.1
+
+[sub_resource type="SphereShape3D" id="Shape_hurtbox"]
+radius = 0.55
+
+[node name="Enemy" type="CharacterBody3D"]
+script = ExtResource("Script_enemy")
+
+[node name="chap2_boss_02" parent="." instance=ExtResource("1_glb")]
+transform = Transform3D(-1.08, 0, 0, 0, 1.08, 0, 0, 0, -1.08, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1.62, 0, 0, 0, 1.62, 0, 0, 0, 1.62, 0, 0, 0)
+shape = SubResource("SphereShape3D_body")
+
+[node name="HealthComponent" parent="." instance=ExtResource("Comp_health")]
+
+[node name="HealthBar3D" parent="." instance=ExtResource("Widget_hpbar")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+style = ExtResource("BossBarStyle")
+height_offset = 2.3
+show_value = false
+follow_game_state = false
+
+[node name="StatusEffectComponent" parent="." instance=ExtResource("Comp_status")]
+
+[node name="MoveToTargetComponent" parent="." instance=ExtResource("Comp_mover")]
+
+[node name="HitFlashComponent" parent="." instance=ExtResource("Comp_flash")]
+
+[node name="DeathFXComponent" parent="." instance=ExtResource("Comp_death")]
+
+[node name="BossHeavyAttackComponent" parent="." instance=ExtResource("Comp_heavy")]
+
+[node name="MeleeRangeArea" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeleeRangeArea"]
+transform = Transform3D(1.08, 0, 0, 0, 1.08, 0, 0, 0, 1.08, 0, 0, 0)
+shape = SubResource("Shape_melee")
+debug_color = Color(0.906487, 0.277482, 0.320141, 0.42)
+
+[node name="HurtboxComponent" parent="." instance=ExtResource("Comp_hurtbox")]
+
+[node name="CollisionShape3D" parent="HurtboxComponent" index="0"]
+transform = Transform3D(1.89, 0, 0, 0, 1.89, 0, 0, 0, 1.89, 0, 0, 0)
+shape = SubResource("Shape_hurtbox")
+
+[editable path="chap2_boss_02"]
+[editable path="HurtboxComponent"]

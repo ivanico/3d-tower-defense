@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" format=3]
+
+[ext_resource type="Script" uid="uid://cyyhy46hf81wm" path="res://resources/enemies/enemy_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap2/chap2_enemy_01/chap2_enemy_01.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "chap2_enemy_01"
+model_path = "res://assets/models/chap2/chap2_enemy_01.glb"
+scene = ExtResource("2")
+base_hp = 100.0
+base_speed = 1.5
+base_damage = 10.0
+attack_cooldown = 1.0
+armor_type = 3
+resisted_school = 1
+xp_value = 40
+is_boss = false
+hold_height = 0.0

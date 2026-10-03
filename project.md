@@ -232,7 +232,7 @@ new damage types or armor types are added — the lookup itself is generic.
 > (`SCHOOL_RESIST_MULT`, halves damage and status — `spells.md` Section 3),
 > not from the armor table. Void's row must always stay ≥ 1.0× and can never
 > be a resisted school: nothing resists Void. *(Superseded by v2 below: the
-> WC3 table is now the counterplay, and resist is boss-only.)*
+> WC3 table is now the counterplay, and every themed enemy resists its set's school, 2026-10-03.)*
 
 > **Extend later by:** adding new `DamageType` / `ArmorType` enum entries and
 > new rows/columns to this table — the damage-calculation code reads the table
@@ -275,12 +275,14 @@ WC3's Frozen Throne table for the mapped attack type:
 > files store `armor_type` as a raw int, so reordering would have silently
 > reclassified them). `CombatUtils.DAMAGE_TABLE` carries these percentages.
 > The per-enemy `resisted_school` / `SCHOOL_RESIST_MULT` multiplies on top
-> of this on the same hit. **Decided (09-00.5): only bosses have a resist**;
-> regular enemies' counterplay is this table alone (`spells.md` §3).
+> of this on the same hit. **Decided (revised 2026-10-03, 09-07):
+> every enemy of a themed set resists that set's school**, regular enemies
+> and bosses alike (× 0.5, never Void). This replaces 09-00.5's original
+> "bosses only" rule (`spells.md` §3).
 >
-> **In use** (checked in each `.tres`, 2026-09-29): chap1 enemy_01/02/03
-> Light, enemy_04 Heavy, enemy_05 Medium, both bosses Fortified. Nothing
-> uses Unarmored yet.
+> **In use** (2026-10-03, the same in chap1 and chap2): enemy_01 Medium,
+> enemy_02/03 Light, enemy_04 Heavy, enemy_05 Fortified, boss_01
+> Fortified, boss_02 Medium. Nothing uses Unarmored yet.
 
 ---
 

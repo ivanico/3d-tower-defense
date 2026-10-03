@@ -172,6 +172,9 @@ C. REWARDS & MATERIALS — all 16 exist in `rewards/`
 - [ ] models: assets/models/towers/poison_tower/ and fire_tower/ lvl1–5 .glb
                               (placeholder: ancient_tower glbs, tinted via
                               TowerDefinition.model_tint; Epic 09 09-04)
+- [ ] world_map/chapter_02_image.png (Frozen Wastes map art — placeholder
+                              today: chapter_01_image_v2.png, set in
+                              resources/chapters/chapter_02.tres; Epic 09 09-07)
 - [ ] bg_victory.png          (optional)
 - [ ] bg_defeat.png           (optional)
 

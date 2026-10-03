@@ -191,18 +191,18 @@ task, not done yet.
 
 ## 3. Resistances (armor vs. schools)
 
-> **Decided 2026-09-27 (`epic_09_content.md` 09-00.5 / 09-11):** the **WC3
-> armor table** (`project.md` "Damage Type vs Armor Table (v2)") is the
-> counterplay system for **every** enemy. The per-enemy resisted school below
-> is kept, but **only bosses** use it. Regular enemies' counterplay is their
-> armor type alone.
-> **Current data (until 09-11 is built):** all 7 chapter-1 `.tres`
-> (`scenes/game_object/chap1/*/*.tres`) still have `resisted_school = 4`
-> (Nature). 09-11 clears it on the 5 regular enemies.
+> **Decided 2026-09-27 (`epic_09_content.md` 09-00.5 / 09-11), revised
+> 2026-10-03 (09-07):** the **WC3 armor table** (`project.md` "Damage Type
+> vs Armor Table (v2)") is the counterplay system for **every** enemy. On
+> top of it, **every enemy of a themed set, regular or boss, resists that
+> set's school** (the original "bosses only" rule was dropped on
+> 2026-10-03).
+> **Current data:** all 7 chapter-1 `.tres` have `resisted_school = 4`
+> (Nature); all 7 chapter-2 `.tres` have `resisted_school = 1` (Frost).
 
 - Each `EnemyDefinition` has a `resisted_school` (`-1` = none), copied onto
-  its `HurtboxComponent` (`hurtbox_component.gd:10`). **Rule: only boss
-  `.tres` files set it.**
+  its `HurtboxComponent` (`hurtbox_component.gd:10`). **Rule: every
+  enemy sets its themed set's school** (Void set: `-1`, none).
 - A resisted hit deals `SCHOOL_RESIST_MULT` ≈ **0.5×** damage, and its
   status effect (burn/slow/poison/lifesteal amount) is halved too
   (`hurtbox_component.gd:17–24`).
@@ -211,10 +211,11 @@ task, not done yet.
   ignores a Void resist even if one is set. That's the tradeoff triangle:
   specialized schools have perks but can be countered; Void has no utility
   perk but always works.
-- **Which school a boss resists** (decided 2026-09-28, 09-11): a boss
-  resists the school of its **themed enemy set** (Nature set → Nature,
+- **Which school an enemy resists** (decided 2026-09-28 for bosses,
+  extended to regular enemies 2026-10-03): it resists the school of its
+  **themed enemy set** (Nature set → Nature,
   Frost set → Frost, Poison → Poison, Fire → Fire; **Void-set bosses resist
-  nothing**). Mixed chapters reuse those bosses with their resist
+  nothing**). Mixed chapters reuse those enemies with their resist
   unchanged.
 
 ---
@@ -739,11 +740,11 @@ per-spell code): Fire burn 30%/s for 3 s · Frost slow 40% for 2 s ·
 Void no status but ~18% higher damage baked in, never resistible ·
 Poison 15%/s for 4 s + 20% slow for 2 s · Nature heals the tower for
 18% of damage dealt. Re-applying refreshes the timer, never stacks.
-Resistances are wired **and in use**: all 7 chapter-1 enemy/boss `.tres`
-currently have `resisted_school = 4` (Nature) — half damage + half status
-from Nature (Void exempt by code, `hurtbox_component.gd:18`). **Decided
-(09-00.5 / 09-11):** only bosses keep a resist; 09-11 clears it on regular
-enemies. See §3.
+Resistances are wired **and in use**: all 7 chapter-1 `.tres` have
+`resisted_school = 4` (Nature) and all 7 chapter-2 `.tres` have `1`
+(Frost), so half damage + half status from that school (Void exempt by
+code, `hurtbox_component.gd:18`). **Decided (revised 2026-10-03):** every
+themed enemy keeps its set's resist, regular or boss. See §3.
 
 ### 6.6 Stacking
 

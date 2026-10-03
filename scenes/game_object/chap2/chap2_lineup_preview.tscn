@@ -1,0 +1,50 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap2/chap2_arena/chap2_arena.tscn" id="arena"]
+[ext_resource type="PackedScene" uid="uid://dy0co36gcwh34" path="res://scenes/game_object/camera_rig/camera_rig.tscn" id="camera"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap2/chap2_enemy_01/chap2_enemy_01.tscn" id="chap2_enemy_01"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap2/chap2_enemy_02/chap2_enemy_02.tscn" id="chap2_enemy_02"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap2/chap2_enemy_03/chap2_enemy_03.tscn" id="chap2_enemy_03"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap2/chap2_enemy_04/chap2_enemy_04.tscn" id="chap2_enemy_04"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap2/chap2_enemy_05/chap2_enemy_05.tscn" id="chap2_enemy_05"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap2/chap2_boss_01/chap2_boss_01.tscn" id="chap2_boss_01"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap2/chap2_boss_02/chap2_boss_02.tscn" id="chap2_boss_02"]
+
+[node name="Chap2LineupPreview" type="Node3D"]
+
+[node name="Arena" parent="." instance=ExtResource("arena")]
+
+[node name="CameraRig" parent="." instance=ExtResource("camera")]
+
+[node name="Camera3D" parent="CameraRig" index="0"]
+transform = Transform3D(1, 0, 0, 0, 0.707107, -0.707107, 0, 0.707107, 0.707107, 0, 24, 24)
+fov = 30.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, 0.5, -0.5, 0, 0.707107, 0.707107, 0.707107, -0.5, 0.5, 0, 5, 0)
+light_energy = 1.2
+shadow_enabled = true
+shadow_opacity = 0.8
+
+[node name="Lineup" type="Node3D" parent="."]
+
+[node name="chap2_enemy_01" parent="Lineup" instance=ExtResource("chap2_enemy_01")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.3, 1)
+
+[node name="chap2_enemy_02" parent="Lineup" instance=ExtResource("chap2_enemy_02")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.24, 1)
+
+[node name="chap2_enemy_03" parent="Lineup" instance=ExtResource("chap2_enemy_03")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 1)
+
+[node name="chap2_enemy_04" parent="Lineup" instance=ExtResource("chap2_enemy_04")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.338, 1)
+
+[node name="chap2_enemy_05" parent="Lineup" instance=ExtResource("chap2_enemy_05")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.0, 1)
+
+[node name="chap2_boss_01" parent="Lineup" instance=ExtResource("chap2_boss_01")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.25, 0.825, -3)
+
+[node name="chap2_boss_02" parent="Lineup" instance=ExtResource("chap2_boss_02")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.25, 0.81, -3)
