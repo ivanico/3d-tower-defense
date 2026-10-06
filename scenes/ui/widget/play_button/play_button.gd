@@ -104,6 +104,15 @@ const ART_ASPECT := 1905.0 / 825.0
 		_apply()
 
 
+## Tint over the whole button (frame, text, icon) while `disabled`, e.g. on a
+## locked chapter. The art has no disabled variant, so without this a disabled
+## Play looks exactly like an enabled one. White = no change.
+@export var disabled_tint: Color = Color(0.5, 0.5, 0.5, 1.0):
+	set(value):
+		disabled_tint = value
+		_update_disabled_tint()
+
+
 ## Guards the re-entry in `_apply()` where locking the aspect writes back to
 ## `button_height`, whose setter calls `_apply()` again. Without this it recurses
 ## until the stack blows.
@@ -111,7 +120,16 @@ var _applying: bool = false
 
 
 func _ready() -> void:
+	# Button has no "disabled changed" signal, but toggling `disabled` always
+	# redraws it, so the redraw is where the tint follows.
+	draw.connect(_update_disabled_tint)
 	_apply()
+
+
+func _update_disabled_tint() -> void:
+	var target := disabled_tint if disabled else Color.WHITE
+	if modulate != target:
+		modulate = target
 
 
 func _apply() -> void:

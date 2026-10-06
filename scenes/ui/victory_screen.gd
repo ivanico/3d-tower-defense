@@ -7,9 +7,13 @@ extends CanvasLayer
 @onready var continue_button: Button = $ContinueButton
 @onready var unlock_label: Label = $StatsPanel/UnlockLabel
 
-## Set by game_world before this is added: towers this victory unlocked for the
-## FIRST time (09-05). Empty on a replay, so the line only shows once. The
+const ChapterRegistry := preload("res://scripts/chapter_registry.gd")
+
+## Set by game_world before this is added, from MetaManager.mark_chapter_cleared():
+## the chapter this victory opened (09-10) and the towers it unlocked (09-05), both
+## for the FIRST clear only. Empty on a replay, so the lines only show once. The
 ## scene's placeholder text is what the editor preview shows.
+var unlocked_chapter_id: String = ""
 var unlocked_tower_ids: Array[String] = []
 
 # Rolled once in _ready() and reused by _on_continue_pressed() — the reward
@@ -30,6 +34,8 @@ func _ready() -> void:
 
 func _show_unlocks() -> void:
 	var lines: PackedStringArray = []
+	if not unlocked_chapter_id.is_empty():
+		lines.append("Chapter %d unlocked!" % ChapterRegistry.number_of(unlocked_chapter_id))
 	for tower_id in unlocked_tower_ids:
 		var tower = TowerRegistry.get_by_id(tower_id)
 		if tower != null:

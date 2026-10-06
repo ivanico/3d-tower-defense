@@ -9,6 +9,8 @@ extends Node
 ## approach can't do that, since each instance gets its own fresh
 ## ShaderMaterial and the base material is never referenced.
 
+const ModelTint := preload("res://scripts/model_tint.gd")
+
 @export var enabled: bool = true
 ## Manual override for models with more than one MeshInstance3D. Leave
 ## unset to auto-discover the parent's (first) MeshInstance3D.
@@ -30,7 +32,9 @@ func _ready() -> void:
 
 	_material = ShaderMaterial.new()
 	_material.shader = preload("res://scenes/component/hit_flash_overlay.gdshader")
-	mesh.material_overlay = _material
+	# Shares the overlay slot with a placeholder model tint (model_tint.gd);
+	# on_top keeps the flash visible over it.
+	ModelTint.add_overlay(mesh, _material, true)
 
 	var health := get_parent().find_child("HealthComponent") as HealthComponent
 	if health:

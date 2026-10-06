@@ -29,6 +29,12 @@ func reset_run() -> void:
 
 func open_draft(trigger: String = "wave_clear") -> void:
 	print("DEBUGTEST open_draft(", trigger, ") phase=", GameState.phase, " queue_before=", _queue.size())
+	# The run is decided: no more picks. The boss's own death XP can level the
+	# player up AFTER victory (enemy.gd emits enemy_died -> victory before
+	# xp_gained -> level_up), which used to open a draft behind the victory
+	# screen and flip the phase from VICTORY back to DRAFT.
+	if GameState.phase == Constants.GamePhase.VICTORY or GameState.phase == Constants.GamePhase.DEFEAT:
+		return
 	if GameState.phase == Constants.GamePhase.DRAFT:
 		_queue.append(trigger)
 		print("DEBUGTEST   queued, queue_after=", _queue.size())

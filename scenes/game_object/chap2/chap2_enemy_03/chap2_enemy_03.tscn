@@ -1,15 +1,15 @@
-[gd_scene format=3]
+[gd_scene load_steps=18 format=3 uid="uid://gmibwcy73jh8"]
 
 [ext_resource type="PackedScene" uid="uid://7631vqx30spd" path="res://assets/models/chap2/chap2_enemy_03.glb" id="1_glb"]
 [ext_resource type="PackedScene" uid="uid://cxjfi50df3rsr" path="res://scenes/component/death_fx_component.tscn" id="Comp_death"]
 [ext_resource type="PackedScene" path="res://scenes/component/hit_flash_component.tscn" id="Comp_flash"]
-[ext_resource type="PackedScene" path="res://scenes/component/health_component.tscn" id="Comp_health"]
-[ext_resource type="PackedScene" path="res://scenes/component/status_effect_component.tscn" id="Comp_status"]
-[ext_resource type="PackedScene" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
+[ext_resource type="PackedScene" uid="uid://ds0gb6fxku8hl" path="res://scenes/component/health_component.tscn" id="Comp_health"]
+[ext_resource type="PackedScene" uid="uid://ckyxwo0imfk0b" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
 [ext_resource type="PackedScene" path="res://scenes/component/move_to_target_component.tscn" id="Comp_mover"]
-[ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/game_object/enemy/enemy.gd" id="Script_enemy"]
-[ext_resource type="PackedScene" path="res://scenes/ui/widget/value_bar_3d/value_bar_3d.tscn" id="Widget_hpbar"]
+[ext_resource type="PackedScene" path="res://scenes/component/status_effect_component.tscn" id="Comp_status"]
 [ext_resource type="Resource" path="res://resources/ui/enemy_bar_style.tres" id="EnemyBarStyle"]
+[ext_resource type="Script" uid="uid://di6vnrencuxju" path="res://scenes/game_object/enemy/enemy.gd" id="Script_enemy"]
+[ext_resource type="PackedScene" uid="uid://bams3a7gi1gqd" path="res://scenes/ui/widget/value_bar_3d/value_bar_3d.tscn" id="Widget_hpbar"]
 
 [sub_resource type="Animation" id="Animation_nhyqd"]
 length = 0.001
@@ -164,10 +164,11 @@ shape = SubResource("SphereShape3D_body")
 [node name="HealthComponent" parent="." instance=ExtResource("Comp_health")]
 
 [node name="HealthBar3D" parent="." instance=ExtResource("Widget_hpbar")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
 style = ExtResource("EnemyBarStyle")
-follow_game_state = false
-show_value = false
 height_offset = 0.85
+show_value = false
+follow_game_state = false
 
 [node name="StatusEffectComponent" parent="." instance=ExtResource("Comp_status")]
 

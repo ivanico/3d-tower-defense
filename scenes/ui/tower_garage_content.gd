@@ -152,17 +152,12 @@ func _refresh() -> void:
 		upgrade_button.text = "Upgrade"
 		upgrade_button.disabled = not (base_affordable and rare_affordable) or not playable
 
-# "Beat Chapter N to unlock". N = the chapter's place in play order
-# (ChapterRegistry). A chapter not built yet falls back to the number in its id
-# ("chapter_03" -> 3).
+# "Beat Chapter N to unlock" for the chapter that unlocks this tower.
 func _unlock_text(tower_def: Resource) -> String:
 	var chapter_id: String = tower_def.unlock_chapter_id
 	if chapter_id.is_empty():
 		return "Locked"
-	var number: int = ChapterRegistry.number_of(chapter_id)
-	if number == 0:
-		number = chapter_id.get_slice("_", 1).to_int()
-	return "Beat Chapter %d to unlock" % number
+	return ChapterRegistry.beat_to_unlock_text(chapter_id)
 
 func _star_of(tower_id: String) -> int:
 	return MetaManager.tower_stars.get(tower_id, 1)

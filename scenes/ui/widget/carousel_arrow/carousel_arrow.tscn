@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/carousel_arrow/carousel_arrow.gd" id="1"]
+
+; Intentionally a single node, like pause_button: the panel stylebox and the
+; chevron are built by the script (the chevron as an INTERNAL child), so nothing
+; is serialised into world_map_content.tscn. Tune the look here; the screen only
+; sets `direction` and the position.
+
+[node name="CarouselArrow" type="Button"]
+custom_minimum_size = Vector2(110, 110)
+offset_right = 110.0
+offset_bottom = 110.0
+focus_mode = 0
+script = ExtResource("1")
+button_size = Vector2i(110, 110)
+corner_radius = 55

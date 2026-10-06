@@ -175,6 +175,17 @@ C. REWARDS & MATERIALS — all 16 exist in `rewards/`
 - [ ] world_map/chapter_02_image.png (Frozen Wastes map art — placeholder
                               today: chapter_01_image_v2.png, set in
                               resources/chapters/chapter_02.tres; Epic 09 09-07)
+- [ ] world_map/ui_carousel_arrow.png (optional — chapter carousel arrows;
+                              placeholder today: chevron drawn in code by
+                              widget/carousel_arrow/; Epic 09 09-09)
+- [ ] world_map/chapter_03_image.png … chapter_10_image.png (map art for
+                              Void / Poison / Fire / Chapter 6–10 — placeholder
+                              today: chapter_01_image_v2.png, set in each
+                              resources/chapters/chapter_0N.tres; Epic 09 09-08)
+- [ ] models: assets/models/chap3/, chap4/, chap5/ enemy_01–05 + boss_01–02
+                              .glb (Void / Poison / Fire sets; placeholder: the
+                              chap1 models, tinted via EnemyDefinition.model_tint;
+                              Epic 09 09-08 model-borrow table)
 - [ ] bg_victory.png          (optional)
 - [ ] bg_defeat.png           (optional)
 

@@ -18,5 +18,7 @@ class_name SaveData
 @export var last_energy_timestamp: int = 0
 @export var premium_currency: int = 0  # added in save version 2
 @export var selected_tower_id: String = "ancient_tower"  # added in save version 3
+@export var last_chapter_id: String = "chapter_01"  # added in save version 4
+@export var cleared_chapters: Array[String] = []  # added in save version 5
 @export var music_volume: float = 1.0
 @export var sfx_volume: float = 1.0

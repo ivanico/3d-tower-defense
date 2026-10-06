@@ -1,6 +1,8 @@
 extends CharacterBody3D
 class_name Enemy
 
+const ModelTint := preload("res://scripts/model_tint.gd")
+
 @export var definition: EnemyDefinition
 
 @onready var health: HealthComponent = $HealthComponent
@@ -16,6 +18,11 @@ var _damage_scale: float = 1.0
 func _ready() -> void:
 	add_to_group("enemies")
 	_apply_definition()
+	# Once only, not in _apply_definition() (reset() calls that again, and a
+	# second apply would stack another tint layer). Runs after the children's
+	# _ready(), so HitFlashComponent's flash is already in place on top.
+	if definition:
+		ModelTint.apply(self, definition.model_tint)
 	melee_area.body_entered.connect(_on_melee_range_body_entered)
 	health.died.connect(_on_died)
 

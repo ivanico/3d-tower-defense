@@ -33,3 +33,33 @@ static func number_of(chapter_id: String) -> int:
 		if chapters[i].chapter_id == chapter_id:
 			return i + 1
 	return 0
+
+
+## The chapter after `chapter_id` in play order, or null for the last one.
+static func next_of(chapter_id: String) -> Resource:
+	var chapters := all()
+	for i in chapters.size() - 1:
+		if chapters[i].chapter_id == chapter_id:
+			return chapters[i + 1]
+	return null
+
+
+## THE unlock rule (09-10), used everywhere a chapter can be locked: the first
+## chapter is always open; chapter N+1 opens once N has been cleared.
+static func is_unlocked(chapter_id: String) -> bool:
+	var chapters := all()
+	for i in chapters.size():
+		if chapters[i].chapter_id == chapter_id:
+			return i == 0 or chapters[i - 1].chapter_id in MetaManager.cleared_chapters
+	return false
+
+
+## "Beat Chapter N to unlock", N = `chapter_id`'s place in play order. Shared by
+## the garage (a tower's unlock_chapter_id) and the world map carousel (the
+## chapter before a locked one). A chapter not built yet falls back to the number
+## in its id ("chapter_03" -> 3).
+static func beat_to_unlock_text(chapter_id: String) -> String:
+	var number := number_of(chapter_id)
+	if number == 0:
+		number = chapter_id.get_slice("_", 1).to_int()
+	return "Beat Chapter %d to unlock" % number

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=3 format=3]
+
+; PLACEHOLDER (Poison set, 09-08): borrows chap1_enemy_04.tscn + a Poison tint.
+; Real model: point `scene` at chap4_enemy_04.tscn and clear model_tint. No code.
+[ext_resource type="Script" uid="uid://cyyhy46hf81wm" path="res://resources/enemies/enemy_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/game_object/chap1/chap1_enemy_04/chap1_enemy_04.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = "chap4_enemy_04"
+model_path = "res://assets/models/chap1/chap1_enemy_04.glb"
+scene = ExtResource("2")
+base_hp = 150.0
+base_speed = 1.1
+base_damage = 15.0
+attack_cooldown = 1.3
+armor_type = 1
+resisted_school = 3
+xp_value = 45
+is_boss = false
+hold_height = 0.0
+model_tint = Color(0.35, 0.9, 0.3, 0.45)

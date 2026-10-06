@@ -13,9 +13,18 @@ extends Control
 		chapter_image = value
 		_apply()
 
+## Set by the screen at runtime (world_map_content.gd's lock check).
 @export var locked: bool = false:
 	set(value):
 		locked = value
+		_apply()
+
+## Editor-only: shows the locked look in the editor without touching `locked`,
+## so ticking it to have a look can never lock a chapter in the game. Ignored at
+## runtime.
+@export var preview_locked: bool = false:
+	set(value):
+		preview_locked = value
 		_apply()
 
 
@@ -32,4 +41,4 @@ func _apply() -> void:
 		return
 	if chapter_image != null:
 		image_rect.texture = chapter_image
-	locked_overlay.visible = locked
+	locked_overlay.visible = locked or (preview_locked and Engine.is_editor_hint())

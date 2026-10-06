@@ -89,9 +89,11 @@ func _on_boss_died() -> void:
 	wave_manager.stop_wave()
 	GameState.end_run(true)
 	var victory := VICTORY_SCREEN_SCENE.instantiate()
-	# First victory of this chapter unlocks its tower (09-05). 09-10 moves this
-	# call inside MetaManager.mark_chapter_cleared() once chapter progress exists.
-	victory.unlocked_tower_ids = MetaManager.unlock_towers_for_chapter(wave_manager.chapter.chapter_id)
+	# The one hook for a won chapter (09-10): the first clear records it, opens
+	# the next chapter and unlocks its tower; the victory screen announces both.
+	var unlocked: Dictionary = MetaManager.mark_chapter_cleared(wave_manager.chapter.chapter_id)
+	victory.unlocked_chapter_id = unlocked.chapter_id
+	victory.unlocked_tower_ids = unlocked.tower_ids
 	add_child(victory)
 	get_tree().paused = true
 

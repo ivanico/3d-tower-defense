@@ -346,6 +346,13 @@ price type.
 Today energy only regenerates in `_apply_offline_energy_regen()` **on load**.
 A player sitting on the home screen never gains energy until they restart.
 
+> **Changed in 09-09 (2026-10-06)**: `save()` no longer resets
+> `last_energy_timestamp`. The timestamp is now "start of the regen interval in
+> progress". It moves forward by `regen × interval` when energy comes back
+> (partial progress kept), and to now when energy is full or when spending from
+> full. The live `Timer` here should reuse that same rule, not set the
+> timestamp itself.
+
 - [ ] `MetaManager` ticks regen while the game runs (a `Timer`, same interval
       math as the offline catch-up, shared, not copied) and exposes
       `seconds_to_next_energy()`.

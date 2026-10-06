@@ -1,6 +1,7 @@
 extends Node
 
 const SAVE_PATH := "user://savegame.tres"
+const ChapterRegistry := preload("res://scripts/chapter_registry.gd")
 
 var owned_towers: Array[String] = []
 var tower_stars: Dictionary = {}
@@ -12,6 +13,12 @@ var energy: int = Constants.MAX_ENERGY
 var last_energy_timestamp: int = 0
 var premium_currency: int = 0
 var selected_tower_id: String = "ancient_tower"
+## The chapter the world map carousel last showed (09-09). An id, not a
+## position, so adding chapters never points it at the wrong one.
+var last_chapter_id: String = "chapter_01"
+## Every chapter whose boss has been beaten at least once (09-10). Chapter N+1
+## opens when N is in here (ChapterRegistry.is_unlocked).
+var cleared_chapters: Array[String] = []
 var music_volume: float = 1.0
 var sfx_volume: float = 1.0
 
@@ -20,6 +27,9 @@ var sfx_volume: float = 1.0
 # can never overwrite (and lose) data it doesn't understand.
 var _read_only: bool = false
 var _read_only_logged: bool = false
+## Where save() writes: the file load() last read. Always SAVE_PATH in the game;
+## tests load() a temp file so a save/reload round-trip never touches the real one.
+var _save_path: String = SAVE_PATH
 
 func _ready() -> void:
 	self.load()
@@ -27,6 +37,9 @@ func _ready() -> void:
 func spend_energy() -> bool:
 	if energy <= 0:
 		return false
+	# A full bar doesn't regenerate, so the clock starts with this spend.
+	if energy >= Constants.MAX_ENERGY:
+		last_energy_timestamp = int(Time.get_unix_time_from_system())
 	energy -= 1
 	save()
 	return true
@@ -63,10 +76,27 @@ func unlock_tower(tower_id: String) -> bool:
 	EventBus.tower_unlocked.emit(tower_id)
 	return true
 
+## THE one hook for a won chapter (09-10), called on victory. The FIRST clear:
+## records it, unlocks the chapter's towers, and points the map at the chapter it
+## opened (09-10 Q2, the Archero way). A replay changes nothing. Returns what is
+## new, for the victory screen: {"chapter_id": the newly opened chapter or "",
+## "tower_ids": Array[String]}. Buying a tower (unlock_tower) never comes here.
+func mark_chapter_cleared(chapter_id: String) -> Dictionary:
+	var result := {"chapter_id": "", "tower_ids": [] as Array[String]}
+	if chapter_id in cleared_chapters:
+		return result
+	cleared_chapters.append(chapter_id)
+	result.tower_ids = unlock_towers_for_chapter(chapter_id)
+	var next: Resource = ChapterRegistry.next_of(chapter_id)
+	if next != null:
+		result.chapter_id = next.chapter_id
+		last_chapter_id = next.chapter_id
+	save()
+	return result
+
 ## Unlocks every tower whose TowerDefinition.unlock_chapter_id is this chapter.
 ## Returns the ids that were NEW, so the victory screen can announce them once
-## (a replayed chapter returns nothing). 09-10's mark_chapter_cleared() will be
-## the caller once chapter progress exists.
+## (a replayed chapter returns nothing). Called by mark_chapter_cleared().
 func unlock_towers_for_chapter(chapter_id: String) -> Array[String]:
 	var newly: Array[String] = []
 	for tower in TowerRegistry.all_towers:
@@ -118,6 +148,8 @@ func save() -> void:
 	data.save_version = Constants.SAVE_VERSION
 	data.premium_currency = premium_currency
 	data.selected_tower_id = selected_tower_id
+	data.last_chapter_id = last_chapter_id
+	data.cleared_chapters = cleared_chapters
 	data.owned_towers = owned_towers
 	data.tower_stars = tower_stars
 	data.spell_ranks = spell_ranks
@@ -125,14 +157,18 @@ func save() -> void:
 	data.tower_material = tower_material
 	data.scroll_materials = scroll_materials
 	data.energy = energy
-	last_energy_timestamp = int(Time.get_unix_time_from_system())
+	# Saving never moves the regen clock (09-09): it used to set it to now on
+	# every save, which threw away partial progress towards the next point.
 	data.last_energy_timestamp = last_energy_timestamp
 	data.music_volume = music_volume
 	data.sfx_volume = sfx_volume
-	ResourceSaver.save(data, SAVE_PATH)
+	ResourceSaver.save(data, _save_path)
 
-func load() -> void:
-	if not ResourceLoader.exists(SAVE_PATH):
+## `path` is only ever passed by tests (a temp file); the game always uses the
+## real save. Every save() after this writes to the same file.
+func load(path: String = SAVE_PATH) -> void:
+	_save_path = path
+	if not ResourceLoader.exists(path):
 		owned_towers = ["ancient_tower"]
 		tower_stars = {}
 		spell_ranks = {}
@@ -141,9 +177,13 @@ func load() -> void:
 		scroll_materials = {}
 		energy = Constants.MAX_ENERGY
 		last_energy_timestamp = int(Time.get_unix_time_from_system())
+		premium_currency = 0
+		selected_tower_id = "ancient_tower"
+		last_chapter_id = "chapter_01"
+		cleared_chapters = []
 		save()
 		return
-	var data: Resource = ResourceLoader.load(SAVE_PATH)
+	var data: Resource = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
 	owned_towers = data.owned_towers
 	tower_stars = data.tower_stars
 	spell_ranks = data.spell_ranks
@@ -156,6 +196,8 @@ func load() -> void:
 	sfx_volume = data.sfx_volume
 	premium_currency = data.premium_currency
 	selected_tower_id = data.selected_tower_id
+	last_chapter_id = data.last_chapter_id
+	cleared_chapters = data.cleared_chapters
 	var version: int = data.save_version
 	if version > Constants.SAVE_VERSION:
 		_read_only = true
@@ -190,6 +232,22 @@ func _migrate_1_to_2() -> void:
 func _migrate_2_to_3() -> void:
 	selected_tower_id = "ancient_tower"
 
+# v4: the world map remembers the last chapter it showed (09-09).
+func _migrate_3_to_4() -> void:
+	last_chapter_id = "chapter_01"
+
+# v5: chapter progress is saved (09-10). Starts empty on purpose (09-10 Q1): no
+# guessing past wins from owned towers, so only chapter 1 is open after this.
+func _migrate_4_to_5() -> void:
+	cleared_chapters = []
+
+## The carousel's current chapter. Saved at once, so it survives a restart.
+func select_chapter(chapter_id: String) -> void:
+	if chapter_id == last_chapter_id:
+		return
+	last_chapter_id = chapter_id
+	save()
+
 ## The garage's pick for the next run. Saved at once, so it survives a restart.
 func select_tower(tower_id: String) -> void:
 	selected_tower_id = tower_id
@@ -201,4 +259,11 @@ func _apply_offline_energy_regen() -> void:
 	var regen_amount: int = int(floor(elapsed / Constants.ENERGY_REGEN_INTERVAL_SEC))
 	if regen_amount > 0:
 		restore_energy(regen_amount)
+		# Timestamp = start of the interval in progress. Advance it by exactly
+		# the intervals used, so the leftover counts towards the next point;
+		# a full bar has nothing in progress.
+		if energy >= Constants.MAX_ENERGY:
+			last_energy_timestamp = now
+		else:
+			last_energy_timestamp += int(regen_amount * Constants.ENERGY_REGEN_INTERVAL_SEC)
 		save()

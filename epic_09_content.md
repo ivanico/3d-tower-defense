@@ -1413,7 +1413,7 @@ to be run.
 
 ---
 
-## Task 09-08 — Chapters 3+ Using Existing Models
+## Task 09-08 — Chapters 3+ Using Existing Models ✅ DONE (2026-10-06, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -1471,43 +1471,275 @@ get there".
   09-07's chap2 roles/armor**. That's the same moment, because the chap2
   enemies need roles before anyone can pick from them. It's the only open
   item left in 09-08. Constraint: `pool[1]` = a fast enemy.
+  - **Q1 Void set (ch3)** ✅ answered (user, 2026-10-06): **all chap1
+    models**, enemies 1–5 plus both chap1 bosses, **tinted purple**. (The
+    user first noted "we don't have the enemies for chap 3 for now", then
+    confirmed option a: keep the 2026-09-28 placeholder plan and borrow
+    models.)
+    - Consequence: the ch3 `enemy_pool` is in number order (chap1 enemy
+      1–5), so `pool[1]` = the chap1 enemy 2 model, the fast one. Rule met.
+    - Consequence: the flyer is the chap1 enemy 5 model (`is_flying`,
+      `hold_height = 1.0`, same as chap1).
+    - Consequence: armor is the same as chap1 (09-07 Q3 table): Medium,
+      Light, Light, Heavy, Fortified, with bosses Fortified and Medium.
+    - Consequence: every Void-set enemy has **no resist** (`resisted_school
+      = -1`; nothing resists Void).
+  - **Q2 Poison set (ch4)** ✅ answered (user, 2026-10-06): **all chap1
+    models again**, the same picks as Void (enemies 1–5 plus both chap1
+    bosses), **tinted green**.
+    - Consequence: the same pool order as Void, so `pool[1]` = the chap1
+      enemy 2 model (fast). The flyer is the chap1 enemy 5 model. Armor is
+      the same as chap1.
+    - Consequence: every Poison-set enemy resists **Poison**
+      (`resisted_school = 3`).
+    - Consequence: Void and Poison differ only in tint + resist. The chap1
+      models are now borrowed by Nature (original), Void and Poison.
+  - **Q3 Fire set (ch5)** ✅ answered (user, 2026-10-06): **all chap1
+    models again**, the same picks as Void and Poison, **tinted orange**.
+    - Consequence: the same pool order, so `pool[1]` = the chap1 enemy 2
+      model (fast). The flyer is the chap1 enemy 5 model. Armor is the
+      same as chap1.
+    - Consequence: every Fire-set enemy resists **Fire**
+      (`resisted_school = 0`).
+    - Consequence: all three placeholder sets (Void / Poison / Fire) borrow
+      the 7 chap1 models. The chap2 models are used only by Frost.
+  - **Q4 Chapter 6** ✅ answered (user, 2026-10-06): **Nature + Frost**,
+    option a as offered:
+    - `enemy_pool` = Nature enemy 1, **Frost enemy 2**, Nature enemy 3,
+      Frost enemy 4, Nature enemy 5. `boss_pool` = Nature boss 1, Frost
+      boss 2.
+    - Consequence: it reuses the existing chap1/chap2 `.tres` as they are,
+      with no new files. `pool[1]` = Frost enemy 2 (fast). The flyer is
+      Nature enemy 5.
+    - Consequence: resists stay with their set (rule from 09-11). The
+      Nature ones resist Nature and the Frost ones resist Frost, so no
+      single school is resisted by the whole chapter.
+  - **Q5 Chapter 7** ✅ answered (user, 2026-10-06): **Frost + Void**,
+    option a as offered:
+    - `enemy_pool` = Void enemy 1, **Frost enemy 2**, Void enemy 3, Frost
+      enemy 4, Void enemy 5. `boss_pool` = Void boss 1, Frost boss 2.
+    - Consequence: `pool[1]` = Frost enemy 2 (fast). The flyer is Void
+      enemy 5 (the chap1 enemy 5 model, purple).
+    - Consequence: it reuses the Void-set `.tres` built for ch3 plus the
+      existing chap2 `.tres`. No extra files beyond the Void set.
+    - Consequence: the Void ones resist nothing and the Frost ones resist
+      Frost.
+  - **Q6 Chapter 8** ✅ answered (user, 2026-10-06): **Void + Poison**,
+    option a as offered:
+    - `enemy_pool` = Poison enemy 1, **Void enemy 2**, Poison enemy 3, Void
+      enemy 4, Poison enemy 5. `boss_pool` = Poison boss 1, Void boss 2.
+    - Consequence: `pool[1]` = Void enemy 2 (fast, the chap1 enemy 2
+      model). The flyer is Poison enemy 5.
+    - Consequence: both sets borrow chap1 models, so this chapter is all
+      chap1 shapes in purple and green.
+    - Consequence: the Void ones resist nothing and the Poison ones resist
+      Poison.
+  - **Q7 Chapter 9** ✅ answered (user, 2026-10-06): **Poison + Fire**,
+    option a as offered:
+    - `enemy_pool` = Fire enemy 1, **Poison enemy 2**, Fire enemy 3, Poison
+      enemy 4, Fire enemy 5. `boss_pool` = Fire boss 1, Poison boss 2.
+    - Consequence: `pool[1]` = Poison enemy 2 (fast). The flyer is Fire
+      enemy 5.
+    - Consequence: all chap1 shapes, in green and orange.
+    - Consequence: the Fire ones resist Fire and the Poison ones resist
+      Poison.
+  - **Q8 Chapter 10** ✅ answered (user, 2026-10-06): **Fire + Nature**,
+    option a as offered:
+    - `enemy_pool` = Nature enemy 1, **Fire enemy 2**, Nature enemy 3, Fire
+      enemy 4, Nature enemy 5. `boss_pool` = Nature boss 1, Fire boss 2.
+    - Consequence: `pool[1]` = Fire enemy 2 (fast). The flyer is Nature
+      enemy 5.
+    - Consequence: all chap1 shapes, untinted and orange.
+    - Consequence: the Nature ones resist Nature and the Fire ones resist
+      Fire.
+  - **Roster summary** (all 8 answered 2026-10-06). E = regular enemy,
+    B = boss; the number is the slot within its set:
+
+    | Ch | Sets | E1 | E2 (fast) | E3 | E4 | E5 (flyer) | B1 | B2 |
+    |---|---|---|---|---|---|---|---|---|
+    | 3 | Void | Void 1 | Void 2 | Void 3 | Void 4 | Void 5 | Void B1 | Void B2 |
+    | 4 | Poison | Poison 1 | Poison 2 | Poison 3 | Poison 4 | Poison 5 | Poison B1 | Poison B2 |
+    | 5 | Fire | Fire 1 | Fire 2 | Fire 3 | Fire 4 | Fire 5 | Fire B1 | Fire B2 |
+    | 6 | Nature + Frost | Nature 1 | Frost 2 | Nature 3 | Frost 4 | Nature 5 | Nature B1 | Frost B2 |
+    | 7 | Frost + Void | Void 1 | Frost 2 | Void 3 | Frost 4 | Void 5 | Void B1 | Frost B2 |
+    | 8 | Void + Poison | Poison 1 | Void 2 | Poison 3 | Void 4 | Poison 5 | Poison B1 | Void B2 |
+    | 9 | Poison + Fire | Fire 1 | Poison 2 | Fire 3 | Poison 4 | Fire 5 | Fire B1 | Poison B2 |
+    | 10 | Fire + Nature | Nature 1 | Fire 2 | Nature 3 | Fire 4 | Nature 5 | Nature B1 | Fire B2 |
+
+  - **Model-borrow table** (the swap list for real models). Every
+    placeholder set borrows the chap1 model in the same slot:
+
+    | Set | Slot | Borrows | Final model to make |
+    |---|---|---|---|
+    | Void (ch3) | enemy 1–5, boss 1–2 | `chap1_enemy_01–05.glb`, `chap1_boss_01–02.glb`, purple tint | `assets/models/chap3/chap3_enemy_01–05.glb`, `chap3_boss_01–02.glb` |
+    | Poison (ch4) | enemy 1–5, boss 1–2 | same chap1 models, green tint | `assets/models/chap4/…` |
+    | Fire (ch5) | enemy 1–5, boss 1–2 | same chap1 models, orange tint | `assets/models/chap5/…` |
+    | Ch6–10 | — | nothing of their own; they list the themed sets' `.tres` | none (they follow their sets) |
+  - **Build decisions** ✅ answered (user, 2026-10-06), resolving the three
+    "Open" points below:
+    - **A: yes.** Each placeholder set gets its own 7 `.tres` (21 total),
+      with chap1 stats/armor, its own resist (Void -1, Poison 3, Fire 0)
+      and its own tint.
+    - **B1.** The tint lives on the `.tres`: a new
+      `EnemyDefinition.model_tint`, the same idea as
+      `TowerDefinition.model_tint`, applied by `enemy.gd` via
+      `scripts/model_tint.gd`. The 21 `.tres` point at the **existing chap1
+      scenes**, so there are no variant scenes. The real-model swap later =
+      the `.tres` `scene` line + clearing the tint. (This replaces the
+      "variant scene" wording in the first checkbox below.)
+    - **C: leave it.** Per-chapter rewards stay in 09-12. 09-08 doesn't
+      touch rewards.
+    - Tint vs flash gets fixed in this task with a shared overlay-stacking
+      helper (`next_pass`). Towers use the same helper but don't flash
+      (see the correction below).
+  - **Tint colours** ✅ answered (user, 2026-10-06), all at 45% strength
+    (alpha 0.45, the same as the Poison/Fire towers). 0% = the original
+    model, 100% = a flat silhouette:
+    - Void: purple `Color(0.6, 0.2, 0.9, 0.45)` (new, there's no Void
+      tower tint)
+    - Poison: green `Color(0.35, 0.9, 0.3, 0.45)`, the same as
+      `tower_poison_tower.tres`
+    - Fire: orange `Color(1, 0.45, 0.1, 0.45)`, the same as
+      `tower_fire_tower.tres`
+    - Note: chap1 enemy 1 is already purple, so the Void tint barely shows
+      on it.
+  - **Open (raised 2026-10-06, now decided above)**:
+    - Because of the 09-07 resist rule (every themed enemy resists its
+      set's school), each themed set needs its **own `.tres` per enemy**,
+      bosses AND regulars, since the resist lives on the `.tres`. Reusing
+      chap1's `.tres` would carry chap1's Nature resist into the Void set.
+      That would be 7 `.tres` × 3 sets (Void / Poison / Fire).
+    - Tint vs hit flash: both use the one `material_overlay` slot per mesh
+      (`hit_flash_component.gd:33`, `model_tint.gd:25`). Whichever runs
+      last wins, so a tinted enemy would lose either its tint or its
+      flash.
+      - **Correction (2026-10-06, found while testing)**: the earlier
+        claim that this "is already live on the Poison/Fire towers" was
+        wrong. `tower.tscn:27` has `HitFlashComponent.enabled = false`, so
+        no tower flashes at all (by design). The clash only matters for
+        enemies.
+    - 09-12 (reward multipliers) isn't built, so "rewards per chapter via
+      09-12" has no field to set yet.
 
 (Chapter 1 is "Ancient Ruins" and chapter 2 is "Frozen Wastes"; see 09-07.)
 
-- [ ] **Chapters 3–5 (themed)**: a themed enemy is a small **variant scene**
-      in `scenes/game_object/chap<N>/…` that instances an existing chap1/chap2
-      model with a school tint (e.g. `material_overlay`; check it doesn't
-      fight `hit_flash_component.gd`, which also uses `material_overlay`).
-      Only make a variant where the tint or stats must differ. Otherwise
-      reference the existing enemy `.tres` directly.
-- [ ] **Chapters 6–10 (mixed, built in this task per the scope answer
-      above)**: `enemy_pool` / `boss_pool` list **existing**
-      enemy `.tres` files from any chapter folder. No new scenes unless a
-      variant is needed. Keep the `enemy_pool[1]` = fast-enemy rule (09-06).
-- [ ] Armor mix per chapter and boss resists per 09-00.5 (09-11's table).
-      ✅ Boss resists decided (2026-09-28): each themed set's bosses resist
-      that set's school (Void none), and mixed chapters reuse them
-      unchanged. Themed boss variants = a new `.tres` with its own
-      `resisted_school`.
-- [ ] Rewards per chapter via 09-12's multipliers.
-- [ ] Each chapter gets `chapter_0N.tres`, an arena copy with its own colours,
+- [x] **Chapters 3–5 (themed)**: ~~a variant scene per enemy~~ built as
+      B1 (see "Build decisions"): each themed enemy is a `.tres` pointing at
+      the chap1 scene in the same slot, with its own `model_tint` +
+      `resisted_school`. Tint vs hit flash fixed via `next_pass`.
+- [x] **Chapters 6–10 (mixed)**: `enemy_pool` / `boss_pool` list existing
+      `.tres` from the themed sets. No new scenes. `enemy_pool[1]` = a fast
+      enemy in every chapter.
+- [x] Armor per chapter = the chap1 table (every set borrows chap1 stats).
+      Resists: Void -1, Poison 3, Fire 0, on bosses AND regulars (09-07
+      rule). Mixed chapters reuse the sets unchanged.
+- [ ] ~~Rewards per chapter via 09-12's multipliers.~~ **Left to 09-12**
+      (user, 2026-10-06, decision C). 09-08 doesn't touch rewards.
+- [x] Each chapter gets `chapter_0N.tres`, an arena copy with its own colours,
       and a lineup preview. More chapters later = more `.tres` + arenas, no
       code.
-- [ ] Keep a table in this task: which chapter/enemy borrows which model, so
-      the real-model swap list is obvious later.
+- [x] Keep a table in this task: which chapter/enemy borrows which model
+      (the "Model-borrow table" above).
+
+**Built (2026-10-06)**:
+1. **Tint + hit flash**:
+   - `scripts/model_tint.gd` has a new `add_overlay(mesh, mat, on_top)`.
+     When a mesh already has a `material_overlay`, it chains the two with
+     `next_pass` instead of replacing it. A per-mesh copy carries the
+     `next_pass`, and the flash material is never copied (its tween keeps
+     working).
+   - `hit_flash_component.gd` adds its flash with `on_top = true`.
+   - New `EnemyDefinition.model_tint` (alpha 0 = none). `enemy.gd._ready()`
+     applies it once (not in `reset()`, which would stack a second layer).
+   - Towers: `tower.tscn` has `HitFlashComponent.enabled = false`, so no
+     tower flashes (by design, unchanged). Their tint now goes through the
+     same helper.
+2. **21 `.tres`**: `scenes/game_object/chap3|4|5/chapN_enemy_01–05/` and
+   `chapN_boss_01–02/`.
+   - Generated from the chap1 `.tres`: same stats, armor and flyer. Own
+     `enemy_id`, resist and tint (the colours above). `scene` = the chap1
+     scene.
+   - A comment at the top of each says how to swap in the real model.
+   - The folders are where the real `chapN_*.tscn` goes later.
+3. **8 arenas**: `chap3_arena` … `chap10_arena`, copies of `chap2_arena`
+   with their own `color_1–4`: ch3 purple, ch4 muted dark green, ch5
+   orange, ch6 sand, ch7 slate, ch8 mauve, ch9 rust, ch10 stone. Tunable in
+   the Inspector.
+4. **8 chapters**: `resources/chapters/chapter_03–10.tres`.
+   - Names "Void", "Poison", "Fire", "Chapter 6" … "Chapter 10".
+   - Pools per the roster table, 12 waves, `sort_order` 2–9, own arena,
+     map image = `chapter_01_image_v2.png` (placeholder).
+   - `ui_assets.md` → STILL TO MAKE lists the `chapter_03–10` map images and
+     the chap3/4/5 models.
+5. **Lineup previews**:
+   - One shared `@tool` base:
+     `scenes/game_object/chapter_lineup/chapter_lineup_preview.tscn` + `.gd`.
+     It has the chap2 preview's camera and light, and builds the arena +
+     5 enemies in front + 2 bosses behind from its `chapter` export.
+   - Grounded enemies rest on their body sphere and flyers sit at
+     `hold_height`. The tint is applied in the editor. Built nodes have no
+     owner, so they're never saved.
+   - `chapN_lineup_preview.tscn` (ch3–10) inherit it and set `chapter`.
+   - The user checked ch3 in the editor: "all looks good".
+   - `chap2_lineup_preview.tscn` is unchanged (hand-placed). The shared
+     builder reproduces its positions within 2 cm.
+6. **Tests** (`_read_only = true`, the save is never written):
+   - Headless: overlay chain 6/6, the 21 `.tres` 357/357, chapters 175/175,
+     previews 121/121.
+   - Full run per chapter 3–10 (570 checks, 0 fails):
+     - The arena swaps, and wave 1 only uses the pool.
+     - All 7 types walk and attack. Flyers are at ~1.0; the rest stay
+       grounded.
+     - Tint + flash are on.
+     - A hit from each of the 5 schools = the armor table, ×0.5 for the
+       set's school.
+     - All die.
+     - Wave 12 spawns one pool boss, and its kill shows the victory
+       screen. Ch3 unlocks Poison and ch4 unlocks Fire.
+   - Windowed runs ch3/5/7 (216 checks, 0 fails) + screenshots of waves,
+     the boss wave and victory.
+   - The test spawns all 7 types (bosses too) around the tower at once,
+     to check every type quickly. That's test-only: real waves 1–11 use
+     only `enemy_pool`, and wave 12 is one boss.
+- **Bug found and fixed (pre-existing, also ch1; fixed 2026-10-06 at the
+  user's request)**:
+  - Problem: the boss's XP could level the player up, and the level-up
+    draft then opened *after* the victory screen. `enemy.gd._on_died()`
+    emits `enemy_died` (→ victory) before `xp_gained` (→ level-up →
+    `open_draft`). The draft sat behind the victory panel, and
+    `GameState.phase` ended as DRAFT instead of VICTORY.
+  - Fix: `draft_manager.gd open_draft()` returns early when the phase is
+    VICTORY or DEFEAT. That's one guard, and it also covers XP arriving
+    after the tower dies. The XP itself still counts.
+  - The next run is unaffected: `GameState.start_run()` sets the phase to
+    WAVE before the first-spell draft.
+  - Tested:
+    - Full runs of ch1–10: the phase stays VICTORY, with no DRAFT after
+      it.
+    - The boss XP still levels up.
+    - A fresh run still opens its first-spell draft.
+    - The windowed ch3 victory screenshot has no draft card behind it.
+- **Not verified by the tests**: how the enemies look while moving in a
+  real run, and the Return to Map button on ch3–10 (the same code as ch2,
+  tested in 09-07). Ch3–10 can't be picked on the world map until 09-09.
+- **Look at**: ch3 (purple on purple) and ch5 (orange on orange) enemies
+  blend into the ground more than the others. A ground colour tweak fixes
+  it if wanted.
 
 **Placeholders**: borrowed `.glb` per enemy → final
 `assets/models/chap<N>/chap<N>_enemy_0M.glb` / `_boss_0M.glb`; map image →
 `world_map/chapter_0N_image.png`.
-**Preview**: `chap<N>_lineup_preview.tscn` per chapter.
+**Preview**: `chap<N>_lineup_preview.tscn` per chapter (ch3–10), built by
+`chapter_lineup/chapter_lineup_preview.tscn`.
 
 **Acceptance criteria**:
-- [ ] Every launch chapter is fully playable, and swapping any single enemy to
-      a real model is one `ext_resource` change.
+- [x] Every launch chapter is fully playable, and swapping any single enemy to
+      a real model is one change in one file (the `.tres` `scene` line, plus
+      clearing `model_tint`).
 
 ---
 
-## Task 09-09 — Chapter Select Carousel
+## Task 09-09 — Chapter Select Carousel ✅ DONE (2026-10-06, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -1527,16 +1759,153 @@ get there".
 `world_map_content.gd` has `CHAPTER_IDS = ["chapter_01"]` hardcoded and a
 `_current_index` nothing moves.
 
-- [ ] Replace `CHAPTER_IDS` with `ChapterRegistry` (09-06).
-- [ ] Left/right arrows + horizontal swipe on the chapter art move
+- [x] Replace `CHAPTER_IDS` with `ChapterRegistry` (09-06).
+- [x] Left/right arrows + horizontal swipe on the chapter art move
       `_current_index`. The title, art and Play button follow it. Remember the
       last viewed chapter (per-viewer convenience, can live in `SaveData` with
       a migration).
-- [ ] Locked chapters use the existing `chapter_node.locked` and
+  - **Q2 remember across restarts** ✅ answered (user, 2026-10-06):
+    **option a**, saved in the save file.
+    - Consequence: a new `SaveData` field for the last viewed chapter.
+      `Constants.SAVE_VERSION` goes 3 → 4, with a
+      `MetaManager._migrate_3_to_4()` that defaults it to chapter 1.
+    - Consequence: store the chapter's **id** (e.g. `"chapter_03"`), not
+      its position, so adding or reordering chapters never points it at
+      the wrong one. An unknown id falls back to chapter 1.
+    - Consequence: **09-10's save bump becomes 4 → 5** (its
+      `cleared_chapters` field), not 3 → 4.
+    - Consequence: your real save upgrades itself to v4 the first time you
+      launch the updated game. Tests stay read-only and check the
+      migration in memory, never on the real file.
+    - **Follow-up: when to save, and the energy clock** ✅ answered (user,
+      2026-10-06: "do what is recommended and how it's done in Archero").
+      - Found: `MetaManager.save()` set `last_energy_timestamp = now` on
+        **every** save. Offline regen (+1 per 20 min, applied only on
+        launch) counts from that timestamp, so every save (Play,
+        upgrades, tower pick) threw away partial progress, and time spent
+        with the game open never counted. Saving on every chapter change
+        would have made that worse.
+      - Chosen: **save on every chapter change, and fix the clock**, the
+        Archero way (its energy clock runs in real time and no action
+        resets it). `save()` no longer touches the timestamp. It only
+        moves when energy actually comes back (forward by exactly the time
+        used, so partial progress is kept) or when spending from full
+        starts the clock.
+      - Not in this task: energy refilling live while the game is open,
+        plus the countdown, which is **10-07** (noted there). This fix is
+        the groundwork 10-07 builds on.
+  - **Q3 ends of the list** ✅ answered (user, 2026-10-06): **stop at the
+    ends**, no wrap-around.
+    - Consequence: the left arrow is hidden on the first chapter and the
+      right arrow on the last. Swiping past either end does nothing.
+    - Consequence: "first" and "last" come from `ChapterRegistry`, so a
+      chapter 11 added later just becomes the new end, with no code
+      change.
+  - **Q4 change animation** ✅ answered (user, 2026-10-06): **slide**. The
+    old picture slides out and the new one slides in from the side you
+    moved towards (~0.25 s), with the title following.
+    - Consequence: the screen holds two chapter pictures during a slide,
+      clipped so nothing shows outside the picture's band. Arrows and
+      swipes are ignored mid-slide, the same as the NavBar's own slide
+      guard.
+- [x] Locked chapters use the existing `chapter_node.locked` and
       `ui_locked_overlay.png`. Play is disabled on them and shows the unlock
       condition (09-10).
-- [ ] Arrow buttons are a small `@tool` widget (`widget/carousel_arrow/`),
+  - **Q1 locks before 09-10** ✅ answered (user, 2026-10-06): **option a**,
+    "if you change it later in the next task". All 10 chapters are playable
+    from the carousel for now.
+    - Consequence: 09-09 builds the lock **display** (overlay, disabled
+      Play, unlock-condition text) and reads "is this chapter locked?" from
+      one place, which returns "open" for every chapter until 09-10.
+    - Consequence: **09-10 must switch the locks on**. Its
+      `ChapterRegistry.is_unlocked(id)` replaces that one place, with no
+      carousel change. (Added to 09-10 as a checkbox.)
+- [x] Arrow buttons are a small `@tool` widget (`widget/carousel_arrow/`),
       tuned in its own scene.
+
+**Built (2026-10-06)**:
+1. **Arrow widget + shared panel base**:
+   - `scenes/ui/widget/panel_button_base.gd` holds the rounded panel (colour,
+     corners, outline, darker when pressed), moved out of `pause_button.gd`.
+     It's the same pattern as `pill_base.gd`, with the subclass overriding
+     `_apply_glyph()`.
+   - `pause_button.gd` now extends it and keeps only its two bars. Checked:
+     its panel, bars, positions and exports are identical before and after,
+     so `game_world.tscn` needed no edit.
+   - New `scenes/ui/widget/carousel_arrow/` (`.tscn` + `.gd`): extends the
+     base, with a chevron drawn on an internal child. Knobs: `direction`,
+     `glyph_size`, `glyph_thickness`. A 110×110 circle by default.
+2. **Save v4 + energy clock**:
+   - `SaveData.last_chapter_id` (default `"chapter_01"`), `SAVE_VERSION` 4,
+     `MetaManager._migrate_3_to_4()` and `select_chapter(id)`, which saves.
+   - Energy clock fix (see the follow-up under Q2): `save()` no longer
+     touches `last_energy_timestamp`.
+     - Offline regen advances it by exactly the intervals used, or sets it
+       to now when the bar is full.
+     - `spend_energy()` from full starts it.
+   - The user's real save was upgraded once to v4 by the first launch of
+     the new code (MetaManager loads before a test can go read-only). The
+     user wasn't running Godot. The diff: only `save_version` and the new
+     `last_chapter_id` changed; energy and the timestamp are identical.
+3. **Carousel** (`world_map_content.tscn` / `.gd`):
+   - `ChapterRegistry.all()` replaces `CHAPTER_IDS`. The screen opens on
+     `MetaManager.last_chapter_id` (an unknown id → chapter 1).
+   - `LeftArrow` / `RightArrow` are hidden at the ends, with no wrap.
+   - The picture sits in a clipped `Carousel` band (full width, the
+     picture's height), which reads the swipe: ≥ 80 px and more horizontal
+     than vertical. Dragging left = next.
+   - The slide is 0.25 s: the incoming picture (a runtime `chapter_node`)
+     comes from the side moved towards and the old one is freed afterwards.
+     Arrows, swipes and Play are ignored mid-slide.
+   - Every change saves via `select_chapter()`.
+   - Play starts the chapter on screen with the selected tower (unchanged).
+   - Locks: `_is_locked()` is the one check and returns false for every
+     chapter until 09-10 (Q1). Locked = lock overlay + greyed, disabled Play
+     + `LockedLabel` "Beat Chapter N to unlock" (N = the chapter before).
+   - "Beat Chapter N to unlock" moved into
+     `ChapterRegistry.beat_to_unlock_text()`. The garage's `_unlock_text()`
+     uses it, so the text isn't written twice.
+   - `play_button.gd` got a `disabled_tint` knob (default grey 0.5),
+     applied on redraw, because the art has no disabled variant and a
+     disabled Play looked enabled.
+4. **Preview**:
+   - `world_map_content.tscn` shows both arrows in the editor
+     (`carousel_arrow` is `@tool`), and `carousel_arrow.tscn` previews on its
+     own.
+   - New editor-only `chapter_node.preview_locked` knob shows the lock
+     overlay without touching the runtime `locked` (tested: ignored at
+     runtime).
+   - `LockedLabel` is a real node with placeholder text, hidden by default.
+     Show it with its eye icon to preview the locked screen, like
+     `OutOfEnergyLabel`.
+   - `ui_assets.md` lists the optional `world_map/ui_carousel_arrow.png`.
+5. **Tests** (`_read_only = true`; the real save's mtime was unchanged
+   after the tests):
+   - Carousel, headless, 64/64:
+     - Opens on the saved chapter, and an unknown id → chapter 1.
+     - The right arrow visits all 10 in order, saving each and leaving one
+       picture after each slide. No wrap at either end, and the arrows hide
+       at the ends.
+     - Input mid-slide is ignored.
+     - Swipes: left = next and right = previous; a short (50 px) or
+       vertical drag does nothing.
+     - All chapters are open.
+     - Forced lock (a test-only subclass locking ch3+): Play is disabled and
+       greyed, the text reads "Beat Chapter 2 to unlock", the overlay shows,
+       Play does nothing, and ch2 is normal again.
+     - The garage text is unchanged.
+     - Play → `pending_chapter_def` = ch5, 1 energy spent, the selected
+       tower kept.
+   - Save/energy 12/12. Pause button identical. Knob 3/3.
+   - Windowed: ch1, mid-slide, ch10 (right arrow hidden) and forced-locked
+     Void (overlay, text, grey Play).
+- **Not verified by the tests**:
+  - A real write → restart → reopen round-trip of `last_chapter_id`. The
+    tests can't write the real save; the load path is the same one the v4
+    migration used.
+  - How the swipe feels on a phone.
+  - The arrows inside the editor (Godot wasn't open). Open
+    `world_map_content.tscn` to check.
 
 **Placeholders**: arrows drawn in code (like `pause_button`) → final
 `world_map/ui_carousel_arrow.png` (optional).
@@ -1545,12 +1914,12 @@ get there".
 `carousel_arrow.tscn` previews on its own.
 
 **Acceptance criteria**:
-- [ ] Every chapter from `ChapterRegistry` can be reached. Play starts the
+- [x] Every chapter from `ChapterRegistry` can be reached. Play starts the
       chapter on screen; locked ones can't be started.
 
 ---
 
-## Task 09-10 — Chapter Progression & Locks
+## Task 09-10 — Chapter Progression & Locks ✅ DONE (2026-10-06, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -1564,22 +1933,105 @@ get there".
 **Covers**: A6 · **Files**: `SaveData`, `MetaManager`, `victory_screen.gd`,
 `ChapterDefinition`
 
-- [ ] `SaveData.cleared_chapters: Array[String]` (+ `SAVE_VERSION` bump and
+- [x] `SaveData.cleared_chapters: Array[String]` (+ `SAVE_VERSION` bump and
       migration). `MetaManager.mark_chapter_cleared(id)` is called on victory.
-- [ ] `ChapterRegistry.is_unlocked(id)`: the first chapter is always open;
+  - Save bump is **v4 → v5** (09-09 already used v4 for `last_chapter_id`).
+  - **Q1 existing saves** ✅ answered (user, 2026-10-06): start **empty**.
+    No guessing past wins from owned towers ("my current save clear it,
+    idc"). Only some chapters have towers, so that guess wouldn't work in
+    general anyway.
+    - Consequence: `_migrate_4_to_5()` sets `cleared_chapters = []`. After
+      the upgrade only chapter 1 is open; beating it again opens chapter 2.
+      Owned towers, materials, stars and ranks stay as they are.
+    - Consequence: from now on every boss kill records its chapter, for
+      all chapters (not just the ones with towers).
+  - **Q2 after a first clear** ✅ answered (user, 2026-10-06: "do what
+    Archero does"): the map opens on the **newly unlocked chapter**. Win
+    ch1 → Continue → the map shows ch2.
+    - Consequence: `mark_chapter_cleared()` also sets `last_chapter_id` to
+      the next chapter, but only on a first clear that opened one. A replay,
+      or clearing the last chapter, leaves it alone.
+  - **Q3 saved chapter is locked** (e.g. after the v5 upgrade your save
+    points at ch10, which will be locked): following the same Archero
+    answer, the map opens on the **furthest open chapter** instead. ✅
+    Approved with the plan (user, 2026-10-06).
+  - Plan also approved (user, 2026-10-06): `save()` / `load()` take an
+    optional path (default = the real save), so the "survives a restart"
+    test round-trips a **temp file** and never the user's save.
+- [x] `ChapterRegistry.is_unlocked(id)`: the first chapter is always open;
       chapter N+1 opens when N is cleared. The rule lives in one place.
-- [ ] Victory screen shows "Chapter N+1 unlocked!" the first time only.
-- [ ] The first clear of a chapter also unlocks its tower (09-05's
+- [x] **Switch the carousel's locks on** (from 09-09 Q1, 2026-10-06): 09-09
+      ships with every chapter open. Point its single "is locked" check at
+      `is_unlocked()` so locked chapters show the overlay and can't be
+      played.
+- [x] Victory screen shows "Chapter N+1 unlocked!" the first time only.
+- [x] The first clear of a chapter also unlocks its tower (09-05's
       `unlock_chapter_id`). One hook: `mark_chapter_cleared` → tower
       unlocks. The victory screen shows both lines.
-- [ ] Buying a tower from a chest never marks a chapter cleared.
+- [x] Buying a tower from a chest never marks a chapter cleared.
+
+**Built (2026-10-06)**:
+1. **Save v5**:
+   - `SaveData.cleared_chapters`, `SAVE_VERSION` 5, and
+     `MetaManager._migrate_4_to_5()` (empty, Q1).
+   - `load(path = SAVE_PATH)` remembers its path and every `save()` writes
+     there. The game always uses the real save; tests `load()` a temp file
+     for a true save → reload round-trip.
+   - Loading uses `CACHE_MODE_IGNORE`, so a reload reads the file, not a
+     cached copy.
+   - The fresh-save branch also resets gems, selected tower, last chapter
+     and progress.
+2. **One hook**: `MetaManager.mark_chapter_cleared(id)`. The first clear
+   records the chapter, unlocks its towers (`unlock_towers_for_chapter`,
+   moved out of `game_world.gd`), points `last_chapter_id` at the opened
+   chapter (Q2), and returns `{chapter_id, tower_ids}`. A replay returns
+   nothing and changes nothing.
+   - `unlock_tower()` (the future chest path) never touches progress.
+3. **One rule**: `ChapterRegistry.is_unlocked(id)`. The first chapter is
+   always open; N+1 opens once N is in `cleared_chapters`. Plus
+   `next_of(id)`.
+4. **Victory**:
+   - `game_world._on_boss_died()` calls `mark_chapter_cleared()`.
+   - `victory_screen.gd` shows "Chapter N unlocked!" above the tower line.
+     Both lines show only on a first clear, and there's no chapter line
+     after the last chapter.
+   - The editor placeholder shows both lines.
+5. **Carousel locks on**: `world_map_content._is_locked()` =
+   `not ChapterRegistry.is_unlocked()`.
+   - A locked saved chapter opens on `_furthest_open_index()` (Q3). It's
+     computed with the screen's own `_is_locked()`, so the screen has one
+     lock check.
+   - Locked chapters can still be browsed and show the overlay, a greyed
+     Play and "Beat Chapter N to unlock".
+6. **The user's real save**: upgraded once to v5 by the first launch of the
+   new code (the user wasn't playing). The diff: only `save_version` 4 → 5
+   and the new empty `cleared_chapters`. Towers, materials and energy are
+   unchanged. Since it points at ch10 (locked), the map now opens on ch1.
+7. **Tests** (the real save's mtime was unchanged after the upgrade):
+   - Progression, headless, on a temp save (29/29):
+     - A fresh save has only ch1 open.
+     - Clearing ch1 opens ch2, unlocks Frost and moves the map to ch2.
+     - A replay gives nothing new and doesn't move the map.
+     - A chest tower doesn't clear a chapter.
+     - Restart round-trip on the temp file: cleared ch1, the towers, the
+       last chapter and ch2 open all survive, and the file is v5.
+     - Clearing ch10 opens nothing.
+     - Carousel: saved ch10 → opens ch1. A fresh ch2 is locked ("Beat
+       Chapter 1 to unlock", overlay); after a ch1 win the map opens on
+       open ch2; ch3 is still locked and Play does nothing.
+     - Victory lines: both shown, and hidden on a replay.
+   - Windowed full flow (7/7): ch1 boss kill → the victory screen shows
+     both lines → Continue → the map is on Frozen Wastes and playable →
+     ch3 (Void) is locked. Screenshots taken.
+   - Regressions: carousel 65/65 (updated for the locks and the Q3 jump),
+     save 12/12, full runs of ch1–10 all pass.
 
 **Placeholders**: none (text).
 **Preview**: `victory_screen.tscn` shows the unlock line in the editor
 (placeholder text, hidden at runtime unless it applies).
 
 **Acceptance criteria**:
-- [ ] Fresh save: only chapter 1 playable. Beating it unlocks 2, and that
+- [x] Fresh save: only chapter 1 playable. Beating it unlocks 2, and that
       survives a restart.
 
 ---

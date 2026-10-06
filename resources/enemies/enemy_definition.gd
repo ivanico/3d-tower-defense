@@ -16,3 +16,8 @@ extends Resource
 @export var is_boss: bool = false
 @export var is_flying: bool = false
 @export var hold_height: float = 0.5
+## Placeholder support (Epic 09 rule 1): a themed set with no models of its own
+## points `scene` at another chapter's enemy and washes it in its school colour
+## (scripts/model_tint.gd, same as TowerDefinition.model_tint). Alpha 0 = no
+## tint. When the real model arrives: point `scene` at it and clear this.
+@export var model_tint: Color = Color(1, 1, 1, 0)

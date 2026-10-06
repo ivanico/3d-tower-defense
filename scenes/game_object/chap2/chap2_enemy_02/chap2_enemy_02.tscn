@@ -1,10 +1,10 @@
-[gd_scene format=4]
+[gd_scene load_steps=18 format=3 uid="uid://js2bhf7b8oaf"]
 
 [ext_resource type="PackedScene" uid="uid://bvf83nj4x5wxy" path="res://assets/models/chap2/chap2_enemy_02.glb" id="1_glb"]
 [ext_resource type="PackedScene" uid="uid://cxjfi50df3rsr" path="res://scenes/component/death_fx_component.tscn" id="Comp_death"]
 [ext_resource type="PackedScene" path="res://scenes/component/hit_flash_component.tscn" id="Comp_flash"]
 [ext_resource type="PackedScene" uid="uid://ds0gb6fxku8hl" path="res://scenes/component/health_component.tscn" id="Comp_health"]
-[ext_resource type="PackedScene" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
+[ext_resource type="PackedScene" uid="uid://ckyxwo0imfk0b" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
 [ext_resource type="PackedScene" path="res://scenes/component/move_to_target_component.tscn" id="Comp_mover"]
 [ext_resource type="PackedScene" path="res://scenes/component/status_effect_component.tscn" id="Comp_status"]
 [ext_resource type="Resource" path="res://resources/ui/enemy_bar_style.tres" id="EnemyBarStyle"]
