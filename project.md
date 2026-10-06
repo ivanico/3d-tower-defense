@@ -229,10 +229,11 @@ new damage types or armor types are added — the lookup itself is generic.
 > the five spell schools (`spells.md` Section 2) landed — every spell now
 > belongs to a school. The school rows are neutral vs. armor — school
 > counterplay comes from each enemy's *resisted school*
-> (`SCHOOL_RESIST_MULT`, halves damage and status — `spells.md` Section 3),
+> (`spells.md` Section 3),
 > not from the armor table. Void's row must always stay ≥ 1.0× and can never
 > be a resisted school: nothing resists Void. *(Superseded by v2 below: the
-> WC3 table is now the counterplay, and every themed enemy resists its set's school, 2026-10-03.)*
+> WC3 table is now the counterplay, and every themed enemy resists its set's school:
+> bosses −50 points, regular enemies −30 off the table value, min 10%, 2026-10-06.)*
 
 > **Extend later by:** adding new `DamageType` / `ArmorType` enum entries and
 > new rows/columns to this table — the damage-calculation code reads the table
@@ -274,13 +275,17 @@ WC3's Frozen Throne table for the mapped attack type:
 > (appended after `HEAVY`, not inserted before it — existing enemy `.tres`
 > files store `armor_type` as a raw int, so reordering would have silently
 > reclassified them). `CombatUtils.DAMAGE_TABLE` carries these percentages.
-> The per-enemy `resisted_school` / `SCHOOL_RESIST_MULT` multiplies on top
-> of this on the same hit. **Decided (revised 2026-10-03, 09-07):
-> every enemy of a themed set resists that set's school**, regular enemies
-> and bosses alike (× 0.5, never Void). This replaces 09-00.5's original
-> "bosses only" rule (`spells.md` §3).
+> The per-enemy `resisted_school` applies on top of this on the same hit.
+> **Decided (revised 2026-10-06, 09-11): every enemy of a themed set
+> resists that set's school. The resist is subtracted from this table's
+> value: bosses −50 points (`BOSS_SCHOOL_RESIST`), regular enemies −30
+> (`REGULAR_SCHOOL_RESIST`), never below 10% (`RESISTED_HIT_MIN`), never
+> Void.** Example: Nature 150% on a Medium regular Nature-set enemy = 120%.
+> This
+> replaces 09-00.5's original "bosses only" rule and 09-07's "everyone
+> × 0.5" (`spells.md` §3).
 >
-> **In use** (2026-10-03, the same in chap1 and chap2): enemy_01 Medium,
+> **In use** (the same in all five sets, chap1–5): enemy_01 Medium,
 > enemy_02/03 Light, enemy_04 Heavy, enemy_05 Fortified, boss_01
 > Fortified, boss_02 Medium. Nothing uses Unarmored yet.
 

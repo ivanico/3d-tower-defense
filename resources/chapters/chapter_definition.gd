@@ -16,3 +16,5 @@ extends Resource
 ## Artwork shown on the world map. Data-driven like TowerDefinition.icon — a new
 ## chapter sets its own here and the world map needs no code change.
 @export var map_image: Texture2D
+## One line under the picture on the chapter screen (chapter_select.tscn).
+@export_multiline var description: String = ""

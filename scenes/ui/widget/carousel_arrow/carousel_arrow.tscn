@@ -4,7 +4,7 @@
 
 ; Intentionally a single node, like pause_button: the panel stylebox and the
 ; chevron are built by the script (the chevron as an INTERNAL child), so nothing
-; is serialised into world_map_content.tscn. Tune the look here; the screen only
+; is serialised into the screen using it (chapter_select.tscn). Tune the look here; the screen only
 ; sets `direction` and the position.
 
 [node name="CarouselArrow" type="Button"]

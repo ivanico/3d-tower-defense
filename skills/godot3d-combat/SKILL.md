@@ -57,12 +57,13 @@ exists in `scenes/component/` but no scene instances it. The real path:
 ```gdscript
 # hurtbox_component.gd (real code, trimmed)
 func apply_hit(hit_damage: float, hit_damage_type: int, hit_world_pos: Vector3) -> void:
-    var resist_mult := 1.0
+    var hit_resist := 0.0
     if hit_damage_type == resisted_school and hit_damage_type != Constants.DamageType.VOID:
-        resist_mult = Constants.SCHOOL_RESIST_MULT   # boss-only by data rule
-    var final_dmg := CombatUtils.calculate_damage(hit_damage, hit_damage_type, armor_type) * resist_mult
+        hit_resist = resist   # set by enemy.gd: boss 0.50, regular 0.30 points
+    # table value - resist, never below Constants.RESISTED_HIT_MIN (10%)
+    var final_dmg := CombatUtils.calculate_damage(hit_damage, hit_damage_type, armor_type, hit_resist)
     health.damage(final_dmg)
-    CombatUtils.apply_school_perk(final_dmg, hit_damage_type, get_parent(), resist_mult)
+    CombatUtils.apply_school_perk(final_dmg, hit_damage_type, get_parent())
     _spawn_damage_number(...)
 ```
 

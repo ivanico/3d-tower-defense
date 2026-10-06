@@ -146,13 +146,18 @@
   school is mapped to a Warcraft 3 attack-type identity (Nature=Normal,
   Poison=Piercing, Frost=Siege, Fire=Magic, Void=Chaos) and `DAMAGE_TABLE`
   carries WC3's own numbers for those rows, against Unarmored/Heavy/Light/
-  Medium/Fortified armor. **In use** (chap1 and chap2 alike): enemy_01
-  Medium, enemy_02/03 Light, enemy_04 Heavy, enemy_05 Fortified, boss_01
-  Fortified, boss_02 Medium (each `.tres` `armor_type`).
-- **Resist** (revised 2026-10-03, 09-07): on top of the table, **every
-  enemy of a themed set** (regular and boss) resists its set's school via
-  `resisted_school` (× 0.5 damage and status, never Void). Chap1 = Nature,
-  chap2 = Frost. See `spells.md` §3.
+  Medium/Fortified armor. **In use** (the same in all five sets, chap1–5):
+  enemy_01 Medium, enemy_02/03 Light, enemy_04 Heavy, enemy_05 Fortified,
+  boss_01 Fortified, boss_02 Medium (each `.tres` `armor_type`).
+- **Resist** (revised 2026-10-06, 09-11): on top of the table, **every
+  enemy of a themed set** resists its set's school via `resisted_school`:
+  the resist is **subtracted** from the table value, **bosses −50 points,
+  regular enemies −30**, never below 10% (never Void;
+  `EnemyDefinition.get_resist()`, `CombatUtils.calculate_damage()`).
+  Burn/poison/heal follow the reduced damage; slows are not reduced. Nature set (chap1) = Nature, Frost
+  set (chap2) = Frost, Void set (chap3) = none, Poison set (chap4) =
+  Poison, Fire set (chap5) = Fire; chapters 6–10 reuse the sets. See
+  `spells.md` §3.
 - **Hit detection is a hybrid, not an `Area3D` overlap signal**: each
   archetype keeps a broad-phase `body_entered/exited` list of nearby
   enemies, does a precise `distance_to()` check in `_physics_process`, and

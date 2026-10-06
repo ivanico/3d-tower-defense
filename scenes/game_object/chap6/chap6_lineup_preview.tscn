@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://bdfux5uy6fu1l"]
 
 [ext_resource type="PackedScene" path="res://scenes/game_object/chapter_lineup/chapter_lineup_preview.tscn" id="1_base"]
 [ext_resource type="Resource" path="res://resources/chapters/chapter_06.tres" id="2_chapter"]

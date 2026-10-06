@@ -191,21 +191,29 @@ task, not done yet.
 
 ## 3. Resistances (armor vs. schools)
 
-> **Decided 2026-09-27 (`epic_09_content.md` 09-00.5 / 09-11), revised
-> 2026-10-03 (09-07):** the **WC3 armor table** (`project.md` "Damage Type
-> vs Armor Table (v2)") is the counterplay system for **every** enemy. On
-> top of it, **every enemy of a themed set, regular or boss, resists that
-> set's school** (the original "bosses only" rule was dropped on
-> 2026-10-03).
-> **Current data:** all 7 chapter-1 `.tres` have `resisted_school = 4`
-> (Nature); all 7 chapter-2 `.tres` have `resisted_school = 1` (Frost).
+> **Decided 2026-09-27 (`epic_09_content.md` 09-00.5), revised 2026-10-03
+> (09-07) and 2026-10-06 (09-11):** the **WC3 armor table** (`project.md`
+> "Damage Type vs Armor Table (v2)") is the counterplay system for
+> **every** enemy. On top of it, **every enemy of a themed set resists that
+> set's school**: the resist is **subtracted** from the armor-table value,
+> **bosses −50 points, regular enemies −30**, never below **10%** (Nature
+> 120% vs a regular Nature-set enemy = 90%).
+> **Current data** (each `.tres` `resisted_school`): Nature set (chap1) 4,
+> Frost set (chap2) 1, Void set (chap3) -1, Poison set (chap4) 3, Fire set
+> (chap5) 0. Chapters 6–10 reuse those sets unchanged. The per-chapter
+> table is in `epic_09_content.md` 09-11.
 
 - Each `EnemyDefinition` has a `resisted_school` (`-1` = none), copied onto
-  its `HurtboxComponent` (`hurtbox_component.gd:10`). **Rule: every
-  enemy sets its themed set's school** (Void set: `-1`, none).
-- A resisted hit deals `SCHOOL_RESIST_MULT` ≈ **0.5×** damage, and its
-  status effect (burn/slow/poison/lifesteal amount) is halved too
-  (`hurtbox_component.gd:17–24`).
+  its `HurtboxComponent` by `enemy.gd`. **Rule: every enemy sets its themed
+  set's school** (Void set: `-1`, none).
+- How much: `EnemyDefinition.get_resist()`, the one place the rule
+  lives: `Constants.BOSS_SCHOOL_RESIST` (0.50) when `is_boss`, else
+  `Constants.REGULAR_SCHOOL_RESIST` (0.30). `enemy.gd` copies it onto
+  `HurtboxComponent.resist`.
+- A resisted hit deals (table value − resist), never below
+  `Constants.RESISTED_HIT_MIN` (10%) — `CombatUtils.calculate_damage()`'s
+  `resist` argument. Burn, poison and the Nature heal are a % of that
+  reduced damage, with no extra cut; slows stay full strength (09-11 Q3b).
 - **Nothing ever resists Void.** Void is the "safe pick" school — its rows
   in the damage table are always ≥ 1.0×, and `hurtbox_component.gd:18`
   ignores a Void resist even if one is set. That's the tradeoff triangle:
@@ -214,7 +222,7 @@ task, not done yet.
 - **Which school an enemy resists** (decided 2026-09-28 for bosses,
   extended to regular enemies 2026-10-03): it resists the school of its
   **themed enemy set** (Nature set → Nature,
-  Frost set → Frost, Poison → Poison, Fire → Fire; **Void-set bosses resist
+  Frost set → Frost, Poison → Poison, Fire → Fire; **the Void set resists
   nothing**). Mixed chapters reuse those enemies with their resist
   unchanged.
 
@@ -359,7 +367,8 @@ each `.tres`, tune freely in the Inspector):
 - [x] Add the school perk constants from Section 2 to `Constants.gd`
 	  (`FIRE_BURN_DPS_PERCENT`, `FROST_SLOW_PERCENT`, `POISON_*`,
 	  `VOID_DAMAGE_PREMIUM`, `NATURE_LIFESTEAL_PERCENT`, durations, and
-	  `SCHOOL_RESIST_MULT`).
+	  the resists `BOSS_SCHOOL_RESIST` 0.50 / `REGULAR_SCHOOL_RESIST` 0.30
+	  + `RESISTED_HIT_MIN` 0.10, reworked in 09-11).
 - [x] Build a generic `StatusEffectComponent` on `Enemy.tscn`:
 	  `apply_burn(dps, duration)`, `apply_slow(percent, duration)`,
 	  `apply_poison(dps, slow_percent, duration)`. Re-apply refreshes
@@ -374,8 +383,8 @@ each `.tres`, tune freely in the Inspector):
 	  status (its premium is baked into its `.tres` damage values).
 	  *(`CombatUtils.apply_school_perk()`, called from
 	  `HurtboxComponent.apply_hit()` — the one shared hit funnel. Per-enemy
-	  `resisted_school` on `EnemyDefinition` halves damage + status via
-	  `SCHOOL_RESIST_MULT`; Void exempt.)*
+	  `resisted_school` on `EnemyDefinition` takes `get_resist()` points
+	  off the table value (boss 0.50, regular 0.30, min 10%); Void exempt.)*
 - [x] **Duplicate-pick stacking**: when a drafted spell is already owned,
 	  the draft must still be able to offer it; picking it again increments
 	  a per-spell `stack_count` on the tower's active-spell entry (instead
@@ -740,11 +749,12 @@ per-spell code): Fire burn 30%/s for 3 s · Frost slow 40% for 2 s ·
 Void no status but ~18% higher damage baked in, never resistible ·
 Poison 15%/s for 4 s + 20% slow for 2 s · Nature heals the tower for
 18% of damage dealt. Re-applying refreshes the timer, never stacks.
-Resistances are wired **and in use**: all 7 chapter-1 `.tres` have
-`resisted_school = 4` (Nature) and all 7 chapter-2 `.tres` have `1`
-(Frost), so half damage + half status from that school (Void exempt by
-code, `hurtbox_component.gd:18`). **Decided (revised 2026-10-03):** every
-themed enemy keeps its set's resist, regular or boss. See §3.
+Resistances are wired **and in use**: every themed enemy resists its
+set's school (Nature set 4, Frost 1, Poison 3, Fire 0, Void set none).
+A hit from that school loses 50 points off the armor-table value on a
+boss and 30 on a regular enemy, never below 10% (revised 2026-10-06,
+09-11); burn/poison/heal follow the reduced damage, slows are not reduced. Void is exempt by code
+(`hurtbox_component.gd` `apply_hit()`). See §3.
 
 ### 6.6 Stacking
 

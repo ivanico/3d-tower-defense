@@ -401,7 +401,9 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
 
 ### `hurtbox_component.gd`
 - **What it does**: `class_name HurtboxComponent extends Area3D`. Exports
-  `armor_type` and `resisted_school` (boss-only by rule, `spells.md` §3). **No
+  `armor_type`, `resisted_school` and `resist` (every themed enemy resists
+  its set's school: boss −50, regular −30 points off the table value, min 10%,
+  set by `enemy.gd`; `spells.md` §3). **No
   `area_entered` handler.** Its one public method,
   `apply_hit(damage, damage_type, hit_world_pos)` (`hurtbox_component.gd:16`),
   is the funnel every archetype calls directly after its own broad-phase +
@@ -841,9 +843,14 @@ full-screen.
 The chapter's picture is data-driven: `ChapterDefinition.map_image` (new
 `@export`, set to `chapter_01_image_v2.png` in `chapter_01.tres`), the same
 pattern as `TowerDefinition.icon`, so chapter #2 needs no code change.
-v1 has one chapter, so `world_map.gd` shows `CHAPTER_IDS[_current_index]`
-rather than a grid — **choosing between chapters still needs a carousel plus a
-way to move `_current_index`**, which is not built.
+Choosing a chapter (Epic 09 09-09, Archero-style since 2026-10-06): the home
+screen shows one chapter, with no arrows and no swipe. Tapping the picture
+opens `chapter_select.tscn` (on a CanvasLayer over the NavBar): every chapter on
+a swipeable strip with the neighbours peeking in, "Chapter Length: N"
+(`wave_count`), `ChapterDefinition.description`, a green `primary_button`
+Enter (greyed + "Beat Chapter N to unlock" on locked chapters) and a
+`carousel_arrow` Back. Enter saves `last_chapter_id` and returns home; Play
+starts that chapter.
 
 **Victory/defeat screens:** both use `ui_panel_dark_v2.png` as the stats
 panel — sized 800×1099 to match the art's 0.73 aspect, with every label and

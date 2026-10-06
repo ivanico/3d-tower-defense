@@ -3,7 +3,7 @@ extends Button
 
 ## Shared look for small drawn (no-art) buttons: a rounded panel with an optional
 ## outline that darkens while held, plus a glyph drawn on top — the in-run
-## `pause_button` (two bars) and the world map's `carousel_arrow` (a chevron).
+## `pause_button` (two bars) and `carousel_arrow` (a chevron, the chapter screen's Back).
 ##
 ## Drawn, not art: a glyph stays crisp at any size where a 1200px generated icon
 ## would have to be shrunk (see the UI art sizing rules in components.md).

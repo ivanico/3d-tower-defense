@@ -13,7 +13,7 @@ var energy: int = Constants.MAX_ENERGY
 var last_energy_timestamp: int = 0
 var premium_currency: int = 0
 var selected_tower_id: String = "ancient_tower"
-## The chapter the world map carousel last showed (09-09). An id, not a
+## The chapter picked on the chapter screen (09-09, Enter). An id, not a
 ## position, so adding chapters never points it at the wrong one.
 var last_chapter_id: String = "chapter_01"
 ## Every chapter whose boss has been beaten at least once (09-10). Chapter N+1
@@ -241,7 +241,8 @@ func _migrate_3_to_4() -> void:
 func _migrate_4_to_5() -> void:
 	cleared_chapters = []
 
-## The carousel's current chapter. Saved at once, so it survives a restart.
+## The chapter picked with Enter on the chapter screen. Saved at once, so it
+## survives a restart.
 func select_chapter(chapter_id: String) -> void:
 	if chapter_id == last_chapter_id:
 		return

@@ -7,7 +7,9 @@ class_name CombatUtils
 # Warcraft 3 attack-type identity: FIRE=Magic, FROST=Siege, VOID=Chaos,
 # POISON=Piercing, NATURE=Normal. Values are WC3's own multipliers for those
 # rows. This is on top of, not instead of, the per-enemy resisted school
-# (SCHOOL_RESIST_MULT in apply_hit) — both layers apply on the same hit.
+# (calculate_damage's `resist`: boss 0.50, regular 0.30 points off the table
+# value, never below Constants.RESISTED_HIT_MIN) — both layers apply on the
+# same hit.
 # Void's row must always stay >= 1.0 (never resisted by anything).
 const DAMAGE_TABLE: Array = [
 	[1.0,  2.0,  1.25, 0.75, 0.35],  # FIRE (Magic)
@@ -17,8 +19,13 @@ const DAMAGE_TABLE: Array = [
 	[1.0,  1.0,  1.0,  1.5,  0.7 ],  # NATURE (Normal)
 ]
 
-static func calculate_damage(base_amount: float, damage_type: int, armor_type: int) -> float:
+## `resist` = points the target resists this hit's school by (0 = not
+## resisted). Subtracted from the table value, floored at RESISTED_HIT_MIN:
+## Nature 1.2 vs resist 0.3 = 0.9 (09-11).
+static func calculate_damage(base_amount: float, damage_type: int, armor_type: int, resist: float = 0.0) -> float:
 	var multiplier: float = DAMAGE_TABLE[damage_type][armor_type]
+	if resist > 0.0:
+		multiplier = maxf(multiplier - resist, Constants.RESISTED_HIT_MIN)
 	return base_amount * multiplier
 
 static func get_damage_color(damage_type: int) -> Color:
@@ -229,9 +236,10 @@ static func release_particles(count: int) -> void:
 	_active_particle_budget = maxi(0, _active_particle_budget - count)
 
 # School perk on-hit application (spells.md Section 2) — the one generic
-# match on DamageType, used by every archetype's hit path. `resist_mult` is
-# 1.0 normally, SCHOOL_RESIST_MULT when the target resists this school.
-static func apply_school_perk(final_damage: float, damage_type: int, target: Node, resist_mult: float = 1.0) -> void:
+# match on DamageType, used by every archetype's hit path. A resisted hit is
+# already reduced in `final_damage`, so burn/poison/heal (a % of it) follow it
+# with no extra cut; slows stay full strength (09-11 Q3b).
+static func apply_school_perk(final_damage: float, damage_type: int, target: Node) -> void:
 	var status := target.find_child("StatusEffectComponent") as StatusEffectComponent
 	# Mono-school mastery bonus (project.md) — Fire/Frost/Poison/Nature swap in
 	# a bigger constant while all owned spells are this one school. Void has no
@@ -242,19 +250,19 @@ static func apply_school_perk(final_damage: float, damage_type: int, target: Nod
 		Constants.DamageType.FIRE:
 			if status:
 				var dps_pct := Constants.FIRE_MONO_BURN_DPS_PERCENT if mono else Constants.FIRE_BURN_DPS_PERCENT
-				status.apply_burn(final_damage * dps_pct * resist_mult, Constants.FIRE_BURN_DURATION)
+				status.apply_burn(final_damage * dps_pct, Constants.FIRE_BURN_DURATION)
 		Constants.DamageType.FROST:
 			if status:
 				var slow_pct := Constants.FROST_MONO_SLOW_PERCENT if mono else Constants.FROST_SLOW_PERCENT
-				status.apply_slow(slow_pct * resist_mult, Constants.FROST_SLOW_DURATION)
+				status.apply_slow(slow_pct, Constants.FROST_SLOW_DURATION)
 		Constants.DamageType.POISON:
 			if status:
 				var dot_pct := Constants.POISON_MONO_DOT_PERCENT if mono else Constants.POISON_DOT_PERCENT
 				var slow_pct := Constants.POISON_MONO_SLOW_PERCENT if mono else Constants.POISON_SLOW_PERCENT
-				status.apply_poison(final_damage * dot_pct * resist_mult, slow_pct * resist_mult, Constants.POISON_DOT_DURATION, Constants.POISON_SLOW_DURATION)
+				status.apply_poison(final_damage * dot_pct, slow_pct, Constants.POISON_DOT_DURATION, Constants.POISON_SLOW_DURATION)
 		Constants.DamageType.NATURE:
 			var lifesteal_pct := Constants.NATURE_MONO_LIFESTEAL_PERCENT if mono else Constants.NATURE_LIFESTEAL_PERCENT
-			GameState.heal(final_damage * lifesteal_pct * resist_mult)
+			GameState.heal(final_damage * lifesteal_pct)
 		# VOID applies no status — its premium is baked into its .tres damage.
 
 static func calculate_wave_hp_scale(wave: int) -> float:

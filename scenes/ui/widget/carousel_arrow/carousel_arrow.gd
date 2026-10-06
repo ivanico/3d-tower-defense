@@ -1,13 +1,15 @@
 @tool
 extends "res://scenes/ui/widget/panel_button_base.gd"
 
-## World map chapter carousel arrow: the shared drawn panel
-## (panel_button_base.gd) with a chevron glyph pointing left or right.
+## Round arrow button: the shared drawn panel (panel_button_base.gd) with a
+## chevron glyph pointing left or right. Built for the 09-09 chapter carousel;
+## since the Archero-style change (2026-10-06) it is the chapter screen's Back
+## button (chapter_select.tscn, pointing left).
 ## Placeholder for the optional final art `world_map/ui_carousel_arrow.png`
 ## (Epic 09 rule 1).
 ##
-## Only the LOOK and the `pressed` signal. Which chapter it moves to, and hiding
-## it at the ends of the list, belong to world_map_content.gd.
+## Only the LOOK and the `pressed` signal. What a press does belongs to the
+## screen that uses it.
 ##
 ## Everything below is editable in the inspector and updates live.
 

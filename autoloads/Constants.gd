@@ -153,7 +153,15 @@ const POISON_SLOW_DURATION:     float = 2.0
 # school's damage * (1 + VOID_DAMAGE_PREMIUM)); nothing reads this at runtime.
 const VOID_DAMAGE_PREMIUM:      float = 0.18
 const NATURE_LIFESTEAL_PERCENT: float = 0.18  # % of damage dealt healed to tower
-const SCHOOL_RESIST_MULT:       float = 0.5   # resisted school: damage AND status halved
+# Resisted school (09-11, 2026-10-06): every themed enemy resists its set's
+# school. The resist is SUBTRACTED from the armor-table value, in points:
+# Nature 120% vs a regular enemy's 0.30 resist = 90%. Never below
+# RESISTED_HIT_MIN. EnemyDefinition.get_resist() picks by is_boss. Burn/poison/
+# heal follow the reduced hit damage; slows are not reduced. Void is never
+# resisted.
+const BOSS_SCHOOL_RESIST:    float = 0.50  # bosses: -50 points
+const REGULAR_SCHOOL_RESIST: float = 0.30  # regular enemies: -30 points
+const RESISTED_HIT_MIN:      float = 0.10  # a resisted hit always deals >= 10%
 const STATUS_TICK_INTERVAL:     float = 0.5   # seconds between DoT damage ticks
 
 # Mono-school mastery bonus — owning all MAX_SPELL_SLOTS spells of one school

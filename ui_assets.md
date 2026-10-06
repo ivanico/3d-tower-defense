@@ -175,7 +175,7 @@ C. REWARDS & MATERIALS — all 16 exist in `rewards/`
 - [ ] world_map/chapter_02_image.png (Frozen Wastes map art — placeholder
                               today: chapter_01_image_v2.png, set in
                               resources/chapters/chapter_02.tres; Epic 09 09-07)
-- [ ] world_map/ui_carousel_arrow.png (optional — chapter carousel arrows;
+- [ ] world_map/ui_carousel_arrow.png (optional — chapter screen Back arrow;
                               placeholder today: chevron drawn in code by
                               widget/carousel_arrow/; Epic 09 09-09)
 - [ ] world_map/chapter_03_image.png … chapter_10_image.png (map art for

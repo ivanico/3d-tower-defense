@@ -26,12 +26,28 @@ static func get_by_id(chapter_id: String) -> Resource:
 	return null
 
 
-## 1-based number shown to the player ("Chapter 3"): its place in play order.
-static func number_of(chapter_id: String) -> int:
+## 0-based place of `chapter_id` in play order, or -1 if no chapter has it.
+static func index_of(chapter_id: String) -> int:
 	var chapters := all()
 	for i in chapters.size():
 		if chapters[i].chapter_id == chapter_id:
-			return i + 1
+			return i
+	return -1
+
+
+## 1-based number shown to the player ("Chapter 3"): its place in play order.
+static func number_of(chapter_id: String) -> int:
+	return index_of(chapter_id) + 1
+
+
+## Index of the last chapter in play order that is_unlocked() lets through
+## (chapter 1 at worst, which is never locked). Used when a saved chapter is
+## locked (09-10 Q3).
+static func furthest_open_index() -> int:
+	var chapters := all()
+	for i in range(chapters.size() - 1, -1, -1):
+		if is_unlocked(chapters[i].chapter_id):
+			return i
 	return 0
 
 
@@ -55,8 +71,8 @@ static func is_unlocked(chapter_id: String) -> bool:
 
 
 ## "Beat Chapter N to unlock", N = `chapter_id`'s place in play order. Shared by
-## the garage (a tower's unlock_chapter_id) and the world map carousel (the
-## chapter before a locked one). A chapter not built yet falls back to the number
+## the garage (a tower's unlock_chapter_id) and the chapter screen (the chapter
+## before a locked one). A chapter not built yet falls back to the number
 ## in its id ("chapter_03" -> 3).
 static func beat_to_unlock_text(chapter_id: String) -> String:
 	var number := number_of(chapter_id)

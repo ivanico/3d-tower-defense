@@ -1917,6 +1917,117 @@ get there".
 - [x] Every chapter from `ChapterRegistry` can be reached. Play starts the
       chapter on screen; locked ones can't be started.
 
+### Change (2026-10-06): Archero-style chapter screen ✅ DONE (2026-10-06, user approved: "it looks fine")
+
+Asked by the user before starting 09-11. The arrows should not be visible by
+default. Tapping the chapter picture on the home screen opens a separate
+chapter screen (reference: Archero's chapter select). On that screen:
+- a title bar, and a big picture of the current chapter with its neighbours
+  peeking in at the sides
+- the chapter length and a short description
+- an Enter button and a back button
+- you swipe to change chapter, with no arrows
+
+- **Q1 home screen swipe** ✅ answered (user, 2026-10-06): **same as
+  Archero**: "you should not be able to move without clicking it".
+  - Consequence: the home screen shows one chapter only. There are no
+    arrows and swiping on the picture does nothing. Tapping the picture
+    opens the chapter screen.
+  - Consequence: changing chapter happens only on the new chapter screen.
+- **Q2 what Enter does** ✅ answered (user, 2026-10-06): **same as
+  Archero**. Enter picks the chapter and goes back to the home screen,
+  and the run starts with the home screen's Play.
+  - Consequence: Play stays the only thing that spends energy and starts
+    a run. The chapter screen never starts a run.
+  - Consequence: the chosen chapter is saved as `last_chapter_id` (the
+    same as today's carousel), so home shows it after a restart.
+  - The user added: "the Enter button should be the button I have, don't
+    make a new button". It reuses an existing button widget.
+    - **Q2a which button** ✅ answered (user, 2026-10-06): "a normal green
+      button, not the Play button" = the existing
+      `widget/primary_button/primary_button.tscn` (green
+      `ui_button_primary.png`, the victory "Continue" / garage "Select"
+      one), instanced with the text "Enter". No new button widget.
+- **Q3 locked chapters on the chapter screen** ✅ answered (user,
+  2026-10-06): **like Archero**: the picture with the lock overlay, a
+  greyed-out Enter that can't be pressed, and "Beat Chapter N to unlock".
+  - Consequence: locked chapters can still be swiped to and looked at.
+  - Consequence: it reuses what exists: `chapter_node.locked` (lock
+    overlay), `ChapterRegistry.is_unlocked()` (the one rule) and
+    `ChapterRegistry.beat_to_unlock_text()`. The primary button already
+    has a grey disabled style.
+  - Consequence: Enter can never pick a locked chapter, so home always
+    shows an open chapter.
+- **Q4 length + description** ✅ answered (user, 2026-10-06): **both**,
+  with a placeholder description for now.
+  - Consequence: "Chapter Length: N" reads `ChapterDefinition.wave_count`
+    (12 for every chapter today, 20 after 09-17), so it updates with no
+    code change.
+  - Consequence: a new `ChapterDefinition.description` field (a `.tres`
+    field, no code per chapter). All 10 chapters get a placeholder line
+    until the user writes the real ones. It's data, not a save field, so
+    there's no save version bump.
+- **Q5 layout** ✅ answered (user, 2026-10-06): **like Archero**: the
+  energy/materials bar at the top, no bottom menu (Garage/Map/Codex) while
+  the chapter screen is open, and a back button in the bottom-left that
+  **reuses the existing arrow** (`widget/carousel_arrow/`, pointing left).
+  - Consequence: the chapter screen draws over the bottom menu, so it sits
+    above the shell's NavBar.
+  - Consequence: no new button widget. The arrow moves from "change
+    chapter" to "back".
+- All questions answered. Plan approved (user, 2026-10-06: "ok go").
+
+**Built (2026-10-06)**:
+1. `ChapterRegistry.index_of()` and `furthest_open_index()` (moved out of
+   `world_map_content.gd`, shared by both screens). `number_of()` now uses
+   `index_of()`.
+2. `ChapterDefinition.description`; all 10 `chapter_0N.tres` have
+   "Description coming soon." (data only, no save change).
+3. New `scenes/ui/chapter_select.tscn` / `.gd`:
+   - Top bar, "N. Name" title, every chapter on one `Strip` 720 px apart, so
+     the neighbours peek in at the sides. The swipe + 0.25 s slide moved here
+     from the home screen (not copied). It stops at both ends.
+   - "Chapter Length: N" (`wave_count`) and the description.
+   - Enter = `primary_button` "Enter". It saves via `select_chapter()`,
+     closes, and emits `chapter_entered`. On a locked chapter: lock overlay,
+     greyed Enter that does nothing, "Beat Chapter N to unlock".
+   - Back = `carousel_arrow` (left), bottom-left. It closes with no change.
+   - Swiping no longer saves; only Enter does.
+   - Editor preview: three placeholder pictures (previous / current / next).
+4. Home (`world_map_content`):
+   - No arrows, no swipe, no `Carousel` band. `ChapterImage` takes taps and
+     opens the chapter screen.
+   - The chapter screen sits on a `ChapterSelectLayer` CanvasLayer
+     (layer 2), so it covers the shell's NavBar.
+   - The home lock display (`LockedLabel`) was removed: home can only show
+     an open chapter now. Play keeps the lock check as a last guard.
+5. Comments/docs: `carousel_arrow`, `panel_button_base`, `meta_manager`,
+   `chapter_registry`, `components.md` world map section, `ui_assets.md`.
+6. Tests (`_read_only = true`):
+   - Headless 40/40: no arrows on home, a home drag doesn't change chapter,
+     a tap opens the screen above the NavBar, 10 pages, opens on the saved
+     chapter, neighbours peek, title/length/description, Back changes
+     nothing, swipe left = next / right = previous without saving, input
+     mid-slide ignored, short/vertical swipes ignored, stops at both ends,
+     locked ch4 (overlay, greyed Enter, text, Enter does nothing), Enter on
+     ch3 saves + home shows Void, reopen doesn't duplicate pages, Play starts
+     ch3 and spends 1 energy.
+   - Registry: `index_of`/`number_of`/`furthest_open_index`, all 10
+     descriptions.
+   - Windowed screenshots: home, chapter screen, mid-slide, locked ch4, home
+     after Enter.
+   - The first test launch applied one point of offline energy regen to the
+     real save before the test could go read-only (the known 09-09 gotcha):
+     energy 3 and the energy clock only. Nothing else changed.
+- **Locked Enter hidden** (user, 2026-10-06, after looking at it: "better
+  remove it"): the greyed Enter was a flat grey box, larger than the green
+  art (`primary_button`'s disabled style is a `StyleBoxFlat`). On a locked
+  chapter Enter is now **hidden**, and only "Beat Chapter N to unlock"
+  shows. `disabled` stays set as a guard. `primary_button` itself is
+  unchanged. Test updated, 40/40 still pass.
+- **Not verified by the tests**: how the swipe feels on a phone; the
+  editor preview of `chapter_select.tscn`.
+
 ---
 
 ## Task 09-10 — Chapter Progression & Locks ✅ DONE (2026-10-06, user approved)
@@ -2036,7 +2147,7 @@ get there".
 
 ---
 
-## Task 09-11 — Resistances: WC3 Table for Everyone, Resist for Bosses Only
+## Task 09-11 — Resistances: WC3 Table for Everyone, Themed Resist (Boss −50, Regular −30, min 10%) ✅ DONE (2026-10-06, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -2053,74 +2164,197 @@ get there".
 >   09-00.5 Q2.
 > - **Armor enum**: `UNARMORED 0, HEAVY 1, LIGHT 2, MEDIUM 3, FORTIFIED 4`.
 
-**Covers**: A13 · **Based on**: 09-00.5. The WC3 table is the damage system for
-every enemy. The per-enemy resisted school is kept, but used **only on
-bosses**.
+**Covers**: A13 · **Based on**: 09-00.5, revised by 09-07 (2026-10-03) and
+the questions below (2026-10-06). The WC3 table is the damage system for
+every enemy. On top of it, every enemy of a themed set resists its set's
+school. The resist is **subtracted** from the armor-table value: **bosses
+−50 points, regular enemies −30**, never below **10%** (Q3/Q3a). Nothing
+resists Void.
+(The original title said "Resist for Bosses Only"; that rule was dropped on
+2026-10-03, see 09-07 Q3.)
 
-- [ ] ~~Clear `resisted_school` (set to none, `-1`) in every **regular enemy**
-      `.tres`, in every chapter (read each file, not a sample). Today that's
-      chap1 enemy_01 to enemy_05.~~
-      **Superseded (user, 2026-10-03, during 09-07)**: regular enemies
-      **keep** a resist of their chapter's school (×0.5). Chap1 has Nature
-      on all 7; chap2 has Frost on all 7. See 09-07 Q3. This task's title
-      and "boss-only" wording need revisiting when 09-11 starts.
-- [ ] **Bosses keep the mechanic**: their `.tres` may set a resisted school
-      (× 0.5 damage and status via `SCHOOL_RESIST_MULT`; Void never). The
-      code in `hurtbox_component.gd` / `enemy.gd` / `apply_school_perk()`
-      stays as is.
-- [ ] Each boss's resisted school follows the 09-00.5 answer to open
-      question 2.
-  - **Rule** ✅ answered (user, 2026-09-28): **a boss resists the school
-    its chapter is themed on.**
-    - Ch1 (Nature): both chap1 bosses keep `resisted_school = 4` (Nature).
-      No change.
-    - Ch2 (Frost): both chap2 bosses get `resisted_school = 1` (Frost).
-    - Ch3 (Void) ✅ answered (user, 2026-09-28): **no resist**,
-      `resisted_school = -1`. Nothing resists Void
-      (`hurtbox_component.gd:18` ignores Void anyway), so the Void
-      chapter's bosses are the one set with no resist. The "nothing
-      resists Void" design rule stays unchanged.
-    - Ch4 (Poison): `resisted_school = 3`. Ch5 (Fire):
-      `resisted_school = 0`. Both follow directly from the rule.
-    - Chapters 6–10 (mixed) ✅ answered (user, 2026-09-28): **each boss
-      keeps its own theme's resist**, wherever it appears. A Frost-set
-      boss resists Frost, a Void-set boss resists nothing, and so on.
-      Mixed chapters reuse the themed boss `.tres` files as they are, so
-      there are no extra files.
-  - **Build note**: the resist lives on the boss's **`.tres`**
-    (`EnemyDefinition.resisted_school`), not its scene. A themed set that
-    reuses another chapter's boss model gets its own small variant `.tres`
-    (e.g. `chap4_boss_01.tres`, resist Poison, `scene` = the tinted
-    variant scene from 09-08). `wave_manager.gd._spawn_enemy()` assigns
-    `enemy.definition = definition` after instancing, so the `.tres` alone
-    decides the resist.
-  - **Final boss resist table** (by themed set):
+**Questions at the start of 09-11 (2026-10-06)**:
+- **Q1 resist strength** ✅ answered (user, 2026-10-06): **bosses keep
+  0.5** (they take 50% from their set's school). **Regular enemies resist
+  less**: "like 0.3 or as you said 0.25, so they take 75%".
+  - Consequence: two strengths instead of one `SCHOOL_RESIST_MULT`: a boss
+    one (take 50%) and a regular one (take 70% or 75%, Q2). Both go in
+    `Constants.gd` (rule 3: balance numbers live there).
+  - Consequence: the status effect (burn/slow/poison/lifesteal) is scaled
+    by the same number as the damage, as today. A regular enemy's status
+    is cut less than a boss's.
+  - Consequence: the resisted school stays on every themed `.tres` (no data
+    change). Which strength applies depends on whether the enemy is a boss.
+  - Consequence: this replaces the 2026-10-03 "everyone ×0.5" rule and the
+    task's "boss-only" wording. Docs, comments and acceptance criteria get
+    rewritten to the two-strength rule.
+- **Q2 exact regular number** ✅ answered (user, 2026-10-06): **70%**.
+  A regular enemy takes ×0.7 damage (and status) from its set's school.
+  - Final: boss ×0.5, regular ×0.7, Void never resisted. The Void set has
+    no resist at all (`-1`).
+- **Q3 how resist combines with armor** ✅ answered (user, 2026-10-06,
+  after the first build): **subtracted, not multiplied**. Armor and resist
+  are separate things: the resist takes percentage points off the armor
+  table value. Regular enemies −30, bosses −50. The user's example: Nature
+  does 120% to some armor, a regular enemy of the Nature set takes **90%**
+  (120 − 30), not 84% (120 × 0.7).
+  - Consequence: the first build (multiplied, ×0.7 / ×0.5) is wrong and
+    gets changed. The constants become resist **points** (0.30 / 0.50)
+    instead of multipliers.
+  - Consequence: at an armor value of exactly 100% both ways give the same
+    result (70% / 50%). Above 100% subtracting is harsher than
+    multiplying; below 100% it's harsher too, and weak matches can drop
+    to 0 or below (e.g. Poison 35% on a Fortified Poison boss: 35 − 50 =
+    −15).
+  - **Q3a minimum** ✅ answered (user, 2026-10-06): **10%**, "so it
+    always does some damage". A resisted hit deals max(armor % − resist,
+    10%). Only resisted hits are floored; other schools use the plain
+    table.
+    - Consequence: with today's data the floor applies to Frost boss 2
+      (50 − 50 = 0 → 10%), Poison boss 1 and Fire boss 1 (35 − 50 = −15 →
+      10%). Poison/Fire enemy 5 (35 − 30 = 5 → 10%) are floored too.
+    - The minimum goes in `Constants.gd` (rule 3).
+  - **Q3b status effects** ✅ answered (user, 2026-10-06): **option a**.
+    Burn, poison and the Nature heal just follow the reduced hit damage
+    (they're a % of it), with no extra cut. Slows stay at full strength.
+    - Consequence: `apply_school_perk()` loses its `resist_mult` parameter.
+      This also removes the "double cut" found in the first build.
+    - Consequence: this replaces the old "status halved too" rule in
+      `spells.md` §3.
 
-    | Themed set | Bosses | `resisted_school` |
+- [x] ~~Clear `resisted_school` (set to none, `-1`) in every **regular enemy**
+      `.tres`.~~ **Superseded (user, 2026-10-03, during 09-07)**: regular
+      enemies **keep** a resist of their set's school, now at ×0.7 (Q2).
+- [x] Every themed enemy's `.tres` sets its set's resisted school
+      (already done by 09-07 / 09-08; re-checked on all 35 files):
+  - **Rule** ✅ answered (user, 2026-09-28, extended to regular enemies
+    2026-10-03): an enemy resists the school of its **themed set**. The
+    Void set resists nothing (`-1`; nothing resists Void, and
+    `hurtbox_component.gd` ignores Void anyway). Mixed chapters 6–10
+    reuse the sets' `.tres` unchanged, so there are no extra files.
+  - The resist lives on the **`.tres`** (`EnemyDefinition.resisted_school`
+    + `is_boss`), not the scene. `wave_manager.gd._spawn_enemy()` assigns
+    `enemy.definition`, so the `.tres` alone decides it.
+
+    | Themed set | Files | `resisted_school` |
     |---|---|---|
-    | Nature (chap1) | chap1_boss_01, _02 | 4 (Nature), already set |
-    | Frost (chap2) | chap2_boss_01, _02 | 1 (Frost) |
-    | Void (ch3 placeholders) | the ch3 bosses | -1 (none) |
-    | Poison (ch4 placeholders) | the ch4 bosses | 3 (Poison) |
-    | Fire (ch5 placeholders) | the ch5 bosses | 0 (Fire) |
+    | Nature (chap1) | chap1_enemy_01–05, chap1_boss_01–02 | 4 (Nature) |
+    | Frost (chap2) | chap2_enemy_01–05, chap2_boss_01–02 | 1 (Frost) |
+    | Void (chap3) | chap3_enemy_01–05, chap3_boss_01–02 | -1 (none) |
+    | Poison (chap4) | chap4_enemy_01–05, chap4_boss_01–02 | 3 (Poison) |
+    | Fire (chap5) | chap5_enemy_01–05, chap5_boss_01–02 | 0 (Fire) |
     | Mixed (ch6–10) | reused from the sets above | unchanged from their set |
     - `DamageType` enum: FIRE 0, FROST 1, VOID 2, POISON 3, NATURE 4.
-- [ ] Update the comments and docs to say "resist is a boss-only
-      mechanic": `EnemyDefinition.resisted_school`,
-      `hurtbox_component.gd`, `combat_utils.gd`, `spells.md` §3 and §6.5,
-      `project.md` table notes, `mechanics.md` §5.
-- [ ] Keep a table here, per chapter: each enemy's armor type (the only
-      counterplay for regular enemies) and each boss's resisted school.
+- [x] Two strengths, subtracted (Q1–Q3b): `Constants.BOSS_SCHOOL_RESIST`
+      0.50, `REGULAR_SCHOOL_RESIST` 0.30 and `RESISTED_HIT_MIN` 0.10 replace
+      `SCHOOL_RESIST_MULT`. `EnemyDefinition.get_resist()` picks by
+      `is_boss` (the one place the rule lives). `enemy.gd` copies it to
+      `HurtboxComponent.resist`. `CombatUtils.calculate_damage(…, resist)`
+      does max(table − resist, 10%). `apply_school_perk()` no longer cuts
+      status: burn/poison/heal follow the reduced damage and slows are full.
+- [x] Update the comments and docs to the subtracted rule (replacing the
+      old "boss-only" wording): `EnemyDefinition`, `hurtbox_component.gd`,
+      `combat_utils.gd`, `Constants.gd`, `spells.md` §3 / §6.5 / S-02,
+      `project.md` table notes, `mechanics.md` §5, `components.md`
+      (hurtbox), `skills/godot3d-combat/SKILL.md`.
+- [x] Keep a table here, per chapter: each enemy's armor and resist.
+
+**Per-chapter table** (2026-10-06, subtracted rule). Every set uses the same
+armor per slot, shown in the header. A cell = the enemy's set, its resist,
+and what a hit **from that set's school** deals: the armor-table value minus
+the resist, never below 10%. *none* = the Void set (resists nothing). Every
+other school hits it at the plain armor table (reminder below).
+
+| Ch | Name | E1 Medium | E2 Light (fast) | E3 Light | E4 Heavy | E5 Fortified (flyer) | B1 Fortified | B2 Medium |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Ancient Ruins | Nature −30 → 120% | Nature −30 → 70% | Nature −30 → 70% | Nature −30 → 70% | Nature −30 → 40% | Nature −50 → 20% | Nature −50 → 100% |
+| 2 | Frozen Wastes | Frost −30 → 20% | Frost −30 → 70% | Frost −30 → 70% | Frost −30 → 70% | Frost −30 → 120% | Frost −50 → 100% | Frost −50 → 10% |
+| 3 | Void | Void *none* | Void *none* | Void *none* | Void *none* | Void *none* | Void *none* | Void *none* |
+| 4 | Poison | Poison −30 → 45% | Poison −30 → 170% | Poison −30 → 170% | Poison −30 → 70% | Poison −30 → 10% | Poison −50 → 10% | Poison −50 → 25% |
+| 5 | Fire | Fire −30 → 45% | Fire −30 → 95% | Fire −30 → 95% | Fire −30 → 170% | Fire −30 → 10% | Fire −50 → 10% | Fire −50 → 25% |
+| 6 | Chapter 6 | Nature −30 → 120% | Frost −30 → 70% | Nature −30 → 70% | Frost −30 → 70% | Nature −30 → 40% | Nature −50 → 20% | Frost −50 → 10% |
+| 7 | Chapter 7 | Void *none* | Frost −30 → 70% | Void *none* | Frost −30 → 70% | Void *none* | Void *none* | Frost −50 → 10% |
+| 8 | Chapter 8 | Poison −30 → 45% | Void *none* | Poison −30 → 170% | Void *none* | Poison −30 → 10% | Poison −50 → 10% | Void *none* |
+| 9 | Chapter 9 | Fire −30 → 45% | Poison −30 → 170% | Fire −30 → 95% | Poison −30 → 70% | Fire −30 → 10% | Fire −50 → 10% | Poison −50 → 25% |
+| 10 | Chapter 10 | Nature −30 → 120% | Fire −30 → 95% | Nature −30 → 70% | Fire −30 → 170% | Nature −30 → 40% | Nature −50 → 20% | Fire −50 → 25% |
+
+- Where the 10% minimum kicks in: Frost boss 2 (50 − 50 = 0), Poison and Fire
+  boss 1 (35 − 50 = −15), Poison and Fire enemy 5 (35 − 30 = 5).
+
+Armor table reminder (school vs armor, before any resist):
+
+| | Unarmored | Light | Medium | Heavy | Fortified |
+|---|---|---|---|---|---|
+| Nature | 100% | 100% | 150% | 100% | 70% |
+| Poison | 150% | 200% | 75% | 100% | 35% |
+| Frost | 150% | 100% | 50% | 100% | 150% |
+| Fire | 100% | 125% | 75% | 200% | 35% |
+| Void | 100% | 100% | 100% | 100% | 100% |
+
+**Built (2026-10-06)**:
+1. **Code** (first built multiplied, ×0.5 / ×0.7. Reworked the same day
+   after Q3–Q3b to subtracted):
+   - `Constants.gd`: `SCHOOL_RESIST_MULT` → `BOSS_SCHOOL_RESIST` 0.50,
+     `REGULAR_SCHOOL_RESIST` 0.30, `RESISTED_HIT_MIN` 0.10.
+   - `EnemyDefinition.get_resist()` picks by `is_boss`. That's the one
+     place the rule lives. `is_boss` was a dead field; it's now used, and
+     all 10 boss `.tres` already had it set (all 25 regulars false).
+   - `CombatUtils.calculate_damage()` takes an optional `resist`: max(table
+     − resist, `RESISTED_HIT_MIN`). Other callers pass nothing, so
+     unchanged.
+   - `HurtboxComponent.resist` (export, default 0.30). `enemy.gd`
+     `_apply_definition()` sets it from the definition. `apply_hit()` passes
+     it only for the resisted school, never Void.
+   - `apply_school_perk()` lost its `resist_mult` parameter.
+     Burn/poison/heal are a % of the already-reduced damage; slows are full
+     strength (Q3b). This also removed the double cut found in the first
+     build.
+   - No `.tres`, `.tscn` or save change.
+2. **Docs/comments**: the subtracted rule and all five sets in
+   `spells.md` §3 / §6.5 / S-02, `mechanics.md` §5, `project.md` (v1 note
+   + v2 note + armor line), `components.md` (hurtbox, was "boss-only"),
+   `skills/godot3d-combat/SKILL.md` (was "boss-only"), plus the code
+   comments. No `SCHOOL_RESIST_MULT` or "boss-only" resist wording is left.
+3. **Task text**: title, intro, checkboxes and acceptance criteria
+   reworded. Per-chapter table added.
+4. **Tests** (`_read_only = true`, rerun after the rework):
+   - Headless 526/526: all 35 enemy `.tres` × 5 schools. Resist school and
+     `is_boss` match the set table, `get_resist()` and the hurtbox value
+     are 0.50 / 0.30, and every hit deals exactly max(table − resist, 10%)
+     for its own school (plain table for other schools and for Void). Fire
+     burn = 30% of the dealt damage (no extra cut), and the Frost slow is
+     full 40%.
+   - Windowed, a real ch1 run 5/5 + screenshots of the damage numbers:
+     - Nature 100 on Light enemy_02 = **70** (100 − 30)
+     - Nature 100 on Fortified boss_01 = **20** (70 − 50)
+     - Nature 100 on Medium enemy_01 = **120** (150 − 30; multiplying
+       would have given 105)
+     - Fire 100 on enemy_02 = **125** (not resisted)
+     - Fire 100 on boss_01 = **35** (armor only)
+   - The real save was written twice by test launches. Both were the
+     launch-time offline energy refill (+1 energy and the clock each), which
+     runs before a test can go read-only (the known 09-09 gotcha). Nothing
+     else changed (energy 4).
+- **Double cut (pre-existing, found in the first build)**: burn/poison/heal
+  used to get the resist twice (a % of the reduced damage, then × the
+  multiplier again). Removed by Q3b.
 
 **Placeholders**: none · **Preview**: none (data). Checked with headless
-tests:
-- a Nature spell on a Light chap1 regular enemy deals exactly 100%
-- the same spell on a boss that resists Nature deals table × 0.5
+tests (wording updated 2026-10-06 for the new rule):
+- a Nature spell on a Light chap1 regular enemy deals exactly 70% (table
+  100% − 30)
+- the same spell on a chap1 boss deals table − 50 (Fortified boss_01:
+  70% − 50 = 20%), never below 10%
 
-**Acceptance criteria**:
-- [ ] No regular enemy `.tres` has a resisted school; bosses have exactly
-      what the table here says.
-- [ ] Regular-enemy damage matches the WC3 table exactly.
+**Acceptance criteria** (reworded 2026-10-06; the old "no regular enemy has
+a resisted school" contradicted the 09-07 rule):
+- [x] Every themed enemy resists its set's school: bosses −50 points,
+      regular enemies −30, subtracted from the WC3 table value. The Void
+      set resists nothing, and nothing ever resists Void.
+- [x] Damage on every enemy = max(table − resist, 10%) for its own school
+      and the plain table for every other school, exactly. Burn/poison/heal
+      follow the dealt damage; slows aren't reduced.
+- [x] The docs and the table here say the same as the game.
 
 ---
 

@@ -56,6 +56,7 @@ func _apply_definition() -> void:
 	if hurtbox:
 		hurtbox.armor_type = definition.armor_type
 		hurtbox.resisted_school = definition.resisted_school
+		hurtbox.resist = definition.get_resist()
 	var tower := get_tree().get_first_node_in_group("tower")
 	if tower:
 		mover.target_position = tower.global_position

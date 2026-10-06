@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://daey7ebm0ucnd" path="res://scenes/ui/widget/top_bar/top_bar.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/chapter_node/chapter_node.tscn" id="5"]
 [ext_resource type="PackedScene" uid="uid://bxfwrtsjwobgj" path="res://scenes/ui/widget/play_button/play_button.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://scenes/ui/widget/carousel_arrow/carousel_arrow.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/chapter_select.tscn" id="7"]
 
 [node name="WorldMapContent" type="Control"]
 offset_right = 1080.0
@@ -35,18 +35,12 @@ text = "Chapter 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Carousel" type="Control" parent="."]
-clip_contents = true
-offset_top = 440.0
-offset_right = 1080.0
-offset_bottom = 1200.0
-
-[node name="ChapterImage" parent="Carousel" instance=ExtResource("5")]
-layout_mode = 3
-anchors_preset = 0
+[node name="ChapterImage" parent="." instance=ExtResource("5")]
 offset_left = 160.0
+offset_top = 440.0
 offset_right = 920.0
-offset_bottom = 760.0
+offset_bottom = 1200.0
+mouse_filter = 0
 
 [node name="OutOfEnergyLabel" type="Label" parent="."]
 visible = false
@@ -60,32 +54,14 @@ text = "Out of energy!"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="LockedLabel" type="Label" parent="."]
-visible = false
-offset_left = 60.0
-offset_top = 1250.0
-offset_right = 1020.0
-offset_bottom = 1310.0
-theme_override_font_sizes/font_size = 36
-text = "Beat Chapter 1 to unlock"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="LeftArrow" parent="." instance=ExtResource("7")]
-offset_left = 30.0
-offset_top = 765.0
-offset_right = 140.0
-offset_bottom = 875.0
-direction = 0
-
-[node name="RightArrow" parent="." instance=ExtResource("7")]
-offset_left = 940.0
-offset_top = 765.0
-offset_right = 1050.0
-offset_bottom = 875.0
-
 [node name="PlayButton" parent="." instance=ExtResource("6")]
 offset_left = 240.0
 offset_top = 1360.0
 offset_right = 840.0
 offset_bottom = 1620.0
+
+[node name="ChapterSelectLayer" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="ChapterSelect" parent="ChapterSelectLayer" instance=ExtResource("7")]
+visible = false

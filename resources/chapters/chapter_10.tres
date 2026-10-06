@@ -23,3 +23,4 @@ arena_model_path = ""
 arena_scene = ExtResource("10_arena")
 sort_order = 9
 map_image = ExtResource("9_map")
+description = "Description coming soon."
