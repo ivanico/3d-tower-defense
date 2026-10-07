@@ -44,6 +44,14 @@ const AIM_HEIGHT := Vector3(0, 0.6, 0)
 		if Engine.is_editor_hint() and is_inside_tree():
 			_apply_preview()
 
+## EDITOR ONLY -- 5 shows the rank-5 size (09-14: look and hit radius
+## x ORB_RANK5_SIZE_MULT). Ignored at runtime, where the player's rank decides.
+@export_range(1, 5) var preview_rank: int = 1:
+	set(value):
+		preview_rank = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_model.scale = model_scale * _rank_size_mult(preview_rank >= 5)
+
 var spell: SpellDefinition = null
 var hit_interval: float = Constants.ORB_HIT_INTERVAL
 
@@ -74,6 +82,9 @@ func _ready() -> void:
 func _apply_preview() -> void:
 	$SchoolVFXComponent.configure(preview_school, _model)
 
+static func _rank_size_mult(rank5: bool) -> float:
+	return Constants.ORB_RANK5_SIZE_MULT if rank5 else 1.0
+
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("enemies") and not _nearby_enemies.has(body):
 		_nearby_enemies.append(body)
@@ -84,7 +95,11 @@ func _on_body_exited(body: Node3D) -> void:
 func setup(spell_def: SpellDefinition) -> void:
 	spell = spell_def
 	hit_interval = spell_def.orb_hit_interval
-	hit_radius = spell_def.hit_radius
+	# Rank 5 (09-14): bigger orb, look and hit radius together. Set before the
+	# VFX configure below so its aura is sized to the scaled mesh.
+	var size_mult := _rank_size_mult(CombatUtils.get_rank_milestone(spell_def.spell_id) >= 2)
+	hit_radius = spell_def.hit_radius * size_mult
+	_model.scale = model_scale * size_mult
 	# SchoolVFXComponent applies the elemental shader (replacing the old flat
 	# CombatUtils.get_school_material() tint) to every MeshInstance3D under
 	# _model, plus the ambient particle/trail dressing -- one call.

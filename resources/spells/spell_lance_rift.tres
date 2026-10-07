@@ -19,5 +19,5 @@ aoe_radius = 0.0
 pierce_count = 0
 projectile_speed = 16.0
 projectile_scene = ExtResource("2")
-stack_max = 1
+stack_max = 5
 max_travel_distance = 30.0

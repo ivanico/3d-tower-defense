@@ -50,6 +50,10 @@ func _add_spell_row(spell: SpellDefinition) -> void:
 	row.set_title(spell.spell_name)
 	row.show_rank("Rank %d/%d" % [rank, Constants.SPELL_MAX_RANK])
 	row.set_stat_text(_stats_text(spell, rank, next_rank, at_max))
+	var milestone_texts: Array = _milestone_texts(spell)
+	if not milestone_texts.is_empty():
+		row.set_milestones(milestone_texts[0], rank >= Constants.RANK_MILESTONE_RANKS[0],
+				milestone_texts[1], rank >= Constants.RANK_MILESTONE_RANKS[1])
 
 	if at_max:
 		row.set_upgrade_maxed()
@@ -73,6 +77,31 @@ func _stats_text(spell: SpellDefinition, rank: int, next_rank: int, at_max: bool
 		return "DMG: %d   Cooldown: %.1fs (fixed)" % [int(round(current_dmg)), spell.cooldown]
 	var next_dmg: float = CombatUtils.calculate_rank_scaled_value(spell.damage, next_rank)
 	return "DMG: %d → %d   Cooldown: %.1fs (fixed)" % [int(round(current_dmg)), int(round(next_dmg)), spell.cooldown]
+
+## What rank 3 / rank 5 unlock for this spell's type (09-14), built from the
+## same Constants the spells use. Empty for passives (no milestones).
+func _milestone_texts(spell: SpellDefinition) -> Array:
+	if spell.spell_category == Constants.SpellCategory.ORB:
+		return ["Spins %d%% faster" % _pct(Constants.ORB_RANK3_SPIN_MULT),
+				"Orbs %d%% bigger" % _pct(Constants.ORB_RANK5_SIZE_MULT)]
+	if spell.spell_category == Constants.SpellCategory.AOE_AREA:
+		return ["Lasts %d%% longer" % _pct(Constants.AOE_RANK3_DURATION_MULT),
+				"Zone %d%% bigger" % _pct(Constants.AOE_RANK5_RADIUS_MULT)]
+	if spell.spell_category != Constants.SpellCategory.PROJECTILE:
+		return []
+	var scene_path := spell.projectile_scene.resource_path if spell.projectile_scene != null else ""
+	if scene_path.contains("chain_bolt"):
+		return ["+%d bounce" % Constants.CHAIN_RANK_EXTRA_BOUNCES[0],
+				"+%d bounces" % Constants.CHAIN_RANK_EXTRA_BOUNCES[1]]
+	if scene_path.contains("line_aoe_bolt"):
+		return ["%d%% bigger" % _pct(Constants.LANCE_RANK3_SIZE_MULT),
+				"Leaves a damaging trail"]
+	return ["Splash %.1f m" % Constants.BOLT_SPLASH_RADIUS[0],
+			"Splash %.1f m" % Constants.BOLT_SPLASH_RADIUS[1]]
+
+## 1.3 -> 30.
+static func _pct(mult: float) -> int:
+	return int(round((mult - 1.0) * 100.0))
 
 func _on_upgrade_pressed(spell_id: String, damage_type: int) -> void:
 	if MetaManager.upgrade_spell_rank(spell_id, damage_type):

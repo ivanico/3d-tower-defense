@@ -271,7 +271,16 @@ with code examples.
   Each star bumps base stats by a tunable percentage; star 3 and star 5 are
   reserved hooks for passive enhancements. **Decided (09-00.6 / 09-13):**
   each tower has an **ult** that charges over time; star 3 and star 5 make
-  it stronger (see `project.md` "Tower").
+  it stronger (see `project.md` "Tower"). **Built (09-13):**
+  `scenes/component/tower_ult_component.gd` is the base (30 s charge,
+  `Constants.ULT_TRIGGER_MODE` TAP/AUTO, power tier 1/2/3 = star 1–2 / 3–4
+  / 5). Each tower's `.tres` `passive_script` names its ult in
+  `scenes/component/tower_ult/`: Ancient Barkskin (shield), Frost freeze
+  (root, bosses immune), Void Rupture (on-screen burst), Poison Plague
+  Cloud (zone, extends aoe_area), Fire Ring of Fire (crossing hit). Tap
+  mode = the HUD `ult_button`. Shields go through
+  `GameState.add_shield()` / `take_damage()`; the shield bar is
+  `widget/shield_bar_3d`. Numbers in `Constants.gd`, tuned in 09-17.
 - **Spell ranks**: spend materials to increase a spell's rank (1–5). Same
   pattern — ranks give +8% damage each. **Decided (09-00.7, built in
   09-14):** rank 3 and rank 5 also unlock a behavior, per spell (Bolt

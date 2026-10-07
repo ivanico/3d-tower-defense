@@ -1,7 +1,8 @@
 class_name StatusEffectComponent
 extends Node
 
-## Holds the school status effects (burn / slow / poison) on one enemy.
+## Holds the school status effects (burn / slow / poison) on one enemy, plus
+## the root from Frost's ult (09-13): can't move, still attacks.
 ## Re-applying an effect refreshes its duration — no stacking (v1 rule).
 
 @export var tick_interval: float = Constants.STATUS_TICK_INTERVAL
@@ -14,6 +15,7 @@ var _poison_slow_percent: float = 0.0
 var _poison_slow_remaining: float = 0.0
 var _slow_percent: float = 0.0
 var _slow_remaining: float = 0.0
+var _root_remaining: float = 0.0
 
 var _tick_accum: float = 0.0
 
@@ -36,6 +38,18 @@ func apply_poison(dps: float, slow_percent: float, duration: float, slow_duratio
 	_poison_slow_remaining = slow_duration if slow_duration >= 0.0 else duration
 	_update_mover_slow()
 
+## Stops the enemy walking for `duration` seconds. Attacks are untouched (a
+## snare, not a stun). Re-applying refreshes, like every other effect.
+func apply_root(duration: float) -> void:
+	_root_remaining = duration
+	_update_mover_slow()
+
+func is_rooted() -> bool:
+	return _root_remaining > 0.0
+
+func is_burning() -> bool:
+	return _burn_remaining > 0.0
+
 func reset() -> void:
 	_burn_dps = 0.0
 	_burn_remaining = 0.0
@@ -45,18 +59,21 @@ func reset() -> void:
 	_poison_slow_remaining = 0.0
 	_slow_percent = 0.0
 	_slow_remaining = 0.0
+	_root_remaining = 0.0
 	_tick_accum = 0.0
 	_update_mover_slow()
 
 func _physics_process(delta: float) -> void:
 	if _burn_remaining <= 0.0 and _poison_remaining <= 0.0 \
-			and _slow_remaining <= 0.0 and _poison_slow_remaining <= 0.0:
+			and _slow_remaining <= 0.0 and _poison_slow_remaining <= 0.0 \
+			and _root_remaining <= 0.0:
 		return
 	_burn_remaining = maxf(_burn_remaining - delta, 0.0)
 	_poison_remaining = maxf(_poison_remaining - delta, 0.0)
-	if _slow_remaining > 0.0 or _poison_slow_remaining > 0.0:
+	if _slow_remaining > 0.0 or _poison_slow_remaining > 0.0 or _root_remaining > 0.0:
 		_slow_remaining = maxf(_slow_remaining - delta, 0.0)
 		_poison_slow_remaining = maxf(_poison_slow_remaining - delta, 0.0)
+		_root_remaining = maxf(_root_remaining - delta, 0.0)
 		_update_mover_slow()
 	_tick_accum += delta
 	if _tick_accum >= tick_interval:
@@ -78,4 +95,6 @@ func _update_mover_slow() -> void:
 		active_slow = _slow_percent
 	if _poison_slow_remaining > 0.0:
 		active_slow = maxf(active_slow, _poison_slow_percent)
+	if _root_remaining > 0.0:
+		active_slow = 1.0
 	_mover.slow_multiplier = 1.0 - active_slow

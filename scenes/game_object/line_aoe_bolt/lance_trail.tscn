@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/game_object/line_aoe_bolt/lance_trail.gd" id="1"]
+
+[sub_resource type="BoxMesh" id="Mesh_strip"]
+resource_local_to_scene = true
+size = Vector3(2.2, 0.02, 6)
+
+; Rank-5 Lance trail (09-14). The strip is resized along the lance's path at
+; runtime and coloured with the school's ground (AoE decal) material.
+
+[node name="LanceTrail" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Strip" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+mesh = SubResource("Mesh_strip")

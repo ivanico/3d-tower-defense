@@ -35,5 +35,15 @@ extends Resource
 @export var base_range: float = 8.0
 @export var base_armor: float = 0.0
 @export var starting_spell_id: String = ""
+## The tower's ult (09-13): a script extending
+## scenes/component/tower_ult_component.gd. tower.gd adds it as an "Ult" child,
+## so which ult a tower has is data, never an `if tower_id ==` branch.
 @export var passive_script: Script = null
+## Seconds to charge the ult. 0 = Constants.ULT_CHARGE_SEC_DEFAULT.
+@export var ult_charge_sec: float = 0.0
+## Garage text for the ult (09-13): name, what it does, what star 3 / 5 add.
+@export var ult_name: String = ""
+@export_multiline var ult_description: String = ""
+@export var ult_star3_text: String = ""
+@export var ult_star5_text: String = ""
 @export var star_level_scenes: Array[PackedScene] = []

@@ -160,7 +160,11 @@ C. REWARDS & MATERIALS — all 16 exist in `rewards/`
 > This is the whole remaining art list. Everything else in sections A–H of the
 > old list turned out to be on disk already; most of it is wired.
 
-- [ ] icon_tower_ability.png  (your tower's ability — 1)
+- [ ] hud/icon_ult_<tower_id>.png  (one per tower: ancient/frost/void/poison/
+                              fire. Replaces icon_tower_ability.png. Placeholder
+                              today: a school-coloured circle drawn by
+                              widget/ult_button/; Epic 09 09-13. Ask before
+                              making real art.)
 - [ ] icon_tower_default.png  (portrait for the garage selection grid, +1 per
                               future tower. icon_tower_ancient.png already
                               covers tower #1 via TowerDefinition.icon)

@@ -265,6 +265,17 @@ static func apply_school_perk(final_damage: float, damage_type: int, target: Nod
 			GameState.heal(final_damage * lifesteal_pct)
 		# VOID applies no status — its premium is baked into its .tres damage.
 
+## Every living enemy whose position is inside the current camera's view —
+## "on screen" for the ults that hit the whole screen (Frost, Void; 09-13).
+## Enemies still walking in from off-screen are left out.
+static func get_enemies_on_screen(tree: SceneTree) -> Array:
+	var camera := tree.root.get_viewport().get_camera_3d()
+	var result: Array = []
+	for enemy in tree.get_nodes_in_group("enemies"):
+		if camera == null or camera.is_position_in_frustum(enemy.global_position):
+			result.append(enemy)
+	return result
+
 static func calculate_wave_hp_scale(wave: int) -> float:
 	return pow(Constants.ENEMY_HP_SCALE, wave - 1)
 
@@ -276,6 +287,33 @@ static func calculate_star_scaled_value(base_value: float, star: int) -> float:
 
 static func calculate_rank_scaled_value(base_value: float, rank: int) -> float:
 	return base_value * (1.0 + Constants.SPELL_RANK_DAMAGE_BONUS_PER_LEVEL * (rank - 1))
+
+## THE rank-milestone check (09-14): 0 below rank 3, 1 at rank 3-4, 2 at rank 5.
+## Reads the player's rank for that exact spell; never touches the .tres.
+static func get_rank_milestone(spell_id: String) -> int:
+	var rank: int = MetaManager.spell_ranks.get(spell_id, 1)
+	var milestone := 0
+	for r in Constants.RANK_MILESTONE_RANKS:
+		if rank >= r:
+			milestone += 1
+	return milestone
+
+## A flat ground disc in a school's colour that fades out (09-14 bolt splash).
+## No particles, so no particle budget. Cleans itself up.
+static func spawn_ground_flash(parent: Node, pos: Vector3, radius: float, damage_type: int, fade_sec: float = 0.3) -> void:
+	var disc := MeshInstance3D.new()
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = radius
+	mesh.bottom_radius = radius
+	mesh.height = 0.02
+	disc.mesh = mesh
+	disc.material_override = load("res://scenes/game_object/aoe_area/aoe_area.gd")._get_decal_material(damage_type)
+	disc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(disc)
+	disc.global_position = Vector3(pos.x, 0.03, pos.z)
+	var tw := disc.create_tween()
+	tw.tween_property(disc, "transparency", 1.0, fade_sec)
+	tw.tween_callback(disc.queue_free)
 
 # Shared by the Base Material amount lookup and the rare-drop chance lookup
 # below — both key off the same checkpoint tiers (highest one reached wins),
@@ -289,13 +327,20 @@ static func _highest_checkpoint_value(waves_cleared: int, checkpoints: Array, va
 			result = values[i]
 	return result
 
-static func calculate_material_reward_amount(waves_cleared: int) -> int:
-	return _highest_checkpoint_value(waves_cleared, Constants.MATERIAL_CHECKPOINT_WAVES, Constants.MATERIAL_CHECKPOINT_REWARDS)
+# Base Material for a run, scaled by `chapter`'s base_reward_multiplier (09-12)
+# and rounded. A null chapter pays the plain checkpoint reward.
+static func calculate_material_reward_amount(waves_cleared: int, chapter: ChapterDefinition = null) -> int:
+	var amount: int = _highest_checkpoint_value(waves_cleared, Constants.MATERIAL_CHECKPOINT_WAVES, Constants.MATERIAL_CHECKPOINT_REWARDS)
+	var mult := chapter.base_reward_multiplier if chapter != null else 1.0
+	return roundi(amount * mult)
 
 # Chance (0.0-1.0) for EACH rare material (Tower Mat, or one fought school's
-# Scroll Mat) to drop this run — see roll_material_reward below.
-static func calculate_rare_drop_chance(waves_cleared: int) -> float:
-	return _highest_checkpoint_value(waves_cleared, Constants.MATERIAL_CHECKPOINT_WAVES, Constants.MATERIAL_CHECKPOINT_CHANCES)
+# Scroll Mat) to drop this run — see roll_material_reward below. Scaled by
+# `chapter`'s rare_chance_multiplier (09-12), capped at 1.0.
+static func calculate_rare_drop_chance(waves_cleared: int, chapter: ChapterDefinition = null) -> float:
+	var chance: float = _highest_checkpoint_value(waves_cleared, Constants.MATERIAL_CHECKPOINT_WAVES, Constants.MATERIAL_CHECKPOINT_CHANCES)
+	var mult := chapter.rare_chance_multiplier if chapter != null else 1.0
+	return minf(chance * mult, 1.0)
 
 # Distinct schools (Constants.DamageType) among a run's active_spells, in
 # first-seen order — the set of scroll materials that run's rewards touch.
@@ -313,14 +358,18 @@ static func get_fought_schools(active_spells: Array) -> Array:
 # results label (format_material_reward_summary) and the actual grant
 # (commit_material_reward) — rolling twice would let the label promise a rare
 # drop the second roll then fails to grant, or vice versa.
+# Scaled by the chapter the run is played on (GameState.pending_chapter_def,
+# which survives Retry); null — e.g. game_world.tscn run standalone with F6 —
+# pays the plain chapter-1 rate (09-12).
 static func roll_material_reward(waves_cleared: int, fought_schools: Array) -> Dictionary:
-	var chance := calculate_rare_drop_chance(waves_cleared)
+	var chapter: ChapterDefinition = GameState.pending_chapter_def
+	var chance := calculate_rare_drop_chance(waves_cleared, chapter)
 	var scroll_hits: Array = []
 	for damage_type in fought_schools:
 		if randf() < chance:
 			scroll_hits.append(damage_type)
 	return {
-		"base_amount": calculate_material_reward_amount(waves_cleared),
+		"base_amount": calculate_material_reward_amount(waves_cleared, chapter),
 		"tower_mat_hit": randf() < chance,
 		"scroll_hits": scroll_hits,
 	}

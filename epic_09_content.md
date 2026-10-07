@@ -2358,7 +2358,7 @@ a resisted school" contradicted the 09-07 rule):
 
 ---
 
-## Task 09-12 — Per-Chapter Reward Scaling (replaces "second material")
+## Task 09-12 — Per-Chapter Reward Scaling (replaces "second material") ✅ DONE (2026-10-07, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -2375,32 +2375,100 @@ a resisted school" contradicted the 09-07 rule):
 **Covers**: A12 · **Based on**: 09-00.8 (no new material; later chapters give
 more of the existing ones).
 
-- [ ] `ChapterDefinition` gets reward-scaling data, e.g. a
-      `reward_multiplier` for Base Material and a `rare_chance_multiplier`
-      for Tower Material and Scrolls. Defaults of 1.0 keep chapter 1
-      unchanged.
-- [ ] `CombatUtils.roll_material_reward()` applies the running chapter's
-      multipliers (`GameState.pending_chapter_def`, or the chapter the run
-      was started with). It's one place, so the victory/defeat screens need
-      no change.
-- [ ] The results screen shows the scaled amounts (it already formats from
+**Questions at the start of 09-12 (2026-10-07)**:
+- **Q1 one multiplier or two** ✅ answered (user, 2026-10-07): **two
+  separate, like Archero**. One for Base Material and one for the rare
+  drops (Tower Material + Scrolls).
+  - Context: 09-00.8's answer said "one reward multiplier per chapter",
+    while this task suggested two. The user picked two after asking how
+    Archero does it: gold rises steadily per chapter, and rare drops scale
+    on their own track.
+  - Consequence: `ChapterDefinition` gets two fields (names at build time,
+    e.g. `reward_multiplier` / `rare_chance_multiplier`). Both default to
+    1.0, so a chapter without values pays exactly as today.
+- **Q2 how the rare boost works** ✅ answered (user, 2026-10-07): **more
+  often, like Archero**. The rare multiplier raises the drop **chance**
+  of Tower Material and each Scroll. A hit still gives +1
+  (`RARE_MATERIAL_DROP_AMOUNT`).
+  - Consequence: the chance = checkpoint chance × the chapter's rare
+    multiplier, capped at 100%. E.g. ×1.5 makes wave 12 go 25% → 37.5%.
+  - Consequence: the Base Material multiplier scales the amount (e.g. 220
+    × 1.5 = 330), rounded to a whole number.
+- **Q3 values now** ✅ answered (user, 2026-10-07): **option a,
+  placeholder numbers now** "so I can see it". 09-17 replaces them.
+  - Placeholder curve (rising per chapter; rare a bit less steep than
+    Base):
+    - Base Material: ch1 ×1.0, then +0.1 per chapter, up to ch10 ×1.9
+    - Rare chance: ch1 ×1.0, then +0.05 per chapter, up to ch10 ×1.45
+  - Consequence: ch1 pays exactly as today. A full clear of ch10 pays 418
+    Base Material (220 × 1.9), with a 36.25% chance per rare drop (25% ×
+    1.45).
+  - Consequence: the numbers live in each `chapter_0N.tres` (data, no
+    code per chapter). They're marked placeholder in the task until
+    09-17.
+
+- [x] `ChapterDefinition` gets reward-scaling data:
+      `base_reward_multiplier` for Base Material and
+      `rare_chance_multiplier` for Tower Material and Scrolls. Defaults of
+      1.0 keep chapter 1 unchanged.
+- [x] `CombatUtils.roll_material_reward()` applies the running chapter's
+      multipliers (`GameState.pending_chapter_def`, which survives Retry).
+      It's one place, so the victory/defeat screens need no change.
+- [x] The results screen shows the scaled amounts (it already formats from
       the rolled reward).
-- [ ] Values per chapter are set in balancing (09-17).
-- [ ] Also feeds the store rule (09-00.1): a chest's "one energy bar's worth"
+- [ ] Values per chapter are set in balancing (09-17). **Placeholders are in
+      now** (Q3); 09-17 replaces them.
+- [x] Also feeds the store rule (09-00.1): a chest's "one energy bar's worth"
       uses these same numbers, so chest value follows chapter rewards.
+      Noted in `epic_12_monetization.md` (catalog + prices); nothing to
+      build until the store exists.
+
+**Built (2026-10-07)**:
+1. `ChapterDefinition.base_reward_multiplier` / `rare_chance_multiplier`
+   (default 1.0).
+2. Placeholder values in `chapter_01–10.tres`: base 1.0 → 1.9 (+0.1 per
+   chapter), rare 1.0 → 1.45 (+0.05).
+3. `CombatUtils`:
+   - `calculate_material_reward_amount(waves, chapter)` = the checkpoint
+     amount × base multiplier, rounded.
+   - `calculate_rare_drop_chance(waves, chapter)` = the checkpoint chance ×
+     rare multiplier, capped at 1.0. A null chapter = the plain values.
+   - `roll_material_reward()` reads `GameState.pending_chapter_def` (null
+     when `game_world.tscn` runs standalone with F6 → plain chapter-1
+     rates). A hit still gives +1.
+4. `victory_screen.tscn` preview line: "Earned: Base Mat x330, Tower Mat +1".
+5. `epic_12_monetization.md`: chest-value note.
+6. Tests (`_read_only = true`):
+   - Headless 178/178:
+     - The multipliers on all 10 chapters.
+     - Every chapter × waves 0/2/3/5/6/9/11/12: exact Base amount and
+       chance. Ch1 = 220 / 25% exactly, ch10 = 418 / 36.25%.
+     - The roll uses the running chapter, and a null chapter pays the plain
+       rate. The chance is capped at 100%.
+     - 20 000 rolls: observed Tower Mat rate ch10 ≈ 36%, ch1 ≈ 25%.
+   - Windowed screenshots (same random seed):
+     - ch1 victory "Base Mat x220"
+     - ch10 victory "Base Mat x418, Fire Scroll +1"
+     - ch6 defeat at wave 9 "Base Mat x225" (150 × 1.5)
+   - The real save was written once by a test launch (the launch-time
+     energy refill, energy is full at 5). Materials are untouched.
+- **Look at**: the reward line is one line inside the victory panel. At
+  ch10 it already reaches the panel edge with one scroll, so a run with
+  Tower Mat + 2–3 scrolls will run past it. That was already possible in
+  ch1, but the higher chances make it more common. Not changed.
 
 **Placeholders**: none.
 **Preview**: `victory_screen.tscn` shows a sample scaled reward line in the
 editor.
 
 **Acceptance criteria**:
-- [ ] The same result (waves reached) in a later chapter pays out more,
+- [x] The same result (waves reached) in a later chapter pays out more,
       exactly by that chapter's multipliers; chapter 1 pays exactly as
       today.
 
 ---
 
-## Task 09-13 — Tower Ults (passive) + Star 3 / Star 5
+## Task 09-13 — Tower Ults (passive) + Star 3 / Star 5 ✅ DONE (2026-10-07, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -2421,13 +2489,44 @@ make it stronger; each tower's ult is designed when this task is reached).
 **Refs**: `mechanics.md` §11, `TowerDefinition.passive_script` (exists, read by
 nothing)
 
+**Questions at the start of 09-13 (2026-10-07)**:
+- **Q1 charge time** ✅ answered (user, 2026-10-07): **30 s**, "about one
+  per wave". This is a starting value for play-testing; 09-17 tunes it.
+  - Consequence: `Constants` default = 30 s, and each tower's `.tres` can
+    override it (09-00.6 Q2). All 5 towers start at the default.
+- **Q2 first trigger mode** ✅ answered (user, 2026-10-07): **tap, like
+  Arknights** ("Manual Trigger": fires on the player's command once
+  charged).
+  - Consequence: the `Constants` switch starts on tap. The `ult_button`
+    HUD widget (with its charge fill and preview scene) is built now, and
+    `game_world.tscn` gets edited (close it in the editor first).
+  - Consequence: auto mode is still built behind the same switch, so it
+    can be play-tested by flipping one value. The final pick stays open
+    (09-00.6 Q1).
+- **Q3 missing numbers** ✅ answered (user, 2026-10-07): the proposed
+  placeholders are fine. Starting values, tuned in 09-17:
+  - Void Rupture: 150 Void damage (star 1–2) / 250 (star 3+). The star-5
+    shield = the damage dealt, **capped at 50% of max HP**, lasting 8 s.
+  - Frost freeze star 5: 60 Frost damage per frozen enemy.
+  - Plague Cloud: 20 Poison damage every 1 s to each enemy inside, plus
+    Poison's normal DoT + slow (via `apply_hit()`).
+  - Ring of Fire: 80 Fire damage per crossing, plus Fire's normal burn.
+    Star 5: +25% on burning enemies.
+  - All of them also get the tower's star damage bonus and go through
+    `apply_hit()` (armor table + resists).
+  - The user added "the boss HP is too low, make it like 2000".
+  - **Q3a boss HP** ✅ answered (user, 2026-10-07): **leave it**. The 500
+    Claude quoted was the `.tres` base. At wave 12 the +12%/wave scaling
+    makes it ~1,740 (boss 1) / ~1,910 (boss 2) in the fight, already close
+    to 2,000. No change.
+
 **Part 1 — shared framework** (09-00.6: time-based charge; trigger mode to be
 tested):
-- [ ] `scenes/component/tower_ult_component.gd`: a base component that
+- [x] `scenes/component/tower_ult_component.gd`: a base component that
       handles the **time-based charge** (duration per tower on its `.tres`,
       default in `Constants`), firing, and the star level
       (`GameState.tower_star_level`, already set at run start).
-- [ ] **Both trigger modes behind one switch**: auto-fire when charged, or
+- [x] **Both trigger modes behind one switch**: auto-fire when charged, or
       tap-to-fire. The switch is a `Constants` value, so both can be
       play-tested.
 - [ ] **Trigger research**: look at what players prefer (forums, reviews,
@@ -2471,13 +2570,13 @@ tested):
         the framework already builds both modes behind one switch.
     - **Final pick: still after play-testing both modes** (09-00.6 Q1),
       recorded in 09-00.6 when made.
-- [ ] Star 3 / star 5: the base exposes "power tier" 1 / 2 / 3 (star 1–2 / 3–4
+- [x] Star 3 / star 5: the base exposes "power tier" 1 / 2 / 3 (star 1–2 / 3–4
       / 5) that each ult reads for its stronger version. No branches in
       `tower.gd`.
-- [ ] If the ult is player-triggered: an `ult_button` HUD widget showing the
+- [x] If the ult is player-triggered: an `ult_button` HUD widget showing the
       charge fill, with its own preview scene. It goes through the rule for
       editing `game_world.tscn` (close it in the editor first).
-- [ ] Garage: a line under the tower name with the ult's name, what it does,
+- [x] Garage: a line under the tower name with the ult's name, what it does,
       and what star 3 / 5 add.
 
 **Part 2 — each tower's ult, one at a time** (designed with you, recorded
@@ -2491,7 +2590,7 @@ here before building):
 | Poison | **Plague Cloud**: a poison cloud around the tower for **6 s**, poisoning and slowing everything inside | **bigger and longer** cloud | as star 3, and enemies that **die inside the cloud spread the poison** to nearby enemies | ✅ designed (user, 2026-09-28) |
 | Fire | **Ring of Fire**: a ring of flame circles the tower for **6 s**, burning any enemy that crosses it | ring **lasts longer** | as star 3, and **the ring hits **already-burning** enemies for **+25%** | ✅ designed (user, 2026-09-28) |
 
-- [ ] Each ult is a small subclass that `extends` the base and overrides only
+- [x] Each ult is a small subclass that `extends` the base and overrides only
       its effect. Attached via `passive_script` or as a component in that
       tower's scenes.
 
@@ -2590,6 +2689,151 @@ here before building):
     tuned in 09-17. Spells are unaffected. Needs a "is burning?" query on
     `StatusEffectComponent`.
 
+**Built (2026-10-07)**:
+1. **Shared pieces**:
+   - `Constants.gd` holds every ult number from Q1–Q3:
+     - `ULT_TRIGGER_MODE` (TAP) and `ULT_CHARGE_SEC_DEFAULT` 30
+     - per-tier arrays (index = tier − 1) for Barkskin, Frost, Void,
+       Plague Cloud and Ring of Fire
+   - `EventBus`: `shield_changed`, `ult_charge_changed(ratio, ready,
+     school)`, `ult_fire_requested`, `ult_fired`.
+   - **Shield**: `GameState.add_shield(amount, duration, heal_leftover)`.
+     - `take_damage()` drains the shield before HP (after armor reduction).
+     - It's pausable, so it doesn't tick in drafts.
+     - On expiry, the leftover heals only if asked (Barkskin star 5).
+     - A new shield replaces the old one. `reset()` clears it.
+   - **Shield bar**: `widget/shield_bar_3d/` is a `value_bar_3d` child in
+     shield blues at height 3.3, above the HP bar's number.
+     - It's shown only while a shield is up, and it's in `game_world.tscn`
+       at the tower's spot.
+     - The bar is a child, not a subclass, because `value_bar_3d`
+       auto-wires to any HealthComponent under its parent.
+   - `HurtboxComponent.apply_hit()` now returns the final damage dealt.
+   - `StatusEffectComponent`: `apply_root()` (speed × 0, attacks
+     untouched), `is_rooted()`, `is_burning()`.
+   - `CombatUtils.get_enemies_on_screen(tree)` (camera frustum).
+   - `aoe_area.gd`: the hit formula moved into `_hit(enemy)`, so the tick
+     and Plague Cloud's spread share it.
+2. **Base**: `scenes/component/tower_ult_component.gd` (no `class_name`).
+   - Charges over `charge_sec` (the tower's `ult_charge_sec` or 30 s).
+   - Fires on `EventBus.ult_fire_requested` (TAP) or by itself when full
+     (AUTO; `trigger_mode` is copied from the constant so a test can flip
+     it).
+   - Won't fire early or after victory/defeat.
+   - `power_tier()` 1/2/3, `tier_value()`, `scaled_damage()` (× the
+     tower's damage multiplier).
+   - Charging starts with the run (so it already has a second or two by
+     the first spell pick) and pauses during drafts.
+3. **Tower hookup**:
+   - `TowerDefinition.passive_script` (was dead) names the ult.
+   - New fields: `ult_charge_sec`, `ult_name`, `ult_description`,
+     `ult_star3_text`, `ult_star5_text`.
+   - `tower.gd._add_ult()` adds it as an "Ult" child after `start_run()`.
+   - All 5 tower `.tres` set their script + garage text.
+4. **The 5 ults** (`scenes/component/tower_ult/`, each `extends` the base,
+   overriding only `_get_school()` + `_activate()`):
+   - `barkskin_ult.gd`: a shield of max HP × 25% / 40%, for 6 / 8 s. At
+     tier 3 the leftover heals.
+   - `frost_freeze_ult.gd`: roots on-screen non-bosses for 2 / 3 s. At
+     tier 3, a 60 Frost hit each.
+   - `void_rupture_ult.gd`: 150 / 250 Void to every on-screen enemy. At
+     tier 3, a shield = the damage dealt, capped at 50% max HP, for 8 s.
+   - `plague_cloud_ult.gd` uses the new
+     `scenes/game_object/plague_cloud/` (`extends aoe_area.gd`, no
+     shards; pooled like every zone).
+     - It hits 20 Poison per 1 s tick, at r 4 / 5 m for 6 / 8 s.
+     - At tier 3, a death inside hits every enemy within 3 m.
+   - `ring_of_fire_ult.gd` uses the new `scenes/game_object/ring_of_fire/`.
+     - A flattened torus at 4 m, for 6 / 9 s.
+     - One 80 Fire hit per inward crossing (a broad-phase cylinder + a
+       per-enemy "was outside" flag). Enemies already inside aren't hit.
+     - At tier 3, +25% if the enemy is burning.
+5. **Ult button** (`scenes/ui/widget/ult_button/`):
+   - `extends panel_button_base.gd`: a 170 px circle with a school-coloured
+     disc (dim while charging, bright when ready) and a charge ring that
+     fills clockwise.
+   - It only sends `ult_fire_requested`, and is hidden until an ult reports
+     in and always in AUTO.
+   - Placed in `game_world.tscn` HUD, bottom-right.
+   - Editor knobs: `preview_charge`, `preview_school`.
+6. **Garage**: `UltLabel` in `tower_garage_content.tscn` shows "Ult: name /
+   what it does / Star 3: … Star 5: …" from the tower's `.tres`.
+7. **Docs**: `mechanics.md` §11 (Built line), `ui_assets.md`
+   (`hud/icon_ult_<tower_id>.png` replaces `icon_tower_ability.png`).
+8. **Tests** (`_read_only = true`):
+   - Headless 72/72 in real runs of all 5 towers:
+     - Charging: ~1/s, can't fire early, tap via EventBus, AUTO fires by
+       itself, no firing after victory.
+     - Tiers for stars 1–5.
+     - Barkskin 25/40%, 6/8 s, absorbs before HP, overflow goes to HP, the
+       star-5 leftover heals, a plain shield vanishes.
+     - Frost: root 2/3 s, speed 0 and doesn't move, boss and off-screen
+       skipped, the star-5 hit is exact.
+     - Void: 150/250 exact, bosses hit, off-screen skipped, the star-5
+       shield = dealt, capped at 50%.
+     - Cloud: r 4/5 m, 6 s, on the tower, hit + poison DoT, gone after 6 s,
+       the star-5 spread hits within 3 m and only for deaths inside.
+     - Ring: 4 m, 6/9 s, an inward crossing hit + burn, no hit on enemies
+       already inside, once per crossing, the star-5 +25% only on burning.
+   - Regressions: resist 526/526, chapter screen 40/40. No
+     `if tower_id ==` branch: the grep only finds list lookups and slot
+     highlighting.
+   - Windowed screenshots of all 5 (charging, ready, fired):
+     - Frost 78 on each enemy (60 × star bonus), boss untouched.
+     - Void 250 each + a 500 shield.
+     - The green cloud and the orange ring.
+     - The garage ult text and the shield bar.
+- **Fixes after the user's first look (2026-10-07)**:
+  - **"Can't click the ult or anything"**:
+    - A real-click test showed that every HUD click landed on
+      `DraftUI/FullscreenContainer`. The draft layer (layer 10, above the
+      HUD) only fades out on close, and its full-screen `DimBG` +
+      `FullscreenContainer` kept catching the mouse. So after the first
+      draft, the pause button was dead too. That's pre-existing since the
+      draft UI was built.
+    - Fix: `draft_ui.gd._ready()` sets both to `MOUSE_FILTER_IGNORE`. The
+      cards still take clicks, and the HUD is hidden during drafts anyway.
+    - Verified with real mouse events in a window: the ult click fires it
+      (shield 520, charge reset), pause toggles on/off, and a draft card
+      click picks it.
+  - **Garage text too big and overlapping the tower**: `UltLabel` is now
+    font 22, outline 6, three lines in y 150–250, above the model. The
+    screenshots (Ancient, Fire) show no overlap.
+- **User requests after play-testing (2026-10-07)**:
+  - **Shield bubble** ✅ built (user, 2026-10-07: "I want to see a barrier
+    around the tower, like a bubble that is transparent"):
+    - A `Bubble` (SphereMesh r 1.6 at y 1.1, no shadow) in
+      `shield_bar_3d.tscn`, with the new `shield_bubble.gdshader`:
+      unshaded, mostly clear (alpha 0.10) with a brighter fresnel edge
+      (0.65), light blue like the shield bar.
+    - Shown/hidden with the shield (any source), with no code change in
+      the shield script.
+    - The colour question (blue for every shield vs green for Barkskin
+      only) got no answer. It went with blue, one value on the material.
+    - Screenshot: the dome around the tower with the shield bar.
+  - **"Wave" spell misses enemies next to each other** ✅ fixed (user,
+    2026-10-07: "make the hitbox of the wave attack bigger and that's
+    all"):
+    - The user's run log showed two enemies stuck at the tower for ~20 s.
+      A test of all 20 spells vs two enemies at those spots: only the
+      Lances (Briar/Flame/Glacier/Rift) hit just one of them.
+    - `Constants.LANCE_HITBOX_WIDTH` 0.7 → **2.2**, and
+      `line_aoe_bolt.tscn` `BoxShape3D` (1.7, 1.7, 2.6) → (3.2, 3.2, 2.6)
+      (width + the 1.0 detection margin).
+    - Retest: all 5 lances hit both.
+    - This is 09-15's "Lance hitbox wider" item, done early. 09-15 keeps
+      it as done.
+- **Look at**:
+  - **Pooled zones outlive the run (pre-existing)**: `ObjectPool` is an
+    autoload, so an AoE zone that's still active (Blizzard, Rain of Fire,
+    and now Plague Cloud) keeps ticking into the next run for its
+    remaining seconds after Retry. Seen in the test screenshots, not
+    changed.
+  - Effect visuals are placeholders: decal colours and the torus, with no
+    particles. The tower model doesn't animate on cast.
+- **Not verified by the tests**: how tap-vs-auto feels (09-00.6 Q1 is still
+  open, for play-testing), and balance (09-17).
+
 **Placeholders**:
 - ult icon: a school-coloured drawn circle → final
   `hud/icon_ult_<tower_id>.png`. This replaces the "tower ability icon"
@@ -2602,12 +2846,12 @@ player-triggered); `tower_garage_content.tscn` shows the ult text line with
 placeholder copy.
 
 **Acceptance criteria**:
-- [ ] Each designed ult charges and fires as specified; star 3 / 5 are
+- [x] Each designed ult charges and fires as specified; star 3 / 5 are
       visibly stronger; no `if tower_id == …` anywhere.
 
 ---
 
-## Task 09-14 — Spell Rank Behaviors (rank 3 / rank 5 milestones)
+## Task 09-14 — Spell Rank Behaviors (rank 3 / rank 5 milestones) ✅ DONE (2026-10-07, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -2627,10 +2871,23 @@ placeholder copy.
 **Covers**: A10 · **Based on**: 09-00.7 · **Refs**: `mechanics.md` §11,
 `spells.md` §5 archetype scripts
 
-- [ ] Rank read at cast time from `MetaManager.spell_ranks` (via
+**Questions at the start of 09-14 (2026-10-07)**:
+- **Q1 starting numbers** ✅ answered (user, 2026-10-07: "do what you
+  think is recommended", i.e. Claude's proposal accepted). Starting values
+  in `Constants`, tuned in 09-17:
+  - Bolt splash: enemies within 1.2 m (rank 3) / 2.0 m (rank 5) of the
+    target take 50% of the hit, through `apply_hit()`.
+  - Chain: +1 / +2 bounces (from 09-00.7).
+  - Orb: rank 3 spin ×1.3. Rank 5 orb size ×1.4 (look + hit radius).
+  - AoE Area: rank 3 duration ×1.5. Rank 5 radius ×1.3 (decal + shards
+    + hit area).
+  - Lance: rank 3 size ×1.3 (look + hit box, on top of 09-13's 2.2 width).
+    Rank 5 trail: stays 2 s, hits 30% of the lance's damage every 0.5 s.
+
+- [x] Rank read at cast time from `MetaManager.spell_ranks` (via
       `GameState`), never by mutating the `.tres` (skill: resource mutation
       footgun). The +8% damage per rank stays as is.
-- [ ] Milestone unlocks per spell type, from the 09-00.7 table. Each
+- [x] Milestone unlocks per spell type, from the 09-00.7 table. Each
       archetype script checks "rank ≥ 3" / "rank ≥ 5" through **one shared
       helper**, and the numbers live in `Constants` / `.tres`:
   - Standard Bolt: splash on hit (small at 3, bigger at 5), reusing an area
@@ -2641,8 +2898,76 @@ placeholder copy.
     up at 5.
   - Lance: bigger at 3 (per 09-00.7 Q2); damaging trail at 5, a pooled
     lingering hit zone behind the lance, hits through `apply_hit()`.
-- [ ] Spell Codex row shows both milestones ("Rank 3: …" / "Rank 5: …"),
+- [x] Spell Codex row shows both milestones ("Rank 3: …" / "Rank 5: …"),
       greyed until reached.
+
+**Built (2026-10-07)**:
+1. **One helper**: `CombatUtils.get_rank_milestone(spell_id)` → 0 / 1
+   (rank 3+) / 2 (rank 5), from `MetaManager.spell_ranks`. It never touches
+   a `.tres`. All Q1 numbers are in `Constants.gd` (`RANK_MILESTONE_RANKS`
+   [3, 5], `BOLT_SPLASH_*`, `CHAIN_RANK_EXTRA_BOUNCES`, `ORB_RANK*`,
+   `AOE_RANK*`, `LANCE_RANK3_SIZE_MULT`, `LANCE_TRAIL_*`).
+2. **Bolt** (`standard_bolt.gd`):
+   - `splash_radius` is set at `initialize()`.
+   - On a hit, `_splash()` hits every other enemy within the radius for
+     50% through `apply_hit` (table + school perk).
+   - New `CombatUtils.spawn_ground_flash()` shows a school-coloured disc
+     that fades out in 0.3 s (no particles).
+3. **Chain** (`chain_bolt.gd`): `max_bounces` = the spell's + 1 / + 2.
+4. **Orb**:
+   - `tower.gd._spawn_orb()`: the ring spins ×1.3 at rank 3 (the whole
+     ring, so spacing stays even).
+   - `orb.gd.setup()`: at rank 5, hit radius and model scale ×1.4
+     together, before the VFX configure.
+   - `preview_rank` editor knob.
+5. **AoE Area** (`aoe_area.gd`):
+   - New zone fields `radius` / `duration` = the spell's × the rank mults
+     (×1.5 duration at 3, ×1.3 radius at 5). The decal, the hit cylinder,
+     the tick check and the shard spread all use them.
+   - The `.tres` is never changed. Plague Cloud uses the same fields, and
+     its spell id never ranks.
+   - `preview_rank` knob scales the decal in the editor.
+6. **Lance** (`line_aoe_bolt.gd`):
+   - Per-cast `_width` / `_length` = exports × 1.3 at rank 3, with the
+     model scale matched. A pooled lance never compounds the scaling.
+   - Rank 5: a new `line_aoe_bolt/lance_trail.tscn` + `.gd`.
+     - A flat strip in the school's ground colour that grows behind the
+       lance.
+     - Every 0.5 s it hits enemies within half the lance width of the line
+       for 30% of the lance's damage, through `apply_hit`.
+     - It stays 2 s after the lance ends, then frees itself. No particles.
+   - `preview_rank` knob.
+7. **Codex**:
+   - `meta_row.tscn` gets a `MilestoneLabel` (RichTextLabel, hidden by
+     default) + `set_milestones()`.
+   - `spell_codex_content.gd._milestone_texts()` builds "Rank 3: … Rank 5:
+     …" from the same Constants, by spell type. Unreached parts are grey;
+     passives have none.
+8. **Tests** (`_read_only = true`):
+   - Headless 57/57:
+     - The helper for ranks 1–5.
+     - Bolt splash radius 0 / 1.2 / 2.0: rank 3 hits only the 1.0 m
+       neighbour, rank 5 the 1.0 + 1.6 m ones (not 2.5 m), at exactly 50%,
+       and applies burn. In real flight, rank 1 doesn't splash and rank 3
+       does.
+     - Chain bounces +0 / +1 / +2.
+     - Orb hit radius = model scale ×1.4 at rank 5, spin ×1.3 at rank 3.
+     - AoE duration ×1.5 / radius ×1.3, with decal + hit area = radius. The
+       `.tres` is unchanged. A rank-5 zone hits at 1.15× the base radius
+       and a rank-1 zone doesn't.
+     - Lance hit box and model ×1.3, and a trail only at rank 5: it hits on
+       the line after the lance passed, misses 3 m to the side, is gone 2 s
+       after, and ticks 30%.
+     - Codex text and greying (rank 3 / rank 5 / rank 1).
+   - Regressions: ults 72/72, resist 526/526.
+   - Windowed screenshots:
+     - The rank-5 Fire bolt splash (104 on the target, 52 on three
+       neighbours, an orange flash).
+     - Orbs rank 1 vs rank 5 (visibly bigger).
+     - The rank-5 Flame Lance trail strip.
+     - The Codex rows (Bolt of Fire rank 3: Rank 3 lit, Rank 5 grey).
+- **Not verified by the tests**: how the bigger rank-3 lance (2.2 × 1.3 =
+  2.86 m wide) feels in play, and balance (09-17).
 
 **Placeholders**: splash and trail visuals reuse the existing school VFX
 (`SchoolVFXComponent` presets / `school_surface.gdshader`); no new art.
@@ -2654,14 +2979,14 @@ Particle budget applies (`CombatUtils.try_reserve_particles`).
 - splash/trail: shown in a test run
 
 **Acceptance criteria**:
-- [ ] At rank 3 / 5 each spell type shows exactly its unlock in a run; below
+- [x] At rank 3 / 5 each spell type shows exactly its unlock in a run; below
       that rank it doesn't.
-- [ ] Hit sizes match visual sizes. The splash and trail respect the
+- [x] Hit sizes match visual sizes. The splash and trail respect the
       particle budget.
 
 ---
 
-## Task 09-15 — Spell Stacking & Lance Hitbox
+## Task 09-15 — Spell Stacking & Lance Hitbox ✅ DONE (2026-10-07, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -2681,30 +3006,61 @@ Particle budget applies (`CombatUtils.try_reserve_particles`).
 **Covers**: A11 · **Based on**: 09-00.3 (confirmed). 09-00.4 answered "no new
 spells", so this task adds none.
 
-- [ ] Set the new `stack_max` values in every affected `.tres`: AoE Area 3,
+- [x] Set the new `stack_max` values in every affected `.tres`: AoE Area 3,
       Lance 5, Chain Bolt 5, Standard Bolt 5 (every file, not a sample). Orb
       stays 8.
-- [ ] AoE Area (Blizzard, Rain of Fire) and all 5 Lances: each extra pick
+- [x] AoE Area (Blizzard, Rain of Fire) and all 5 Lances: each extra pick
       fires **1 more** per cast, same as the first, each at a **different
       random enemy** in range, with a slight delay between them. This reuses
       the tower's existing Bolt volley path (`stack_count`,
       `BOLT_VOLLEY_STAGGER_SEC`) instead of writing a second one.
-- [ ] Lance hitbox a bit **wider** (`LANCE_HITBOX_WIDTH`, and `_LENGTH` only if
+- [x] **Done early in 09-13 (2026-10-07, user's request)**: width 0.7 → 2.2,
+      scene box (3.2, 3.2, 2.6); all 5 lances hit both enemies hugging the
+      tower. Original item: Lance hitbox a bit **wider** (`LANCE_HITBOX_WIDTH`, and `_LENGTH` only if
       needed, in `Constants.gd`); keep the scene's `BoxShape3D` matching.
       Target: a lance fired at one enemy in a cluster next to the tower also
       hits the enemies to its left and right, plus everything behind it.
       Numbers tuned in a test run.
+
+**Built (2026-10-07)**:
+1. **`stack_max`**, checked file by file: the 5 bolts 3 → 5, the 3 chains
+   3 → 5, the 5 lances 1 → 5, the 2 areas 1 → 3, and the 5 orbs stay 8.
+2. **One volley loop**:
+   - `tower.gd._fire_projectile()` became `_fire_volley(spell, target,
+     fire_one)`, the existing stagger / distinct random targets / fallback
+     loop.
+   - Bolts, chains and lances pass `_spawn_bolt`, and AoE zones pass
+     `_fire_aoe_area`. No second loop.
+   - Lances already went through it, so raising their cap was enough.
+3. **Draft card "what another pick gives"** (`draft_card.gd`): "+1 Lance"
+   for lances (was "+1 Bolt"), "+1 Zone" for AoE areas (was blank).
+   - A typing slip briefly broke this script's compile while it was being
+     edited. It was caught by the test run and fixed before the tests
+     passed, and the windowed draft screenshot shows the cards working.
+4. `spells.md` §6.6 is updated to the new caps and the shared loop.
+5. **Tests** (`_read_only = true`):
+   - Headless 31/31:
+     - Every spell's `stack_max`.
+     - Bolt/Chain/Lance/AoE/Orb are offered exactly `stack_max` times,
+       then not.
+     - 3 Blizzard picks → 3 zones per cast on 3 different spots.
+     - 5 Flame Lance picks → 5 per cast in 5 different directions.
+   - Windowed screenshots: 3 Blizzard zones, a 5-lance volley, and a draft
+     card showing "+1 Lance".
+- **Look at**: with 3 zones / 5 lances the screen gets busy (see the
+  screenshots), so the placeholder VFX stack up. That's balance and
+  readability for 09-17.
 
 **Placeholders**: none.
 **Preview**: a test run with a few enemies clustered side by side near the
 tower, showing the wider lance hits and a 3-zone Blizzard / 5-lance volley.
 
 **Acceptance criteria**:
-- [ ] Every spell type stops appearing in drafts exactly at its new
+- [x] Every spell type stops appearing in drafts exactly at its new
       `stack_max`.
-- [ ] Pick N of an AoE Area / Lance fires N per cast, at different enemies
+- [x] Pick N of an AoE Area / Lance fires N per cast, at different enemies
       when there are enough.
-- [ ] A lance hits the enemies either side of its target in a cluster.
+- [x] A lance hits the enemies either side of its target in a cluster.
 
 ---
 

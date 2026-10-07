@@ -69,7 +69,7 @@ texture = ExtResource("4")
 [node name="MaterialsLabel" type="Label" parent="StatsPanel/MaterialsRow"]
 size_flags_vertical = 4
 theme_override_font_sizes/font_size = 30
-text = "Materials Earned: 0"
+text = "Earned: Base Mat x330, Tower Mat +1"
 
 [node name="UnlockLabel" type="Label" parent="StatsPanel"]
 theme_override_colors/font_color = Color(0.45, 1, 0.45, 1)

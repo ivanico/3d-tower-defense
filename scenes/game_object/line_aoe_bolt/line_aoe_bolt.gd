@@ -30,6 +30,23 @@ var damage: float = 0.0
 var damage_type: int = Constants.DamageType.VOID
 var max_travel: float = Constants.LANCE_MAX_TRAVEL
 
+## EDITOR ONLY -- 3 or more shows the rank-3 size (09-14: look and hit box
+## x LANCE_RANK3_SIZE_MULT). Ignored at runtime, where the player's rank decides.
+@export_range(1, 5) var preview_rank: int = 1:
+	set(value):
+		preview_rank = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			_model.scale = model_scale * _rank_size_mult(preview_rank >= 3)
+
+const LANCE_TRAIL_SCENE := preload("res://scenes/game_object/line_aoe_bolt/lance_trail.tscn")
+
+## This cast's hit box: the exports with the rank-3 size applied (09-14), kept
+## separate so a pooled lance never compounds the scaling.
+var _width: float = Constants.LANCE_HITBOX_WIDTH
+var _length: float = Constants.LANCE_HITBOX_LENGTH
+## Rank 5: the damaging trail laid behind this lance, if any.
+var _trail: Node3D = null
+
 var _direction: Vector3 = Vector3.ZERO
 var _traveled: float = 0.0
 var _hit_enemies: Array = []
@@ -62,6 +79,7 @@ func _ready() -> void:
 
 func _on_screen_exited() -> void:
 	_initialized = false
+	_finish_trail()
 	ObjectPool.release(self)
 
 func _on_body_entered(body: Node3D) -> void:
@@ -86,9 +104,19 @@ func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition)
 	damage_type = spell.damage_type
 	speed = spell.projectile_speed
 	max_travel = spell.max_travel_distance
+	var milestone := CombatUtils.get_rank_milestone(spell.spell_id)
+	var size_mult := _rank_size_mult(milestone >= 1)
+	_width = hitbox_width * size_mult
+	_length = hitbox_length * size_mult
+	_model.scale = model_scale * size_mult
 	(collision.shape as BoxShape3D).size = Vector3(
-			hitbox_width + DETECTION_MARGIN, hitbox_width + DETECTION_MARGIN,
-			hitbox_length + DETECTION_MARGIN)
+			_width + DETECTION_MARGIN, _width + DETECTION_MARGIN,
+			_length + DETECTION_MARGIN)
+	_finish_trail()
+	if milestone >= 2:
+		_trail = LANCE_TRAIL_SCENE.instantiate()
+		get_tree().current_scene.add_child(_trail)
+		_trail.start(start_pos, damage, damage_type, _width)
 	look_at(global_position + _direction, Vector3.UP)
 	_configure_school_vfx(damage_type, -_direction)
 	_hit_enemies.clear()
@@ -101,9 +129,12 @@ func _physics_process(delta: float) -> void:
 	var step := speed * delta
 	global_position += _direction * step
 	_traveled += step
+	if _trail != null and is_instance_valid(_trail):
+		_trail.extend_to(global_position)
 	_check_hits()
 	if _traveled >= max_travel:
 		_initialized = false
+		_finish_trail()
 		ObjectPool.release(self)
 
 func _check_hits() -> void:
@@ -115,17 +146,27 @@ func _check_hits() -> void:
 		var offset: Vector3 = enemy.global_position - global_position
 		offset.y = 0.0
 		var longitudinal := offset.dot(_direction)
-		if absf(longitudinal) > hitbox_length * 0.5:
+		if absf(longitudinal) > _length * 0.5:
 			continue
 		var lateral := (offset - _direction * longitudinal).length()
-		if lateral > hitbox_width * 0.5:
+		if lateral > _width * 0.5:
 			continue
 		_hit_enemies.append(enemy)
 		var hurtbox := enemy.find_child("HurtboxComponent") as HurtboxComponent
 		if hurtbox:
 			hurtbox.apply_hit(damage, damage_type, enemy.global_position + Vector3(0, 0.6, 0))
 
+## Hands the trail its "lance is gone" signal; it lingers, then frees itself.
+func _finish_trail() -> void:
+	if _trail != null and is_instance_valid(_trail):
+		_trail.finish()
+	_trail = null
+
+static func _rank_size_mult(rank3: bool) -> float:
+	return Constants.LANCE_RANK3_SIZE_MULT if rank3 else 1.0
+
 func reset() -> void:
+	_finish_trail()
 	_initialized = false
 	_direction = Vector3.ZERO
 	_traveled = 0.0

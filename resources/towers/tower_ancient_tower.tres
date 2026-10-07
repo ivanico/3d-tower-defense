@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl4/ancient_tower_lvl4.tscn" id="5_lvl4"]
 [ext_resource type="PackedScene" uid="uid://cer1blly3mgyn" path="res://scenes/game_object/tower/ancient_tower/ancient_tower_lvl5/ancient_tower_lvl5.tscn" id="6_lvl5"]
 [ext_resource type="Texture2D" uid="uid://bdusiyj4dxftf" path="res://assets/ui/garage/icon_tower_ancient.png" id="7_icon"]
+[ext_resource type="Script" path="res://scenes/component/tower_ult/barkskin_ult.gd" id="ult_script"]
 
 [resource]
 script = ExtResource("1")
@@ -23,3 +24,8 @@ base_range = 8.0
 base_armor = 0.0
 starting_spell_id = "lance_rift"
 star_level_scenes = Array[PackedScene]([ExtResource("2_lvl1"), ExtResource("3_lvl2"), ExtResource("4_lvl3"), ExtResource("5_lvl4"), ExtResource("6_lvl5")])
+passive_script = ExtResource("ult_script")
+ult_name = "Barkskin"
+ult_description = "Shields the tower for 25% of its max HP for 6 s. Hits drain the shield first."
+ult_star3_text = "Shield 40% of max HP, lasts 8 s."
+ult_star5_text = "Leftover shield heals the tower when it ends."

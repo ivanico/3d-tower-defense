@@ -10,6 +10,13 @@ const DRAFT_CARD_SCENE := preload("res://scenes/ui/draft_card.tscn")
 var _close_tween: Tween = null
 
 func _ready() -> void:
+	# The dim background and the full-screen centring container never leave the
+	# tree (closing only fades them out), and this layer sits above the HUD. If
+	# they caught the mouse, every HUD button (pause, ult) would be dead after the
+	# first draft. Only the cards themselves take clicks; the HUD is hidden while
+	# a draft is open anyway (hud.gd).
+	dim_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	$FullscreenContainer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dim_bg.modulate = Color(1, 1, 1, 0)
 	panel.visible = false
 	EventBus.draft_opened.connect(_on_draft_opened)

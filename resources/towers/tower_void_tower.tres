@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/game_object/tower/void_tower/void_tower_lvl4/void_tower_lvl4.tscn" id="5_lvl4"]
 [ext_resource type="PackedScene" path="res://scenes/game_object/tower/void_tower/void_tower_lvl5/void_tower_lvl5.tscn" id="6_lvl5"]
 [ext_resource type="Texture2D" uid="uid://bdusiyj4dxftf" path="res://assets/ui/garage/icon_tower_ancient.png" id="7_icon"]
+[ext_resource type="Script" path="res://scenes/component/tower_ult/void_rupture_ult.gd" id="ult_script"]
 
 [resource]
 script = ExtResource("1")
@@ -27,3 +28,8 @@ base_fire_rate = 1.0
 base_range = 8.0
 base_armor = 0.0
 star_level_scenes = Array[PackedScene]([ExtResource("2_lvl1"), ExtResource("3_lvl2"), ExtResource("4_lvl3"), ExtResource("5_lvl4"), ExtResource("6_lvl5")])
+passive_script = ExtResource("ult_script")
+ult_name = "Void Rupture"
+ult_description = "Deals 150 Void damage to every enemy on screen, bosses included."
+ult_star3_text = "Deals 250 damage."
+ult_star5_text = "Shields the tower for the damage dealt (up to 50% of max HP) for 8 s."

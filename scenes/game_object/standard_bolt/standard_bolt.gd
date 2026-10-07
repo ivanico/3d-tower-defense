@@ -13,6 +13,8 @@ var speed: float = 14.0
 var damage: float = 0.0
 var damage_type: int = Constants.DamageType.VOID
 var pierce_count: int = 0
+## Rank 3 / 5 splash radius (09-14); 0 = no splash below rank 3.
+var splash_radius: float = 0.0
 
 # Void's trailing ring (see school_vfx_component.gd's `_build_sonic_rings()`
 # and `configure()`'s `sonic_ring_tuning` doc comments) tuned specifically
@@ -63,6 +65,8 @@ func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition)
 	damage = spell.damage * GameState.tower_damage_multiplier * GameState.get_school_damage_multiplier(spell.damage_type) * GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(spell.spell_id)
 	damage_type = spell.damage_type
 	pierce_count = spell.pierce_count
+	var milestone := CombatUtils.get_rank_milestone(spell.spell_id)
+	splash_radius = Constants.BOLT_SPLASH_RADIUS[milestone - 1] if milestone > 0 else 0.0
 	speed = spell.projectile_speed
 	_direction = (target_pos - start_pos).normalized()
 	look_at(global_position + _direction, Vector3.UP)
@@ -85,11 +89,29 @@ func _check_hits() -> void:
 		var hurtbox := enemy.find_child("HurtboxComponent") as HurtboxComponent
 		if hurtbox:
 			hurtbox.apply_hit(damage, damage_type, enemy.global_position + Vector3(0, 0.6, 0))
+		if splash_radius > 0.0:
+			_splash(enemy)
 		_hits += 1
 		if _hits > pierce_count:
 			_initialized = false
 			ObjectPool.release(self)
 			return
+
+## Rank 3 / 5 splash (09-14): every other enemy within `splash_radius` of the
+## one hit takes a share of the hit, through apply_hit (table + school perk).
+## Once per hit, not per frame, so the group scan is fine.
+func _splash(center_enemy: Node3D) -> void:
+	var center := center_enemy.global_position
+	for other in get_tree().get_nodes_in_group("enemies"):
+		if other == center_enemy:
+			continue
+		var flat := Vector2(other.global_position.x - center.x, other.global_position.z - center.z)
+		if flat.length() > splash_radius:
+			continue
+		var hurtbox := other.find_child("HurtboxComponent") as HurtboxComponent
+		if hurtbox:
+			hurtbox.apply_hit(damage * Constants.BOLT_SPLASH_DAMAGE_PERCENT, damage_type, other.global_position + Vector3(0, 0.6, 0))
+	CombatUtils.spawn_ground_flash(get_tree().current_scene, center, splash_radius, damage_type)
 
 func _on_screen_exited() -> void:
 	_initialized = false
@@ -99,4 +121,5 @@ func reset() -> void:
 	_initialized = false
 	_direction = Vector3.ZERO
 	_hits = 0
+	splash_radius = 0.0
 	_nearby_enemies.clear()

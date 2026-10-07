@@ -759,14 +759,13 @@ boss and 30 on a regular enemy, never below 10% (revised 2026-10-06,
 ### 6.6 Stacking
 
 Duplicates bump a per-spell stack counter, never a second entry:
-Bolts & Chains (×3) fire one more projectile per cast as a staggered
-volley; Orbs (×8) add another orb on the same ring
-(0°→180°→90°→270°→45°→…); AoE Area & Lances (×1) are one-pick today.
+Bolts, Chains and Lances (×5) fire one more per cast as a staggered
+volley; AoE Areas (×3) drop one more zone per cast; Orbs (×8) add another
+orb on the same ring (0°→180°→90°→270°→45°→…). Every volley goes through
+one shared loop, `tower.gd._fire_volley()`, at random distinct enemies.
 At `stack_max` a spell stops appearing in drafts for the rest of the run.
-**Decided 2026-09-27 (09-00.3), built in 09-15:** new caps are Standard Bolt
-5, Chain 5, AoE Area 3, Lance 5, Orb 8 (unchanged). Each extra AoE/Lance pick
-fires one more per cast at a different random enemy, staggered like the Bolt
-volley. The Lance hitbox also gets wider.
+(Decided 2026-09-27 in 09-00.3, built in 09-15. The Lance hitbox was widened
+0.7 → 2.2 in 09-13.)
 
 ### 6.7 Synergy tags
 

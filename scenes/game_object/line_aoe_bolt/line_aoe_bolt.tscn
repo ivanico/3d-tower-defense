@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/component/school_vfx_component.tscn" id="3"]
 
 [sub_resource type="BoxShape3D" id="Shape_lance"]
-size = Vector3(1.7, 1.7, 2.6)
+size = Vector3(3.2, 3.2, 2.6)
 
 [node name="LineAoeBolt" type="Area3D"]
 script = ExtResource("1")

@@ -17,4 +17,4 @@ range = 10.0
 aoe_radius = 0.0
 pierce_count = 0
 projectile_speed = 14.0
-stack_max = 3
+stack_max = 5

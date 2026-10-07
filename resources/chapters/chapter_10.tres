@@ -24,3 +24,5 @@ arena_scene = ExtResource("10_arena")
 sort_order = 9
 map_image = ExtResource("9_map")
 description = "Description coming soon."
+base_reward_multiplier = 1.9
+rare_chance_multiplier = 1.45

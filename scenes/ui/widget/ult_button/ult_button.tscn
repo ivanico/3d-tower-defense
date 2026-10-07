@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/ult_button/ult_button.gd" id="1"]
+
+; Single node, like pause_button / carousel_arrow: the panel and the charge
+; ring are built by the script (the ring on an INTERNAL child), so nothing is
+; serialised into game_world.tscn. Tune the look here; preview_charge and
+; preview_school show it in the editor.
+
+[node name="UltButton" type="Button"]
+custom_minimum_size = Vector2(170, 170)
+offset_right = 170.0
+offset_bottom = 170.0
+focus_mode = 0
+script = ExtResource("1")
+button_size = Vector2i(170, 170)
+corner_radius = 85
+border_width = 4

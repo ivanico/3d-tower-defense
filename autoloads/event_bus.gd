@@ -6,6 +6,12 @@ signal enemy_reached_tower(enemy: Node)
 signal tower_damaged(amount: float)
 signal tower_healed(amount: float)
 signal tower_died
+signal shield_changed(current: float, max_value: float)
+
+# Tower ult (09-13)
+signal ult_charge_changed(ratio: float, ready: bool, school: int)
+signal ult_fire_requested
+signal ult_fired(school: int)
 
 # XP
 signal xp_gained(amount: int)

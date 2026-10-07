@@ -246,7 +246,7 @@ static func _get_pill_style(color: Color) -> StyleBoxFlat:
 
 # Empty on a spell's first pick (nothing granted yet beyond owning it).
 # On a repeat pick, the exact effect stacking actually gives that spell's
-# archetype (tower.gd's _add_spell/_fire_projectile — spells.md §6.6). A
+# archetype (tower.gd's _add_spell/_fire_volley — spells.md §6.6). A
 # stat-upgrade card always shows its flat bonus, first pick or not, since
 # apply_card applies the same amount every time (game_state.gd:147-154).
 func _setup_effect_line(card_data: Resource) -> void:
@@ -262,9 +262,10 @@ func _get_effect_text(card_data: Resource) -> String:
 			return ""
 		match card_data.spell_category:
 			Constants.SpellCategory.PROJECTILE:
-				# Volley stacking (spells.md §6.6): Bolts & Chains fire one
-				# more projectile per cast, staggered as a volley.
-				return "+1 Bolt"
+				# Volley stacking (spells.md §6.6): Bolts, Chains and Lances
+				# fire one more per cast, staggered as a volley.
+				var scene_path: String = card_data.projectile_scene.resource_path if card_data.projectile_scene != null else ""
+				return "+1 Lance" if scene_path.contains("line_aoe_bolt") else "+1 Bolt"
 			Constants.SpellCategory.ORB:
 				# tower.gd::_add_spell spawns another orb on the same ring.
 				return "+1 Orb"
@@ -274,10 +275,10 @@ func _get_effect_text(card_data: Resource) -> String:
 				var rank: int = MetaManager.spell_ranks.get(card_data.spell_id, 1)
 				var pct := CombatUtils.calculate_rank_scaled_value(card_data.passive_value, rank) * 100.0
 				return "+%d%% Damage Reduction" % roundi(pct)
+			Constants.SpellCategory.AOE_AREA:
+				# 09-15: one more zone per cast, at a different enemy.
+				return "+1 Zone"
 			_:
-				# AoE Area & Lance are stack_max = 1 (spells.md §6.6, "one-pick"),
-				# so _is_eligible removes them from the pool after one take —
-				# this branch is never actually reached in current gameplay.
 				return ""
 	return ""
 

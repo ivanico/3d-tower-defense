@@ -144,6 +144,21 @@ text = "Ancient Tower"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="UltLabel" type="Label" parent="."]
+offset_left = 40.0
+offset_top = 150.0
+offset_right = 1040.0
+offset_bottom = 250.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 6
+theme_override_constants/line_spacing = -4
+theme_override_font_sizes/font_size = 22
+text = "Ult: Barkskin
+Shields the tower for 25% of its max HP for 6 s. Hits drain the shield first.
+Star 3: Shield 40% of max HP, lasts 8 s.   Star 5: Leftover shield heals the tower when it ends."
+horizontal_alignment = 1
+autowrap_mode = 3
+
 [node name="StarRow" parent="." instance=ExtResource("6")]
 offset_left = 387.0
 offset_top = 856.0

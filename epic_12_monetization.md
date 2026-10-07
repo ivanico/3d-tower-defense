@@ -34,6 +34,12 @@
       `epic_09_content.md` 09-00.1 "Store rule"**:
       - material chests: 3/day, key included, capped at one energy bar's
         worth, chance of an unowned tower
+        - "One energy bar's worth" uses the 09-12 chapter reward numbers
+          (`ChapterDefinition.base_reward_multiplier` /
+          `rare_chance_multiplier`, applied in
+          `CombatUtils.calculate_material_reward_amount()` /
+          `calculate_rare_drop_chance()`), so chest value follows chapter
+          rewards. Which chapter it's measured on is still to decide here.
       - energy refills: unlimited
       - skins
       - no direct tower packs

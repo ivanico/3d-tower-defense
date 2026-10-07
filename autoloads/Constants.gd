@@ -44,6 +44,22 @@ const SAVE_VERSION:             int   = 5
 const XP_LEVEL_SCALE_PER_LEVEL:          float = 1.2
 const STAR_STAT_BONUS_PER_LEVEL:         float = 0.10
 const SPELL_RANK_DAMAGE_BONUS_PER_LEVEL: float = 0.08
+# Rank milestones (09-14): rank 3 and rank 5 unlock a behaviour for that exact
+# spell, on top of the damage bonus. CombatUtils.get_rank_milestone() returns
+# 0 / 1 / 2. Values are starting numbers, tuned in 09-17. Two-entry arrays are
+# [rank 3+, rank 5].
+const RANK_MILESTONE_RANKS:      Array[int]   = [3, 5]
+const BOLT_SPLASH_RADIUS:        Array[float] = [1.2, 2.0]
+const BOLT_SPLASH_DAMAGE_PERCENT: float = 0.5
+const CHAIN_RANK_EXTRA_BOUNCES:  Array[int]   = [1, 2]
+const ORB_RANK3_SPIN_MULT:       float = 1.3
+const ORB_RANK5_SIZE_MULT:       float = 1.4
+const AOE_RANK3_DURATION_MULT:   float = 1.5
+const AOE_RANK5_RADIUS_MULT:     float = 1.3
+const LANCE_RANK3_SIZE_MULT:     float = 1.3
+const LANCE_TRAIL_DURATION:      float = 2.0
+const LANCE_TRAIL_TICK_SEC:      float = 0.5
+const LANCE_TRAIL_DAMAGE_PERCENT: float = 0.3
 
 # [Offense] synergy tag
 const OFFENSE_TIER1_DAMAGE_MULT:    float = 1.10
@@ -162,6 +178,45 @@ const NATURE_LIFESTEAL_PERCENT: float = 0.18  # % of damage dealt healed to towe
 const BOSS_SCHOOL_RESIST:    float = 0.50  # bosses: -50 points
 const REGULAR_SCHOOL_RESIST: float = 0.30  # regular enemies: -30 points
 const RESISTED_HIT_MIN:      float = 0.10  # a resisted hit always deals >= 10%
+
+# Tower ults (09-13). Every tower has one signature ult that charges over time
+# (scenes/component/tower_ult_component.gd). All numbers are STARTING values
+# for play-testing, tuned in 09-17. Per-tier arrays are indexed by power tier
+# - 1: tier 1 = star 1-2, tier 2 = star 3-4, tier 3 = star 5.
+enum UltTrigger { TAP, AUTO }
+# Which trigger is live. Both are built (09-00.6 Q1 is decided by play-test);
+# flip this one value to try the other. TAP shows the HUD ult_button.
+const ULT_TRIGGER_MODE: int = UltTrigger.TAP
+# Seconds to fully charge, unless a tower's .tres sets its own ult_charge_sec.
+const ULT_CHARGE_SEC_DEFAULT: float = 30.0
+# Ancient: Barkskin — a shield worth a % of max HP. Tier 3 (star 5): any
+# leftover shield heals the tower when it expires.
+const BARKSKIN_SHIELD_PERCENT: Array[float] = [0.25, 0.40, 0.40]
+const BARKSKIN_DURATION:       Array[float] = [6.0, 8.0, 8.0]
+# Frost: freeze — roots every on-screen non-boss enemy (can't move, still
+# attacks). Tier 3 also hits each rooted enemy with Frost damage.
+const FROST_ULT_ROOT_SEC:      Array[float] = [2.0, 3.0, 3.0]
+const FROST_ULT_STAR5_DAMAGE:  float = 60.0
+# Void: Void Rupture — Void damage to every on-screen enemy, bosses included.
+# Tier 3: the tower gets a shield = the damage dealt, capped at a % of max HP,
+# lasting Barkskin's longest duration (09-13: "same as Barkskin").
+const VOID_RUPTURE_DAMAGE:             Array[float] = [150.0, 250.0, 250.0]
+const VOID_RUPTURE_SHIELD_CAP_PERCENT: float = 0.5
+# Poison: Plague Cloud — a zone on the tower that hits everything inside every
+# tick (plus Poison's normal DoT + slow). Tier 3: an enemy dying inside spreads
+# a cloud hit to enemies within PLAGUE_CLOUD_SPREAD_RADIUS of it.
+const PLAGUE_CLOUD_RADIUS:        Array[float] = [4.0, 5.0, 5.0]
+const PLAGUE_CLOUD_DURATION:      Array[float] = [6.0, 8.0, 8.0]
+const PLAGUE_CLOUD_DAMAGE:        float = 20.0
+const PLAGUE_CLOUD_TICK_SEC:      float = 1.0
+const PLAGUE_CLOUD_SPREAD_RADIUS: float = 3.0
+# Fire: Ring of Fire — a ring at a fixed radius around the tower; each enemy
+# that crosses it inward takes one Fire hit (plus Fire's normal burn). Tier 3:
+# that hit deals +RING_OF_FIRE_BURNING_BONUS on an enemy already burning.
+const RING_OF_FIRE_RADIUS:        float = 4.0
+const RING_OF_FIRE_DURATION:      Array[float] = [6.0, 9.0, 9.0]
+const RING_OF_FIRE_DAMAGE:        float = 80.0
+const RING_OF_FIRE_BURNING_BONUS: float = 0.25
 const STATUS_TICK_INTERVAL:     float = 0.5   # seconds between DoT damage ticks
 
 # Mono-school mastery bonus — owning all MAX_SPELL_SLOTS spells of one school
@@ -234,7 +289,7 @@ const AOE_AREA_SHARD_INTERVAL:  float = 0.2   # base seconds between shard drops
 # Line AoE Bolt archetype (spells.md Task S-05)
 const LANCE_MAX_TRAVEL:         float = 30.0  # crosses the whole visible arena, then despawns
 const LANCE_HITBOX_LENGTH:      float = 1.6   # longer than the standard bolt's hit reach
-const LANCE_HITBOX_WIDTH:       float = 0.7
+const LANCE_HITBOX_WIDTH:       float = 2.2   # wide enough to hit enemies either side of the target next to the tower (09-13 play-test)
 
 # School tint colors (spells.md Section 2), read via CombatUtils.get_damage_color()
 const SCHOOL_COLORS: Dictionary = {

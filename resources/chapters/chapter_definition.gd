@@ -18,3 +18,9 @@ extends Resource
 @export var map_image: Texture2D
 ## One line under the picture on the chapter screen (chapter_select.tscn).
 @export_multiline var description: String = ""
+## Reward scaling (09-12): later chapters pay more of the same materials.
+## Base Material amount x this (rounded). 1.0 = the plain checkpoint reward.
+@export var base_reward_multiplier: float = 1.0
+## Chance of each rare drop (Tower Material, each fought school's Scroll) x
+## this, capped at 100%. A hit still gives RARE_MATERIAL_DROP_AMOUNT.
+@export var rare_chance_multiplier: float = 1.0

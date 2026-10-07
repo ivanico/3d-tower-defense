@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://gojcy8ojc28y"]
+[gd_scene load_steps=20 format=3 uid="uid://gojcy8ojc28y"]
 
 [ext_resource type="PackedScene" uid="uid://dy0co36gcwh34" path="res://scenes/game_object/camera_rig/camera_rig.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/game_object/chap1/chap1_arena/chap1_arena.tscn" id="2_arena"]
@@ -14,6 +14,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/pause_button/pause_button.tscn" id="15_pause"]
 [ext_resource type="Script" uid="uid://bjy471auqvlrg" path="res://scenes/ui/school_bonus_icon.gd" id="16_bonusicon"]
 [ext_resource type="Script" uid="uid://cntomb20lojxx" path="res://scenes/main/hud.gd" id="Script_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/ult_button/ult_button.tscn" id="17_ult"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/shield_bar_3d/shield_bar_3d.tscn" id="18_shield"]
 
 [sub_resource type="Environment" id="Env_world"]
 background_mode = 2
@@ -62,6 +64,8 @@ environment = SubResource("Env_world")
 [node name="EnemyContainer" type="Node3D" parent="."]
 
 [node name="ProjectileContainer" type="Node3D" parent="."]
+
+[node name="ShieldBar" parent="." instance=ExtResource("18_shield")]
 
 [node name="WaveManager" parent="." instance=ExtResource("10")]
 chapter = ExtResource("12")
@@ -138,6 +142,17 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_kla03")
 theme_override_styles/hover = SubResource("StyleBoxFlat_kla03")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_rdw2g")
 theme_override_styles/normal = SubResource("StyleBoxFlat_kla03")
+
+[node name="UltButton" parent="HUD" instance=ExtResource("17_ult")]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -190.0
+offset_top = -240.0
+offset_right = -20.0
+offset_bottom = -70.0
 
 [node name="DraftUI" parent="." instance=ExtResource("7")]
 

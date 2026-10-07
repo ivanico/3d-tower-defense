@@ -22,4 +22,4 @@ projectile_scene = ExtResource("2")
 bounce_radius = 4.0
 max_bounces = 2
 damage_falloff_per_bounce = 1.0
-stack_max = 3
+stack_max = 5

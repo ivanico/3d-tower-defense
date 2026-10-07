@@ -23,6 +23,8 @@ const ChapterRegistry := preload("res://scripts/chapter_registry.gd")
 @onready var preview: Control = $Preview3D
 @onready var star_row: HBoxContainer = $StarRow
 @onready var name_label: Label = $NameLabel
+## The tower's ult (09-13): name, what it does, what star 3 / 5 add.
+@onready var ult_label: Label = $UltLabel
 @onready var level_pill: Control = $StatsStrip/Level
 @onready var atk_pill: Control = $StatsStrip/Atk
 @onready var hp_pill: Control = $StatsStrip/Hp
@@ -112,6 +114,8 @@ func _refresh() -> void:
 	preview.show_tower(_viewing_id, star)
 	star_row.stars = star
 	name_label.text = tower_def.tower_name
+	ult_label.text = _ult_text(tower_def)
+	ult_label.visible = not tower_def.ult_name.is_empty()
 	level_pill.value_text = "%d/%d" % [star, Constants.TOWER_MAX_STARS]
 	_set_stat(atk_pill, tower_def.base_damage, star, at_max)
 	_set_stat(hp_pill, tower_def.base_hp, star, at_max)
@@ -187,3 +191,10 @@ func _on_upgrade_pressed() -> void:
 	if MetaManager.upgrade_tower_star(_viewing_id):
 		AudioManager.play_sfx("sfx_upgrade_confirm")
 	_refresh()
+
+
+## The ult line (09-13), from the tower's .tres text fields.
+func _ult_text(tower_def: Resource) -> String:
+	return "Ult: %s\n%s\nStar 3: %s   Star 5: %s" % [
+			tower_def.ult_name, tower_def.ult_description,
+			tower_def.ult_star3_text, tower_def.ult_star5_text]

@@ -50,6 +50,14 @@ var armor_damage_reduction: float = 0.0
 var armor_regen_active: bool = false
 var utility_cooldown_mult: float = 1.0
 
+# Tower shield (09-13): absorbs damage before tower_hp, for a set time. One
+# generic shield for every source (Barkskin, Void Rupture star 5); a new shield
+# replaces the old one. EventBus.shield_changed drives the shield bar.
+var shield_hp: float = 0.0
+var shield_max: float = 0.0
+var _shield_remaining: float = 0.0
+var _shield_heals_leftover: bool = false
+
 # Run stats
 var run_kills: int = 0
 var waves_cleared: int = 0
@@ -112,11 +120,45 @@ func gain_xp(amount: int) -> void:
 
 func take_damage(amount: float) -> void:
 	var reduced := amount * (1.0 - armor_damage_reduction)
+	if shield_hp > 0.0:
+		var absorbed := minf(shield_hp, reduced)
+		shield_hp -= absorbed
+		reduced -= absorbed
+		EventBus.shield_changed.emit(shield_hp, shield_max)
 	tower_hp = max(tower_hp - reduced, 0.0)
 	hp_changed.emit(tower_hp, tower_max_hp)
 	EventBus.tower_damaged.emit(amount)
 	if tower_hp <= 0.0:
 		call_deferred("_on_tower_died")
+
+## Gives the tower a shield of `amount` for `duration` seconds, replacing any
+## current one. `heal_leftover`: what's left when it expires heals the tower
+## (Barkskin star 5); otherwise it just disappears.
+func add_shield(amount: float, duration: float, heal_leftover: bool = false) -> void:
+	shield_hp = amount
+	shield_max = amount
+	_shield_remaining = duration
+	_shield_heals_leftover = heal_leftover
+	EventBus.shield_changed.emit(shield_hp, shield_max)
+
+func _clear_shield() -> void:
+	shield_hp = 0.0
+	shield_max = 0.0
+	_shield_remaining = 0.0
+	_shield_heals_leftover = false
+	EventBus.shield_changed.emit(0.0, 0.0)
+
+# Pausable (autoloads inherit the root's mode), so a shield doesn't tick down
+# during a draft or the pause menu.
+func _physics_process(delta: float) -> void:
+	if _shield_remaining <= 0.0:
+		return
+	_shield_remaining -= delta
+	if _shield_remaining <= 0.0:
+		var leftover := shield_hp if _shield_heals_leftover else 0.0
+		_clear_shield()
+		if leftover > 0.0:
+			heal(leftover)
 
 func heal(amount: float) -> void:
 	tower_hp = min(tower_hp + amount, tower_max_hp)
@@ -239,6 +281,7 @@ func reset() -> void:
 	_regen_timer.stop()
 	run_kills = 0
 	waves_cleared = 0
+	_clear_shield()
 	damage_dealt = 0.0
 	run_start_time = 0.0
 

@@ -29,6 +29,7 @@ func _ready() -> void:
 	GameState.start_run(definition)
 	# Placeholder towers borrowing another model get their school tint (09-04).
 	ModelTint.apply(self, definition.model_tint)
+	_add_ult()
 	# No auto-equipped starting spell any more — the tower now spawns with
 	# zero spells, and game_world.gd opens a "first_spell" draft immediately
 	# (before wave 1 starts) so the player picks their own opener instead.
@@ -37,6 +38,20 @@ func _ready() -> void:
 	# five .tres values and the docs describing the old design
 	# (components.md, spells.md, epic_done/epic_02/03) — ask if those should go too.
 	_play_idle()
+
+## The tower's ult (09-13): its .tres names the script, so no tower id branch
+## here. After start_run(), so the ult reads this run's star level.
+func _add_ult() -> void:
+	if definition.passive_script == null:
+		return
+	var ult := Node.new()
+	ult.set_script(definition.passive_script)
+	ult.name = "Ult"
+	ult.setup(self, definition)
+	add_child(ult)
+
+func get_ult() -> Node:
+	return get_node_or_null("Ult")
 
 func _play_idle() -> void:
 	if anim == null:
@@ -98,7 +113,11 @@ func _spawn_orb(spell: SpellDefinition, index: int) -> void:
 		var pivot := Node3D.new()
 		pivot.name = "OrbRing_%s" % spell.spell_id
 		add_child(pivot)
-		ring = {"pivot": pivot, "speed_deg": spell.orbit_speed}
+		# Rank 3 (09-14): the whole ring spins faster, so spacing stays even.
+		var spin := spell.orbit_speed
+		if CombatUtils.get_rank_milestone(spell.spell_id) >= 1:
+			spin *= Constants.ORB_RANK3_SPIN_MULT
+		ring = {"pivot": pivot, "speed_deg": spin}
 		_orb_rings[spell.spell_id] = ring
 	var orb := ORB_SCENE.instantiate()
 	ring["pivot"].add_child(orb)
@@ -125,9 +144,9 @@ func _try_fire(spell: SpellDefinition) -> void:
 		return
 	_spell_timers[spell.spell_id] = spell.cooldown * GameState.tower_fire_rate_multiplier * GameState.utility_cooldown_mult
 	if spell.spell_category == Constants.SpellCategory.PROJECTILE:
-		_fire_projectile(spell, target)
+		_fire_volley(spell, target, _spawn_bolt)
 	elif spell.spell_category == Constants.SpellCategory.AOE_AREA:
-		_fire_aoe_area(spell, target)
+		_fire_volley(spell, target, _fire_aoe_area)
 
 func _fire_aoe_area(spell: SpellDefinition, target: Node3D) -> void:
 	# Zone lands at the enemy's position at the moment of cast and never
@@ -138,11 +157,12 @@ func _fire_aoe_area(spell: SpellDefinition, target: Node3D) -> void:
 	var zone := ObjectPool.acquire(scene)
 	zone.initialize(Vector3(target.global_position.x, 0.0, target.global_position.z), spell)
 
-func _fire_projectile(spell: SpellDefinition, target: Node3D) -> void:
-	# Volley stacking (spells.md Task S-01): stack_count bolts per cast, at
-	# random distinct enemies (every spell type targets randomly except Orb,
-	# which orbits instead), with a small stagger so it reads as a volley.
-	# Extra bolts fall back to a random target when enemies < bolts.
+## Volley stacking (spells.md Task S-01, extended to AoE zones in 09-15):
+## stack_count casts per cooldown, at random distinct enemies (every spell type
+## targets randomly except Orb, which orbits instead), with a small stagger so
+## it reads as a volley. Extras fall back to a random target when enemies <
+## casts. `fire_one(spell, target)` launches one: a bolt/lance or a zone.
+func _fire_volley(spell: SpellDefinition, target: Node3D, fire_one: Callable) -> void:
 	var stacks: int = maxi(_spell_stacks.get(spell.spell_id, 1), 1)
 	var targets: Array[Node3D] = targeting.get_targets(stacks, spell.range)
 	if targets.is_empty():
@@ -155,7 +175,7 @@ func _fire_projectile(spell: SpellDefinition, target: Node3D) -> void:
 			t = targeting.get_target(spell.range)
 		if t == null:
 			continue
-		_spawn_bolt(spell, t)
+		fire_one.call(spell, t)
 
 func _spawn_bolt(spell: SpellDefinition, target: Node3D) -> void:
 	# A spell's .tres can point at its own projectile scene (chain bolt etc.);

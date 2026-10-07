@@ -53,6 +53,20 @@ var _preview_shard: Node3D = null
 static var _decal_materials: Dictionary = {}
 
 var spell: SpellDefinition = null
+## This zone's own size and lifetime: the spell's values with the rank
+## milestones applied (09-14: rank 3 lasts longer, rank 5 is bigger). Kept on
+## the zone so the shared .tres is never changed.
+var radius: float = 0.0
+var duration: float = 0.0
+
+## EDITOR ONLY -- 5 shows the rank-5 size of the ground disc (09-14). Ignored
+## at runtime, where the player's rank decides.
+@export_range(1, 5) var preview_rank: int = 1:
+	set(value):
+		preview_rank = value
+		if Engine.is_editor_hint() and is_inside_tree():
+			var m := Constants.AOE_RANK5_RADIUS_MULT if preview_rank >= 5 else 1.0
+			decal.scale = Vector3(m, 1.0, m)
 
 # Margin added to the collision cylinder beyond spell.aoe_radius, so it's
 # always a safe superset of the exact flat-radius check in _tick_damage --
@@ -114,14 +128,17 @@ func _on_body_exited(body: Node3D) -> void:
 func initialize(pos: Vector3, spell_def: SpellDefinition) -> void:
 	spell = spell_def
 	global_position = pos
+	var milestone := CombatUtils.get_rank_milestone(spell.spell_id)
+	duration = spell.duration * (Constants.AOE_RANK3_DURATION_MULT if milestone >= 1 else 1.0)
+	radius = spell.aoe_radius * (Constants.AOE_RANK5_RADIUS_MULT if milestone >= 2 else 1.0)
 	_age = 0.0
 	_tick_accum = 0.0
 	_shard_accum = 0.0
 	_next_shard_in = 0.0
-	decal.scale = Vector3(spell.aoe_radius, 1.0, spell.aoe_radius)
+	decal.scale = Vector3(radius, 1.0, radius)
 	decal.material_override = _get_decal_material(spell.damage_type)
 	var shape := collision.shape as CylinderShape3D
-	shape.radius = spell.aoe_radius + DETECTION_MARGIN
+	shape.radius = radius + DETECTION_MARGIN
 	shape.height = 2.0
 	_active = true
 	# The cast-moment tick fires in this same call, before Godot's physics
@@ -137,14 +154,14 @@ func _physics_process(delta: float) -> void:
 	if not _active:
 		return
 	_age += delta
-	if _age >= spell.duration:
+	if _age >= duration:
 		_expire()
 		return
 	_tick_accum += delta
 	if _tick_accum >= spell.tick_interval:
 		_tick_accum -= spell.tick_interval
 		_tick_damage(_nearby_enemies)
-	if _age <= spell.duration - SHARD_SPAWN_CUTOFF:
+	if _age <= duration - SHARD_SPAWN_CUTOFF:
 		_shard_accum += delta
 		if _shard_accum >= _next_shard_in:
 			_shard_accum = 0.0
@@ -156,13 +173,18 @@ func _tick_damage(enemies: Array) -> void:
 		if not is_instance_valid(enemy):
 			continue
 		var flat := Vector2(enemy.global_position.x - global_position.x, enemy.global_position.z - global_position.z)
-		if flat.length() > spell.aoe_radius:
+		if flat.length() > radius:
 			continue
-		var hurtbox := enemy.find_child("HurtboxComponent") as HurtboxComponent
-		if hurtbox:
-			# Computed at tick time so mid-run upgrades apply to live zones.
-			var dmg: float = spell.damage * GameState.tower_damage_multiplier * GameState.get_school_damage_multiplier(spell.damage_type) * GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(spell.spell_id)
-			hurtbox.apply_hit(dmg, spell.damage_type, enemy.global_position + Vector3(0, 0.6, 0))
+		_hit(enemy)
+
+## One zone hit on `enemy`. Shared by the tick and by subclasses (Plague
+## Cloud's star-5 spread, 09-13) so the damage formula lives in one place.
+func _hit(enemy: Node3D) -> void:
+	var hurtbox := enemy.find_child("HurtboxComponent") as HurtboxComponent
+	if hurtbox:
+		# Computed at hit time so mid-run upgrades apply to live zones.
+		var dmg: float = spell.damage * GameState.tower_damage_multiplier * GameState.get_school_damage_multiplier(spell.damage_type) * GameState.offense_damage_mult * GameState.get_spell_damage_multiplier(spell.spell_id)
+		hurtbox.apply_hit(dmg, spell.damage_type, enemy.global_position + Vector3(0, 0.6, 0))
 
 ## Instantiates the shard model, positions/orients it, and dresses it with
 ## the same shader/trail look every other spell object (Orb/Bolts) gets via
@@ -200,7 +222,7 @@ func _create_dressed_shard(damage_type: int, shard_position: Vector3, shard_rota
 
 func _spawn_shard() -> void:
 	# sqrt for a uniform spread over the disc, not clustered at the center.
-	var r := sqrt(randf()) * spell.aoe_radius
+	var r := sqrt(randf()) * radius
 	var a := randf() * TAU
 	var ground := Vector3(cos(a) * r, 0.0, sin(a) * r)
 	var spawn_pos := _get_shard_spawn_position(ground)

@@ -14,6 +14,8 @@ signal select_pressed
 @onready var rank_label: Label = $HBox/Info/StatusSlot/RankLabel
 @onready var select_button: CheckButton = $HBox/Actions/SelectButton
 @onready var stat_text_label: Label = $HBox/Info/StatsRow/StatText
+## Codex only (09-14): what rank 3 / rank 5 unlock, greyed until reached.
+@onready var milestone_label: RichTextLabel = $HBox/Info/MilestoneLabel
 @onready var upgrade_button: Button = $HBox/Actions/UpgradeButton
 @onready var cost_row: HBoxContainer = $HBox/Actions/CostRow
 # Typed to the base class, not the global class name `CostChip` — see the
@@ -91,3 +93,15 @@ func show_select(is_selected: bool) -> void:
 	select_button.visible = true
 	select_button.button_pressed = is_selected
 	select_button.disabled = is_selected
+
+
+## Codex only (09-14): "Rank 3: … / Rank 5: …", each greyed until reached.
+func set_milestones(rank3_text: String, rank3_reached: bool, rank5_text: String, rank5_reached: bool) -> void:
+	milestone_label.visible = true
+	milestone_label.text = "%s   %s" % [
+			_milestone_part("Rank 3: " + rank3_text, rank3_reached),
+			_milestone_part("Rank 5: " + rank5_text, rank5_reached)]
+
+
+func _milestone_part(text: String, reached: bool) -> String:
+	return text if reached else "[color=#8a8f9c]%s[/color]" % text

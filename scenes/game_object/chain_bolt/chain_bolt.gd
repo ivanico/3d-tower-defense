@@ -49,6 +49,10 @@ func initialize(start_pos: Vector3, target_pos: Vector3, spell: SpellDefinition)
 	speed = spell.projectile_speed
 	bounce_radius = spell.bounce_radius
 	max_bounces = spell.max_bounces
+	# Rank 3 / 5: +1 / +2 bounces for this exact spell (09-14).
+	var milestone := CombatUtils.get_rank_milestone(spell.spell_id)
+	if milestone > 0:
+		max_bounces += Constants.CHAIN_RANK_EXTRA_BOUNCES[milestone - 1]
 	damage_falloff_per_bounce = spell.damage_falloff_per_bounce
 	_hit_enemies.clear()
 	_age = 0.0
