@@ -165,6 +165,9 @@ C. REWARDS & MATERIALS — all 16 exist in `rewards/`
                               today: a school-coloured circle drawn by
                               widget/ult_button/; Epic 09 09-13. Ask before
                               making real art.)
+- [ ] hud/ui_boss_banner.png  (optional — boss intro banner. Placeholder today:
+                              big red "BOSS" Label in
+                              scenes/ui/boss_banner/boss_banner.tscn; Epic 09 09-16)
 - [ ] icon_tower_default.png  (portrait for the garage selection grid, +1 per
                               future tower. icon_tower_ancient.png already
                               covers tower #1 via TowerDefinition.icon)

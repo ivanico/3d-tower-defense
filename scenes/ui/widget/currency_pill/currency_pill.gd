@@ -30,9 +30,25 @@ func set_amount(value: int) -> void:
 	amount = value
 
 
+## Space kept clear at each end of the pill. The text is centred, so a number
+## wider than `pill_size.x - 2 * TEXT_SIDE_MARGIN` would run under the icon on
+## the left (a 7-digit amount lost its first digit there). Up to 4 digits at the
+## default 40 px keep their full size; longer amounts shrink to fit.
+const TEXT_SIDE_MARGIN := 42
+
+
 func _apply_content() -> void:
 	var label: Label = get_node_or_null("Pill/AmountLabel")
 	if label == null:
 		return
-	label.add_theme_font_size_override("font_size", font_size)
 	label.text = str(amount)
+	label.add_theme_font_size_override("font_size", _fitting_font_size(label))
+
+
+## `font_size`, shrunk just enough for a long amount to fit between the margins.
+func _fitting_font_size(label: Label) -> int:
+	var max_width: float = pill_size.x - 2 * TEXT_SIDE_MARGIN
+	var width: float = label.get_theme_font("font").get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	if width <= max_width:
+		return font_size
+	return maxi(int(font_size * max_width / width), 1)

@@ -1633,7 +1633,7 @@ get there".
 - [x] Armor per chapter = the chap1 table (every set borrows chap1 stats).
       Resists: Void -1, Poison 3, Fire 0, on bosses AND regulars (09-07
       rule). Mixed chapters reuse the sets unchanged.
-- [ ] ~~Rewards per chapter via 09-12's multipliers.~~ **Left to 09-12**
+- [x] ~~Rewards per chapter via 09-12's multipliers.~~ **Left to 09-12**
       (user, 2026-10-06, decision C). 09-08 doesn't touch rewards.
 - [x] Each chapter gets `chapter_0N.tres`, an arena copy with its own colours,
       and a lineup preview. More chapters later = more `.tres` + arenas, no
@@ -2416,7 +2416,7 @@ more of the existing ones).
       It's one place, so the victory/defeat screens need no change.
 - [x] The results screen shows the scaled amounts (it already formats from
       the rolled reward).
-- [ ] Values per chapter are set in balancing (09-17). **Placeholders are in
+- [x] Values per chapter are set in balancing (09-17). **Placeholders are in
       now** (Q3); 09-17 replaces them.
 - [x] Also feeds the store rule (09-00.1): a chest's "one energy bar's worth"
       uses these same numbers, so chest value follows chapter rewards.
@@ -2529,10 +2529,12 @@ tested):
 - [x] **Both trigger modes behind one switch**: auto-fire when charged, or
       tap-to-fire. The switch is a `Constants` value, so both can be
       play-tested.
-- [ ] **Trigger research**: look at what players prefer (forums, reviews,
+- [x] **Trigger research**: look at what players prefer (forums, reviews,
       comparable mobile tower-defense/roguelite games), write up the
       findings here with sources, then play-test both modes. You make the
       final pick; record it in 09-00.6.
+      (Ticked 2026-10-08 when the user marked everything done: the research
+      is done; the auto-vs-tap pick is still open, TAP is what's built.)
   - ✅ **Research done (2026-09-28)**. Findings:
     - **No clear winner; preference is personal.** Some players want
       control, others want the game to handle it
@@ -3064,7 +3066,7 @@ tower, showing the wider lance hits and a 3-zone Blizzard / 5-lance volley.
 
 ---
 
-## Task 09-16 — Boss Depth (phases + intro)
+## Task 09-16 — Boss Depth (phases + intro) ✅ DONE (2026-10-08, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -3079,13 +3081,13 @@ tower, showing the wider lance hits and a 3-zone Blizzard / 5-lance volley.
 **Covers**: A8 · **Refs**: `mechanics.md` §3 "multi-phase bosses [LATER]", §1
 "brief zoom/pan on boss intro [LATER]"
 
-- [ ] `scenes/component/boss_phase_component.gd`: HP thresholds (on the boss
+- [x] `scenes/component/boss_phase_component.gd`: HP thresholds (on the boss
       `.tres` or as exports) switch the boss to its next phase. Each phase
       changes data such as speed, attack cooldown and heavy-attack frequency.
       Attached only to boss scenes, next to `BossHeavyAttackComponent`.
-- [ ] Phase change tell: a reuse of the existing heavy-attack telegraph
+- [x] Phase change tell: a reuse of the existing heavy-attack telegraph
       (scale pulse / flash), no new art.
-- [ ] **Phase design** ✅ answered (user, 2026-09-28; the user's idea "simple
+- [x] **Phase design** ✅ answered (user, 2026-09-28; the user's idea "simple
       attacks first, then add the heavy hit", in Claude's recommended
       form):
   - **2 phases, split at 50% HP**, the same rule for every boss.
@@ -3107,7 +3109,7 @@ tower, showing the wider lance hits and a 3-zone Blizzard / 5-lance volley.
   - Known side effect: bosses get **easier than today** in their first
     half (the heavy hit is active from the start today). Compensate in
     09-17 if needed.
-- [ ] **Boss intro** ✅ answered (user, 2026-09-28): **a "BOSS" banner only.
+- [x] **Boss intro** ✅ answered (user, 2026-09-28): **a "BOSS" banner only.
       No camera move, no shake.** `camera_rig.gd` is not touched.
   - Why (Claude's recommendation, accepted):
     - The fixed camera always shows the whole arena, and the boss spawns
@@ -3131,12 +3133,82 @@ tower, showing the wider lance hits and a 3-zone Blizzard / 5-lance volley.
 Phases are verified in a run.
 
 **Acceptance criteria**:
-- [ ] Bosses visibly change behavior at each threshold; regular enemies are
+- [x] Bosses visibly change behavior at each threshold; regular enemies are
       unaffected.
+
+### Session 2026-10-08: status + plan
+
+**Status at start**: nothing of 09-16 was built. `EventBus.boss_spawned` is
+emitted in `wave_manager.gd start_wave()` with no listener. The heavy attack
+is on from the start. `synergy_banner.gd` still works, but nothing emits
+`synergy_threshold_reached` (its fate is the open 10-00 B10 question).
+All 10 chapters use only 4 boss scenes (`chap1_boss_01/02`, `chap2_boss_01/02`;
+ch3–10 `.tres` borrow the chap1 ones), so 4 `.tscn`s cover every boss.
+No new design questions: everything above is already answered.
+
+**Plan**:
+1. `Constants.BOSS_PHASE_2_HP_FRACTION = 0.5`, `BOSS_BANNER_HOLD_SEC = 2.0`.
+2. `BossHeavyAttackComponent`: `heavy_enabled` flag (default true) +
+   `set_heavy_enabled()`, which also restarts the 4-attack count;
+   `_telegraph()` renamed `telegraph()` so the phase component can reuse it.
+3. `scenes/component/boss_phase_component.gd/.tscn` (no class_name):
+   listens to the sibling `HealthComponent.health_changed`; `thresholds`
+   array (one entry today); phase 1 = heavy off, phase 2 = heavy on + one
+   pulse. A full-HP `health_changed` (pooled `reset()`) goes back to phase 1.
+4. Shared banner base `scenes/ui/widget/hud_banner/hud_banner.gd` (the old
+   show / fade / queue code moved out of `synergy_banner.gd`, which now
+   `extends` it). So 10-13 can delete the synergy banner without touching
+   the boss banner.
+5. `scenes/ui/boss_banner/boss_banner.tscn/.gd`: big red "BOSS", held 2 s,
+   no pause; `@tool preview_visible` so the scene shows it in the editor.
+6. Add `BossPhaseComponent` to the 4 boss `.tscn`s and `BossBanner` to
+   `game_world.tscn` (scenes closed in the editor first).
+7. Test headless + windowed screenshots.
+
+**Acceptance criteria (this session)**:
+- [x] Phase 1 (HP ≥ 50%): every boss attack is a normal hit.
+- [x] Crossing 50%: one scale pulse, heavy attack on (every 4th attack,
+      ×2.5, 0.5 s telegraph); speed and cooldown unchanged.
+- [x] A pooled boss that respawns starts in phase 1 again.
+- [x] Regular enemies have no phase/heavy component and are unchanged.
+- [x] "BOSS" banner shows ~2 s when the boss spawns; the game keeps running.
+- [x] The synergy banner still works the same (it now uses the shared base).
+- [x] `boss_banner.tscn` shows the banner when opened in the editor.
+
+**Progress**:
+- Steps 1–5 built. Headless test (component added in code) passed: phase 1 at
+  51% HP, phase 2 + pulse (scale 1.0 → 1.12 → 1.0) at 49%, `reset()` back to
+  phase 1, regular enemy has neither component, banner alpha 0 → 1 ("BOSS")
+  → 0 after 2 s, synergy banner still shows its text.
+- Step 6 done (2026-10-08, user said go; no scenes were open):
+  `BossPhaseComponent` added to `chap1_boss_01/02.tscn` and
+  `chap2_boss_01/02.tscn`; `BossBanner` added to `game_world.tscn` next to
+  `SynergyBanner` (`preview_visible = false` on the instance).
+- Step 7: headless check on all 4 real boss scenes passed (phase 1 normal hits,
+  51% still phase 1, 49% phase 2 + pulse, scale back to 1, reset → phase 1).
+  Windowed run (chap1, boss wave): "BOSS" shows over the arena right after
+  the spawn and is gone 2 s later; at 49% HP the boss is mid-pulse (scale 1.15)
+  and the heavy attack is on. User checked it in a window (boss started at
+  55% HP in that test window only) and approved: "it's good".
+
+**Built (2026-10-08)**:
+- `Constants.BOSS_PHASE_2_HP_FRACTION = 0.5`, `BOSS_BANNER_HOLD_SEC = 2.0`.
+- `BossHeavyAttackComponent`: `heavy_enabled` + `set_heavy_enabled()` (restarts
+  the 4-attack count); `telegraph()` is now public (was `_telegraph()`).
+- `scenes/component/boss_phase_component.gd/.tscn` (no class_name) on all 4 boss
+  scenes (`chap1_boss_01/02`, `chap2_boss_01/02`; ch3–10 borrow chap1's).
+  `thresholds` array, phase 1 heavy off, phase 2 heavy on + one pulse.
+- `scenes/ui/widget/hud_banner/hud_banner.gd`: shared show / fade / queue base.
+  `synergy_banner.gd` and `scenes/ui/boss_banner/boss_banner.gd` extend it, so
+  10-13 can delete the synergy banner alone.
+- `BossBanner` in `game_world.tscn`: red "BOSS", 2 s, no pause.
+- Placeholder `hud/ui_boss_banner.png` listed in `ui_assets.md`.
+- The 50% tell is the existing 0.5 s / +15% scale pulse; the user saw it and
+  kept it as is.
 
 ---
 
-## Task 09-17 — Difficulty Curve & Balancing
+## Task 09-17 — Difficulty Curve & Balancing ✅ DONE (2026-10-08, user marked done)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -3150,7 +3222,7 @@ Phases are verified in a run.
 
 **Covers**: A7 · Do this **after** 09-03 → 09-16, since it tunes all of them.
 
-- [ ] Write down the targets first, with you: rough run length, how often a
+- [x] Write down the targets first, with you: rough run length, how often a
       fresh star-1 tower should clear chapter 1, and the step up per chapter.
   - ✅ **Run length** (user, 2026-09-28): **no minute target; a run is
     20 waves** ("making it 20 waves will make it good enough").
@@ -3187,9 +3259,9 @@ Phases are verified in a run.
     - Per-chapter scaling lives on `ChapterDefinition` (HP/damage
       multipliers, bullet below). The exact numbers come from
       play-testing against this curve.
-- [ ] Per-chapter scaling lives on `ChapterDefinition` (e.g. HP/damage
+- [x] Per-chapter scaling lives on `ChapterDefinition` (e.g. HP/damage
       multipliers on top of `ENEMY_HP_SCALE`), so chapters differ by data.
-- [ ] **Switch to 20 waves** (09-00.2). ✅ **Timing answered** (user,
+- [x] **Switch to 20 waves** (09-00.2). ✅ **Timing answered** (user,
       2026-09-28): **at the start of this task**. Every task before it
       (09-01 → 09-16) is built and tested at 12 waves; this task switches
       first, then tunes everything at 20. Update together:
@@ -3197,16 +3269,16 @@ Phases are verified in a run.
       - every chapter's `wave_count`
       - `MATERIAL_CHECKPOINT_WAVES` / `_REWARDS` / `_CHANCES`
       - the ramp in `wave_manager.gd`
-- [ ] Tune the new numbers from Epic 09's answers:
+- [x] Tune the new numbers from Epic 09's answers:
       - stack caps (09-15)
       - rank 3 / 5 unlock values (09-14)
       - ult charge times (09-13)
       - per-chapter reward multipliers (09-12)
       - the chest cap of "one energy bar's worth" (09-00.1)
       - armor mixes (09-11)
-- [ ] Check towers stay **sidegrades** (09-00.1): no tower should clearly
+- [x] Check towers stay **sidegrades** (09-00.1): no tower should clearly
       beat the others at the same star.
-- [ ] The known issue: short-range spells rarely fire because enemies die
+- [x] The known issue: short-range spells rarely fire because enemies die
       before closing to 6.5 / 4 m (`spells.md` §6.4). ✅ **Answered**
       (user, 2026-09-28, Claude's recommendation): **do nothing now; check
       it in this task after the 20-wave switch.**
@@ -3221,30 +3293,226 @@ Phases are verified in a run.
   - **Fallback if they still rarely fire**: first raise their ranges in
     each spell's `.tres` (AoE 6.5 → ~8 m, Lance 4 → ~6 m). Only if that's
     not enough, look at enemy toughness. Record what you land on here.
-- [ ] Balance every tower × chapter combination by play-testing. Record the
+- [x] Balance every tower × chapter combination by play-testing. Record the
       numbers you land on in this task.
 
 **Placeholders**: none · **Preview**: none (numbers).
 
 **Acceptance criteria**:
-- [ ] Each chapter meets the targets written at the top of this task, for
+- [x] Each chapter meets the targets written at the top of this task, for
       each launch tower.
+
+### Session 2026-10-08: plan (user OK'd)
+
+**Today's code**: count `3 × 1.5^(w−1)` capped at 60 (cap at wave 9); HP
+`1.12^(w−1)` (wave 12 = 3.5×, wave 20 = 8.6×, boss included); damage
+`1.08^(w−1)`; checkpoints 3 / 6 / 9 / 12; no per-chapter difficulty fields.
+`Constants.TOTAL_WAVES` is read by no code (the real count is each
+chapter's `wave_count`).
+
+1. **Switch to 20 waves.** Questions first, one at a time:
+   (1) enemy-count ramp, (2) wave-20 boss strength, (3) material
+   checkpoints. Then constants + 10 chapter `.tres` + ramp, headless test.
+2. **Per-chapter HP / damage multipliers** on `ChapterDefinition`
+   (placeholder curve, numbers asked first).
+3. **Play-test and tune** (09-13/14/15 numbers, rewards, chest cap, armor,
+   short-range spells, sidegrades), recorded here.
+- Open, not chosen: an auto-play test window to speed up tower × chapter
+  checks. Only if the user asks for it.
+
+**Answers**:
+- **Q1 enemy-count ramp** (user, 2026-10-08): **B, +3 enemies per wave**
+  ("go b if it's ez to tune"). Count = 3 + 3 × (wave − 1), max 60 stays.
+  - Waves 1/5/10/15/19 = 3/15/30/45/57; about 570 enemies per run (today
+    ~330). Early waves stay close to today (waves 1–5 ≈ 45 vs 40).
+  - Consequences: the `× 1.5^(w−1)` growth becomes a flat `+3` step (one
+    constant to tune: +2 / +4). The 60 max is never reached in 19 waves.
+  - Open: the right step size, from play-tests.
+- **Q2 boss strength** (user, 2026-10-08, partial): "the bosses should be
+  harder than the waves". Exact numbers still open.
+  - New question raised by the user: boss 1 on wave 10 and boss 2 on
+    wave 20? Not in any doc and not built. Today: ONE boss on the last
+    wave, picked at random from the chapter's 2 (`wave_manager.gd
+    _pick_boss()`).
+- **Q2a two boss fights** (user, 2026-10-08): **yes. Wave 10 = boss 1
+  alone, and the run goes on after it. Wave 20 = boss 2 and ends the run.
+  Both bosses every run.**
+  - Consequences:
+    - `boss_pool[0]` = wave-10 boss, `boss_pool[1]` = wave-20 boss, in
+      every chapter `.tres` (no more random pick). The 09-08 pools are
+      already listed as "boss 1, boss 2" in that order.
+    - `wave_manager.gd`: a boss wave is wave 10 and the last wave. Killing
+      the wave-10 boss is a normal `wave_cleared` (draft, next wave); only
+      the last boss emits `boss_died` → victory.
+    - "BOSS" banner and boss phases (09-16) work for both, no change.
+    - The checkpoint question (Q3) should account for the wave-10 boss.
+  - Found while reading (not fixed, pre-existing): `WAVE_DURATION_MAX`
+    (60 s) also applies to the boss wave. If the boss is still alive after
+    60 s, `_on_wave_timeout()` removes it and `_finish_wave()` counts it as
+    killed → victory. Ask the user what a boss timeout should do.
+- **Q2b boss strength** (user, 2026-10-08, Claude agreed): **B, ×2 extra
+  HP for bosses** on top of the normal per-wave growth. Damage keeps the
+  normal growth only.
+  - New constant (e.g. `BOSS_EXTRA_HP_MULT = 2.0`), applied only to bosses
+    at spawn. Tuned in play-tests.
+  - Chap1 numbers: boss 1 (wave 10) ≈ 2,780 HP / 80 per hit; boss 2
+    (wave 20) ≈ 9,470 HP / 195 per hit.
+- **Boss timeout** (user, 2026-10-08, Claude's recommendation): **A, no time
+  limit on boss waves.** The fight lasts until the boss or the tower dies.
+  - Consequences: `wave_manager.gd` doesn't start `_wave_timer`
+    (`WAVE_DURATION_MAX`) on a boss wave (wave 10 and the last). The
+    fall-off auto-kill (`ENEMY_FALL_KILL_Y`) still covers a boss off the
+    arena. Regular waves keep the 60 s limit.
+  - The user briefly asked "or maybe A was better?" about Q2b, then moved on
+    to this question; Q2b stays **B (×2)**.
+- **Q3 material checkpoints** (user, 2026-10-08: "go what works like
+  archero" = Claude's recommendation B): **waves 5 / 10 / 15 / 20, Base Mat
+  85 / 170 / 255 / 375 (today's ×1.7), rare chances unchanged 6 / 11 / 17 /
+  25%.**
+  - Archero check (2026-10-08): you keep all loot even if you die; a boss
+    every 10 rooms with an extra reward per 10 rooms cleared; gear ≈ 60%
+    per run (player-measured). Sources: gamepressure.com/games/archero,
+    archero-2.game-vault.net/wiki/Campaign, levelskip.com Archero farming
+    guide.
+  - Consequences: checkpoints 10 and 20 are the two boss kills. The 09-12
+    chapter multipliers still apply on top. Reward per minute stays about
+    the same as today's 12-wave run.
+  - Open: raising rare chances toward Archero's ~60% → play-test step.
+
+**Step 1 built (2026-10-08, user said go)**:
+- `Constants`: `TOTAL_WAVES = 20` (reference only), `WAVE_ENEMY_COUNT_STEP = 3`
+  (replaces `WAVE_ENEMY_COUNT_GROWTH_RATE`), `MID_BOSS_WAVE = 10`,
+  `BOSS_EXTRA_HP_MULT = 2.0`, checkpoints `[5, 10, 15, 20]` /
+  `[85, 170, 255, 375]` (chances unchanged).
+- `ChapterDefinition.wave_count` default 20; all 10 chapter `.tres` = 20.
+- `wave_manager.gd`: `is_boss_wave()` (wave 10 + last), `_pick_boss(wave)`
+  (`boss_pool[0]` / `[1]`, no random), count `3 + 3 × (w − 1)` max 60,
+  boss HP × `BOSS_EXTRA_HP_MULT` (by `definition.is_boss`), no
+  `_wave_timer` on boss waves; only the last wave emits `boss_died`.
+- Docs: `project.md` chapter line, `components.md` `TOTAL_WAVES`.
+- Headless: all chapters 20; counts 3, 6 … 27, B, 33 … 57; wave 10 =
+  chap1 boss 1 at 2,773 HP, wave 20 = boss 2 at 9,474 HP, both with the
+  timer off; killing boss 1 → `wave_cleared(10)`, no victory; killing boss
+  2 → victory; regular wave 5 timer on, no ×2; rewards 4→0, 5→85/6%,
+  10→170/11%, 15→255/17%, 20→375/25%.
+- Windowed (auto-closing): "BOSS" on wave 10, then "Wave Cleared!" card
+  pick + a "Level Up!" pick, wave 11 runs with 33 enemies, "BOSS" on
+  wave 20. Window left open for the user from wave 9.
+- User play-test (2026-10-08, window from wave 9 with 9 auto-picked cards):
+  cleared waves 9 → 20. "the bosses were TOOOO easy, didn't even get close
+  to me, make the hp x3" → **`BOSS_EXTRA_HP_MULT` 2.0 → 3.0** (chap1:
+  boss 1 ≈ 4,160 HP, boss 2 ≈ 14,200 HP).
+- Second play-test (×3): "everything feels weak, even the enemies". Reason
+  found in the save (read-only): all 4 owned towers star 5, 12 of 13 spells
+  rank 5. Test windows load the real save, so this was a maxed build on
+  chapter 1 (whose target is a fresh star-1 tower), and no chapter has
+  extra difficulty yet (Step 2).
+  - Open (user: "we will do it later"): judge chapter 1 with a fresh
+    build (star-1 tower, rank-1 spells, in-memory only) and re-check the
+    ×3 boss HP against it.
+- ✅ **Step 1 done (2026-10-08).** 09-17 itself stays open: Step 2
+  (per-chapter difficulty) and Step 3 (play-test tuning) are left.
+
+**Step 2 (per-chapter difficulty)**, plan OK'd by the user 2026-10-08:
+- **Q chapter numbers** (user, 2026-10-08: "go with ur numbers" = Claude's
+  recommendation): enemy HP ×1.0 / 1.1 / 1.2 / 1.3 / 1.4 / 1.6 / 1.8 / 2.0 /
+  2.2 / 2.5 and damage ×1.0 / 1.05 / 1.1 / 1.15 / 1.2 / 1.3 / 1.4 / 1.5 /
+  1.6 / 1.75 for ch1 → ch10.
+  - Why: star 3 + rank 3 ≈ 1.4× a fresh build (= ch5), maxed ≈ 1.85× plus
+    milestones (ch10's 2.5 needs good drafting too); damage grows slower
+    than HP because tower HP only grows +10% per star.
+  - Consequences: new `ChapterDefinition.enemy_hp_multiplier` /
+    `enemy_damage_multiplier` (default 1.0), applied to every enemy and
+    boss in `wave_manager._spawn_enemy()`. Placeholders, tuned in Step 3.
+- Built 2026-10-08: the two fields + values in all 10 chapter `.tres`, one
+  change in `wave_manager._spawn_enemy()`.
+- Headless: every chapter's wave-5 enemy and wave-10 boss get exactly
+  base × wave growth × chapter multiplier (× boss 3) HP and the chapter's
+  damage scale (ch1 boss 1 = 4,159 HP, ch10 boss 1 = 10,399 HP).
+- Windowed (auto-closing): chapter 10 runs on its own arena with its mixed
+  enemies; wave 11 = 33 enemies. Window left open for the user on
+  chapter 10 from wave 9 with the maxed save (8 auto-picks).
+- User play-test, chapter 10, maxed save: auto-picked cards lost on wave 9
+  ("shit combo of spells"); with 8 picks of their own they beat wave 9 +
+  boss 1 and closed on wave 11. Verdict: "the mobs feel harder but the
+  boss the same … it's ok for now, later we will tune it better".
+- ✅ **Step 2 done (2026-10-08).** Open for Step 3: bosses don't feel
+  harder per chapter (ch10 boss 1 = 2.5× ch1's HP, but the user felt no
+  difference); maybe a separate per-chapter boss multiplier.
+
+**Closed (2026-10-08)**: the user said "mark everything as tested and done".
+Built and tested: Steps 1 (20 waves, two bosses, ×3 boss HP, no boss timer,
+checkpoints) and 2 (per-chapter HP / damage), headless + windowed + the user's
+own runs (ch1 waves 9 → 20, ch10 to wave 11). **Not done as a separate pass**:
+the full tower × chapter play-test tuning, the sidegrade check, the
+short-range-spell check and the fresh-build (star 1) ch1 check. Every number
+set here is still a placeholder; retune them whenever play-testing shows a
+problem.
 
 ---
 
-## Task 09-18 — Integration Test
+## Task 09-18 — Integration Test ✅ DONE (2026-10-08, user marked done)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
 > - **Back up the save first.** Open every preview scene listed in 09-03 …
 >   09-16.
 
-- [ ] Fresh save (backed up first). Play chapter 1 → unlocks chapter 2 → play
+- [x] Fresh save (backed up first). Play chapter 1 → unlocks chapter 2 → play
       it → every launch chapter.
-- [ ] Get tower #2 by the A2 method; play a run with each tower at star 1 and
+- [x] Get tower #2 by the A2 method; play a run with each tower at star 1 and
       star 5.
-- [ ] An old (pre-09-01) save loads with nothing lost.
-- [ ] Open every preview scene added this epic and confirm it shows what its
+- [x] An old (pre-09-01) save loads with nothing lost.
+- [x] Open every preview scene added this epic and confirm it shows what its
       task says.
-- [ ] Every placeholder added this epic is listed in `ui_assets.md` "STILL TO
+- [x] Every placeholder added this epic is listed in `ui_assets.md` "STILL TO
       MAKE" (or the model swap tables in 09-04 / 09-08).
+
+### Session 2026-10-08: the checks Claude can run (user OK'd)
+
+The play parts (fresh save through every chapter, each tower at star 1 and
+star 5) wait for the 09-17 Step 3 tuning session; they are the same runs.
+
+- ✅ **Old save**: a pre-09-01 save (no `save_version`, old fields only, from
+  `git show e339843:scripts/save_data.gd`) in a temp file, loaded with
+  `MetaManager.load(path)` and `_read_only = true`. Migrated 1 → 5. All 9 old
+  fields kept (towers, stars, ranks, 3 materials, energy, both volumes);
+  the 4 new fields got their defaults (gems 0, selected `ancient_tower`,
+  last chapter `chapter_01`, cleared `[]`). The temp file wasn't written.
+- ✅ **Preview scenes load**: 51 scenes, headless, 0 errors / warnings: all
+  25 `<tower>_lvlN.tscn`, `chap2…10_lineup_preview.tscn`,
+  `chapter_lineup_preview.tscn`, `tower_preview_3d`, `tower_garage_content`,
+  `world_map_content`, `chapter_select`, `victory_screen`, `ult_button`,
+  `shield_bar_3d`, `spell_codex_content`, `orb`, `aoe_area`, `blizzard`,
+  `rain_of_fire`, `line_aoe_bolt`, `lance_trail`, `boss_banner`.
+  - Windowed shots (runtime look): garage, codex (milestone lines shown),
+    chapter screen, victory screen all draw correctly.
+  - `preview_rank` exists on orb / aoe_area / line_aoe_bolt only. Bolt and
+    Chain change splash / bounces, not size, so they have no knob (as
+    built in 09-14).
+- ✅ **Placeholders**: every final file named in 09-03 → 09-16 is in
+  `ui_assets.md` "STILL TO MAKE". The optional `ui_tower_unlock_badge.png`
+  never got a stand-in (09-05 uses the existing padlock + "Beat Chapter N"
+  text), so nothing to list.
+- Found (not fixed, user to decide):
+  - `chapter_select.tscn` editor placeholder text still says "Chapter
+    Length: 12" (runtime shows the real 20). One-line `.tscn` fix; needs
+    the scene closed in the editor.
+  - Top-bar currency pill cuts a 7-digit number: the user's 1,100,756 Base
+    Mat shows as "100756" in the garage and codex (pre-existing; only a
+    huge test save reaches 7 digits).
+  - **Both fixed** (user: "fix both now", 2026-10-08):
+    - `chapter_select.tscn` placeholder text → "Chapter Length: 20".
+    - `currency_pill.gd`: the text keeps `TEXT_SIDE_MARGIN` (42 px) clear at
+      each end and shrinks its font only when it doesn't fit (≤ 4 digits keep
+      40 px, 5 digits 37 px). Script only, every top-bar screen gets it. Checked
+      in a window with 3 / 6 / 6 / 7 / 8 digits: all clear of the gem; garage
+      and codex show the user's 1100756 in full.
+- Open: the user opens the editor-only previews (checklist given in chat
+  2026-10-08).
+
+**Closed (2026-10-08)**: the user said "mark everything as tested and done".
+Tested by Claude: old save, preview scenes load, placeholders listed, two
+fixes. **Not done as a separate pass**: the fresh-save play-through of every
+chapter, each tower at star 1 and star 5, and the user's look at the
+editor-only previews.

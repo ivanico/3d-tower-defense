@@ -7,7 +7,7 @@ enum SpellCategory  { PROJECTILE, PASSIVE, ORB, AOE_AREA }
 enum CardRarity     { COMMON, RARE, EPIC }
 enum SynergyTag     { OFFENSE, ARMOR, UTILITY }
 
-const TOTAL_WAVES:              int   = 12
+const TOTAL_WAVES:              int   = 20     # reference only; each chapter's wave_count is what runs
 const WAVE_DURATION_MAX:        float = 60.0
 # Real floor is 40x57 (chap1_arena.tscn PlaneMesh/BoxShape3D -> half-extents
 # X=20, Z=28.5); shrunk slightly for a safety margin. WaveManager clamps
@@ -77,6 +77,16 @@ const UTILITY_TIER1_COOLDOWN_MULT:  float = 0.90
 const BOSS_HEAVY_ATTACK_EVERY_N:         int   = 4
 const BOSS_HEAVY_ATTACK_DAMAGE_MULT:     float = 2.5
 const BOSS_HEAVY_ATTACK_TELEGRAPH_SEC:   float = 0.5
+# Two boss fights per run (09-17): boss_pool[0] on this wave, boss_pool[1] on
+# the chapter's last wave (wave_count). Boss waves have no time limit.
+const MID_BOSS_WAVE:                     int   = 10
+# Bosses get this on top of the normal per-wave HP growth (09-17).
+const BOSS_EXTRA_HP_MULT:                float = 3.0
+# Boss phases (09-16): phase 2 starts below this HP fraction and turns the
+# heavy attack on. Same rule for every boss.
+const BOSS_PHASE_2_HP_FRACTION:          float = 0.5
+# Boss intro banner (09-16): how long "BOSS" stays fully visible.
+const BOSS_BANNER_HOLD_SEC:              float = 2.0
 
 # Animation pacing (Epic 06) — tune these two by eye, nothing else needs editing
 # The "attack" clip always plays at its real, unscaled, authored length — it
@@ -113,7 +123,7 @@ const DAMAGE_NUMBER_SCATTER_RADIUS: float = 0.3   # random X/Z spawn scatter
 
 # Wave composition (Epic 04)
 const WAVE_ENEMY_COUNT_BASE:             int   = 3
-const WAVE_ENEMY_COUNT_GROWTH_RATE:      float = 1.5    # count = BASE * RATE^(wave-1), rounded, capped at MAX
+const WAVE_ENEMY_COUNT_STEP:             int   = 3      # count = BASE + STEP * (wave-1), capped at MAX (09-17)
 const WAVE_ENEMY_COUNT_MAX:              int   = 60
 const WAVE_FAST_ENEMY_MIN_WAVE:          int   = 5
 const WAVE_BASIC_ENEMY_WEIGHT:           int   = 70
@@ -124,17 +134,15 @@ const WAVE_FAST_ENEMY_WEIGHT:            int   = 30
 # mid-wave, including mid-boss-fight, does not count that wave). Reward only
 # increases at each checkpoint; the top tier is only reachable by clearing
 # the boss wave (i.e. an actual victory), never by reaching it and dying.
-# TODO: this is tuned for the current 12-wave chapter (checkpoint every 3
-# waves). Once the chapter grows (planned: wave 10 mini-boss + wave 20 final
-# boss), update both arrays to match, e.g. checkpoints [5, 10, 15, 20].
-const MATERIAL_CHECKPOINT_WAVES:   Array[int] = [3, 6, 9, 12]
+# 20-wave chapter (09-17): checkpoints 10 and 20 are the two boss kills.
+const MATERIAL_CHECKPOINT_WAVES:   Array[int] = [5, 10, 15, 20]
 # Base Material — the common currency, guaranteed every run, shown in the top
 # bar next to Energy.
-const MATERIAL_CHECKPOINT_REWARDS: Array[int] = [50, 100, 150, 220]
+const MATERIAL_CHECKPOINT_REWARDS: Array[int] = [85, 170, 255, 375]  # 12-wave values x1.7 (09-17)
 # Tower Material / Scroll Material — the rare currencies, only a CHANCE to
 # drop (see CombatUtils.roll_material_reward). Same checkpoint tiers as
 # above, scaled proportionally to MATERIAL_CHECKPOINT_REWARDS so the curve
-# shape matches; capped at 25% on the boss checkpoint (wave 12) per design.
+# shape matches; capped at 25% on the final boss checkpoint per design.
 const MATERIAL_CHECKPOINT_CHANCES: Array[float] = [0.06, 0.11, 0.17, 0.25]
 # Flat amount granted per rare currency when its roll hits. Tower Material is
 # rolled once per run; Scroll Material is rolled independently once per

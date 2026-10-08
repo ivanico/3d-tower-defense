@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://dsgpfmu1nauna"]
+[gd_scene load_steps=16 format=3 uid="uid://dsgpfmu1nauna"]
 
 [ext_resource type="PackedScene" uid="uid://cspnubp3032oo" path="res://assets/models/chap2/chap2_boss_01.glb" id="1_glb"]
 [ext_resource type="Resource" path="res://resources/ui/boss_bar_style.tres" id="BossBarStyle"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/component/hit_flash_component.tscn" id="Comp_flash"]
 [ext_resource type="PackedScene" uid="uid://ds0gb6fxku8hl" path="res://scenes/component/health_component.tscn" id="Comp_health"]
 [ext_resource type="PackedScene" path="res://scenes/component/boss_heavy_attack_component.tscn" id="Comp_heavy"]
+[ext_resource type="PackedScene" path="res://scenes/component/boss_phase_component.tscn" id="Comp_phase"]
 [ext_resource type="PackedScene" uid="uid://ckyxwo0imfk0b" path="res://scenes/component/hurtbox_component.tscn" id="Comp_hurtbox"]
 [ext_resource type="PackedScene" path="res://scenes/component/move_to_target_component.tscn" id="Comp_mover"]
 [ext_resource type="PackedScene" path="res://scenes/component/status_effect_component.tscn" id="Comp_status"]
@@ -48,6 +49,8 @@ follow_game_state = false
 [node name="DeathFXComponent" parent="." instance=ExtResource("Comp_death")]
 
 [node name="BossHeavyAttackComponent" parent="." instance=ExtResource("Comp_heavy")]
+
+[node name="BossPhaseComponent" parent="." instance=ExtResource("Comp_phase")]
 
 [node name="MeleeRangeArea" type="Area3D" parent="."]
 

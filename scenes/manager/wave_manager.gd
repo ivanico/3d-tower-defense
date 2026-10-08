@@ -46,27 +46,36 @@ func start_wave(wave_number: int) -> void:
 	_wave_start_msec = Time.get_ticks_msec()
 	_watchdog_last_count = -1
 	_watchdog_timer.start()
-	_wave_timer.start(Constants.WAVE_DURATION_MAX)
-	if wave_number >= chapter.wave_count:
-		_spawn_enemy(_pick_boss())
+	# Boss waves have no time limit (09-17): the fight lasts until the boss or
+	# the tower dies. A boss off the arena is still auto-killed (enemy.gd).
+	if is_boss_wave(wave_number):
+		_wave_timer.stop()
+		_spawn_enemy(_pick_boss(wave_number))
 		EventBus.boss_spawned.emit()
 		EventBus.wave_started.emit(wave_number)
 		print("DEBUGTEST   spawned BOSS")
 		return
+	_wave_timer.start(Constants.WAVE_DURATION_MAX)
 	var comp := _get_wave_composition(wave_number)
 	for definition in comp:
 		_spawn_enemy(definition)
 	print("DEBUGTEST   spawned ", comp.size(), " enemies, active_enemies=", _active_enemies.size())
 	EventBus.wave_started.emit(wave_number)
 
-func _pick_boss() -> EnemyDefinition:
+## Two boss fights per run (09-17): MID_BOSS_WAVE and the last wave.
+func is_boss_wave(wave_number: int) -> bool:
+	return wave_number == Constants.MID_BOSS_WAVE or wave_number >= chapter.wave_count
+
+## boss_pool[0] on MID_BOSS_WAVE, boss_pool[1] on the last wave (a chapter
+## with one boss uses it for both).
+func _pick_boss(wave_number: int) -> EnemyDefinition:
 	if chapter.boss_pool.is_empty():
 		return null
-	return chapter.boss_pool[randi() % chapter.boss_pool.size()]
+	var index := 0 if wave_number < chapter.wave_count else 1
+	return chapter.boss_pool[mini(index, chapter.boss_pool.size() - 1)]
 
 func _get_wave_composition(wave_number: int) -> Array[EnemyDefinition]:
-	var exp_count := Constants.WAVE_ENEMY_COUNT_BASE * pow(Constants.WAVE_ENEMY_COUNT_GROWTH_RATE, wave_number - 1)
-	var count: int = mini(roundi(exp_count), Constants.WAVE_ENEMY_COUNT_MAX)
+	var count: int = mini(Constants.WAVE_ENEMY_COUNT_BASE + Constants.WAVE_ENEMY_COUNT_STEP * (wave_number - 1), Constants.WAVE_ENEMY_COUNT_MAX)
 	# RULE for every chapter .tres (09-06): enemy_pool[0] is the baseline enemy,
 	# enemy_pool[1] MUST be the fast/small variant (only from
 	# WAVE_FAST_ENEMY_MIN_WAVE, at WAVE_FAST_ENEMY_WEIGHT), and indices 2+ are
@@ -108,7 +117,11 @@ func _spawn_enemy(definition: EnemyDefinition) -> void:
 	var enemy := definition.scene.instantiate() as Enemy
 	enemy.definition = definition
 	_enemy_container.add_child(enemy)
-	enemy.apply_wave_scale(CombatUtils.calculate_wave_hp_scale(_current_wave), CombatUtils.calculate_wave_dmg_scale(_current_wave))
+	var hp_scale := CombatUtils.calculate_wave_hp_scale(_current_wave) * chapter.enemy_hp_multiplier
+	if definition.is_boss:
+		hp_scale *= Constants.BOSS_EXTRA_HP_MULT
+	var dmg_scale := CombatUtils.calculate_wave_dmg_scale(_current_wave) * chapter.enemy_damage_multiplier
+	enemy.apply_wave_scale(hp_scale, dmg_scale)
 	enemy.global_position = _get_spawn_position()
 	_active_enemies.append(enemy)
 
@@ -156,6 +169,7 @@ func _finish_wave() -> void:
 	print("DEBUGTEST _finish_wave wave=", _current_wave, " elapsed_sec=", elapsed_sec)
 	_wave_timer.stop()
 	_watchdog_timer.stop()
+	# Only the last boss ends the run; the MID_BOSS_WAVE boss is a normal clear.
 	if _current_wave >= chapter.wave_count:
 		EventBus.boss_died.emit()
 	else:

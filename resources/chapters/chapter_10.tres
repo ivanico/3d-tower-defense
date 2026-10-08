@@ -16,7 +16,7 @@
 script = ExtResource("1")
 chapter_id = "chapter_10"
 chapter_name = "Chapter 10"
-wave_count = 12
+wave_count = 20
 enemy_pool = Array[ExtResource("1_ba2tk")]([ExtResource("e1"), ExtResource("e2"), ExtResource("e3"), ExtResource("e4"), ExtResource("e5")])
 boss_pool = Array[ExtResource("1_ba2tk")]([ExtResource("b1"), ExtResource("b2")])
 arena_model_path = ""
@@ -26,3 +26,5 @@ map_image = ExtResource("9_map")
 description = "Description coming soon."
 base_reward_multiplier = 1.9
 rare_chance_multiplier = 1.45
+enemy_hp_multiplier = 2.5
+enemy_damage_multiplier = 1.75

@@ -177,8 +177,8 @@ World Map
 launch, architected for more.
 
 **Chapters**: **Decided (09-00.2, 09-07, 09-08):** 10 chapters at launch,
-each 5 regular enemies + 2 bosses, **20 waves** (runs stay at 12 while
-Epic 09 is built; the switch is at the start of 09-17). Themes: Ch1 Nature
+each 5 regular enemies + 2 bosses, **20 waves** (switched 2026-10-08 in 09-17):
+boss 1 on wave 10 (the run goes on), boss 2 on wave 20 (ends the run). Themes: Ch1 Nature
 "Ancient Ruins" (built), Ch2 Frost "Frozen Wastes", Ch3 Void, Ch4 Poison,
 Ch5 Fire, Ch6–10 mixed (2–3 enemy themes each). Chapters 3–10 are
 placeholders reusing chap1/chap2 models until real ones exist. Beating

@@ -16,7 +16,7 @@
 script = ExtResource("1")
 chapter_id = "chapter_01"
 chapter_name = "Ancient Ruins"
-wave_count = 12
+wave_count = 20
 enemy_pool = Array[ExtResource("1_ba2tk")]([ExtResource("2"), ExtResource("3"), ExtResource("5"), ExtResource("6"), ExtResource("7")])
 boss_pool = Array[ExtResource("1_ba2tk")]([ExtResource("4"), ExtResource("8")])
 arena_model_path = ""
@@ -26,3 +26,5 @@ map_image = ExtResource("9_map")
 description = "Description coming soon."
 base_reward_multiplier = 1.0
 rare_chance_multiplier = 1.0
+enemy_hp_multiplier = 1.0
+enemy_damage_multiplier = 1.0

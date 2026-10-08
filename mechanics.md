@@ -87,7 +87,8 @@
     on a longer cooldown — **[V1-SIMPLE]**; multi-phase bosses with HP-gated
     mechanic changes are **[LATER]**). **Decided 2026-09-28 (09-16):** 2
     phases split at 50% HP — normal attacks only above 50%, the heavy attack
-    turns on below it; a "BOSS" banner on spawn.
+    turns on below it; a "BOSS" banner on spawn. Built 2026-10-08
+    (`boss_phase_component.gd`, `scenes/ui/boss_banner/`).
 - **Movement**: enemies move toward the tower's position on the X/Z plane using
   `CharacterBody3D.move_and_slide()`, with light separation steering against
   nearby enemies so they don't perfectly stack (check only nearby enemies

@@ -162,7 +162,7 @@ enum CardRarity     { COMMON, RARE, EPIC }
 enum SynergyTag     { OFFENSE, ARMOR, UTILITY }
 enum MaterialType   { STANDARD }
 
-const TOTAL_WAVES:              int   = 12     # v1 chapter length, tune in playtesting
+const TOTAL_WAVES:              int   = 20     # reference only; each chapter's wave_count runs (09-17)
 const WAVE_DURATION_MAX:        float = 30.0   # fallback if kill-based clear stalls
 const DRAFT_CARDS_SHOWN:        int   = 3
 const ENEMY_HP_SCALE:           float = 1.12
