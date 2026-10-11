@@ -4,10 +4,10 @@
 > energy refill hook, settings screen). An Android export that installs on a
 > device (13-01) is needed for real billing/ad testing, so 13-01 can be
 > pulled forward.
-> **Rules**: see `epic_09_content.md` → "Rules for Epics 09–13".
+> **Rules**: see `epic_done/epic_09_content.md` → "Rules for Epics 09–13".
 > **Design constraint (updated 2026-09-27)**: the old rule (`project.md`,
 > `mechanics.md` §12: "time-saving, not power") was replaced by the user with
-> **capped pay-to-skip**. See `epic_09_content.md` 09-00.1 "Store rule":
+> **capped pay-to-skip**. See `epic_done/epic_09_content.md` 09-00.1 "Store rule":
 > - material chests: 3/day, key included, chance of an unowned tower
 > - energy refills: unlimited
 > - skins
@@ -31,7 +31,7 @@
 > - **Read**: `project.md` "Save Data" (server options) and `mechanics.md` §12.
 
 - [ ] **Catalog + prices** (store layout was set in 10-00). **Follow
-      `epic_09_content.md` 09-00.1 "Store rule"**:
+      `epic_done/epic_09_content.md` 09-00.1 "Store rule"**:
       - material chests: 3/day, key included, capped at one energy bar's
         worth, chance of an unowned tower
         - "One energy bar's worth" uses the 09-12 chapter reward numbers

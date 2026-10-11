@@ -233,7 +233,8 @@ Signals (grouped):
 - Draft: `draft_opened(trigger)`, `draft_closed`, `card_selected(card)`.
 - Synergy: `synergy_threshold_reached(tag, level)`.
 - Meta: `run_ended(victory)`, `materials_earned(amount)`,
-  `tower_upgraded(tower_id, star)`, `spell_ranked_up(spell_id, rank)`.
+  `tower_upgraded(tower_id, star)`, `spell_ranked_up(spell_id, rank)`,
+  `gems_changed(total)` (10-03, after every `award_gems` / `spend_gems`).
 
 **Location**: `res://autoloads/event_bus.gd` · **Autoload order**: 2
 
@@ -281,7 +282,13 @@ to one of these, it belongs in a new method or a new autoload, not bolted on):
 
 ### `MetaManager.gd`
 **What it does**: Persistent (between-run) player data — owned towers, tower
-star levels, spell ranks, materials, energy, premium currency, selected tower.
+star levels, spell ranks, materials, energy, gems, selected tower.
+**Gems (10-03)**: `gems` is the premium currency, saved as
+`SaveData.premium_currency` (the field keeps its 09-01 name so old saves load).
+Change it ONLY through `award_gems(n)` (ignores n ≤ 0) and `spend_gems(n) -> bool`
+(refuses when you can't afford it, so gems never go negative). Both save at once
+and emit `EventBus.gems_changed(total)`. Gems are granted only by the store
+(10-04), rewards (10-05 / 10-06) and tests.
 `save()`/`load()` read/write a `SaveData` resource to `user://savegame.tres`.
 
 **Location**: `res://autoloads/meta_manager.gd` · **Autoload order**: 4
@@ -492,7 +499,7 @@ unrelated concerns like animation, audio, AND combat AND movement all at once).
 `base_hp`, `base_damage`, `base_fire_rate`, `base_range`, `base_armor`,
 `starting_spell_id` (**dead** — runs start with a `"first_spell"` draft
 instead, `spells.md` §6.2), `passive_script` (read by nothing today; the tower
-**ults** of `epic_09_content.md` 09-13 may use it), plus `icon`, `unlocked`
+**ults** of `epic_done/epic_09_content.md` 09-13 may use it), plus `icon`, `unlocked`
 (content exists), `sort_order` (garage position) and `star_level_scenes`
 (gameplay scene per star).
 **One `.tres` per tower.** `tower.tscn` is generic and reads whichever
@@ -614,9 +621,15 @@ That overhang is the look. `Pill` is a PanelContainer with the
 text_gap` so the amount always clears the icon. Knobs: `pill_size`, `icon_size`
 (keep above `pill_size.y`), `icon_overlap`, `text_gap`, `font_size`, `icon`,
 `amount`. `set_amount()` unchanged for screens),
-`top_bar` (HBoxContainer instancing two `currency_pill`s: energy =
+`top_bar` (`@tool` HBoxContainer, `top_bar.gd`, instancing three `currency_pill`s
+(10-03): energy =
 `icon_currency_energy1.png`, materials = **`icon_currency_materials1.png`** at
-`icon_scale = 0.82`. Its height is the ICON's height, not the pill's, because of
+`icon_scale = 0.82`, gems = the same materials gem at `icon_scale = 0.82` with
+`icon_hue_shift = 0.28` (pink) as a placeholder for `topbar/icon_currency_gems.png`.
+**It fills its own numbers**: screens call `top_bar.refresh()` (reads `MetaManager`),
+and the gems pill also updates live on `EventBus.gems_changed`. `show_energy` is the
+one per-screen switch (off on the Garage, 10-03). Gap `separation = 24`, so three
+pills plus the home Settings gear fit. Its height is the ICON's height, not the pill's, because of
 that overhang. **The icon PNGs are all 1254×1254 but their artwork fills wildly
 different fractions of that canvas** — bolt 47.4%×67.0%, plain gem 57.4%×56.2%,
 `materials1` gem 83.1%×81.2% — so identical node sizes do NOT give identical
@@ -648,12 +661,14 @@ left-to-right. Icon, label and badge are
 `theme_override_*` from storage, so instancing it into a screen bakes nothing.
 Per-entry exports are only `icon_texture`, `label_text` and the badge fields;
 colour, tile size, icon scale and font are pushed in by `nav_bar` via
-`style_tile()` / `set_content()` so the three tiles cannot drift apart —
+`style_tile()` / `set_content()` so the tiles cannot drift apart —
 **setting colours on an individual button does nothing, they are overwritten on
-every layout pass**),
-`nav_bar` (`@tool` Control instancing three `nav_button`s. **Order is
-Garage · Worldmap · Codex — Worldmap is deliberately in the MIDDLE**, because the
-world map is what the game opens on, so it is the home position. `nav_bar.gd`'s
+every layout pass**. The badge knobs and placement come from
+`badge_button_base.gd`, shared with `home_side_button`),
+`nav_bar` (`@tool` Control instancing four `nav_button`s. **Order is
+Store · Garage · Worldmap · Codex** (Store added as the far-left tab in 10-02,
+Archero-style; before that Worldmap sat dead centre). Worldmap is the home
+position, because the world map is what the game opens on. `nav_bar.gd`'s
 `Nav` enum indexes that same order; keep them in step if you reorder. Screens set
 `nav_bar.selected` and the bar does the rest: the selected tile is wider by
 `selected_extra_width`, shaded tan instead of grey, shows its `label_text`, and is
@@ -680,7 +695,7 @@ render different widths from identical numbers: 3 units is ~1.4 real pixels, and
 the two seams sit symmetrically about the bar's centre so their fractional offsets
 are mirror images and round opposite ways — one 2px, one 1px.
 
-**No artwork**; only the three icons are PNGs. The tiles come from
+**No artwork**; only the tab icons are PNGs. The tiles come from
 `BarTexture.make_tile()`, two pixels wide and stretched horizontally. Shading is
 two bands — a gradient from `*_color_top` to `*_color_split` ending at `*_split`
 of the height, then a flat `*_color_bottom` — plus `highlight_height` rows of
@@ -830,6 +845,38 @@ affordable, owned = OWNED_HIDDEN)` — pass `owned` and the label becomes
 "have/need" (`"500/100"`), omit it and it shows the cost alone, which is what
 the codex does. `set_balance(amount, icon)` drops the cost entirely and never
 tints red, for a spot with nothing left to buy),
+`overlay_screen` (Epic 10 10-01, `@tool` Control — ONE Archero-style popup: a
+full-screen `Dim`, a centred `Panel` (background drawn in `_draw`, so nothing
+generated is stored) holding the content scene in `Panel/Content`, and the red X
+(`ui_button_x_red_square_clean_transparent.png`, its only reference) on the
+panel's top-right corner. Pop-in = scale `open_scale`→1 + fade. Per-popup options
+are read off the content root if it declares them: `overlay_show_close`,
+`overlay_tap_outside_closes`, `custom_minimum_size` (= panel size, else the
+`panel_size` knob), and a `close_requested` signal. **Never instance it
+yourself** — go through the host below).
+`overlay_host.gd` (same folder, the script on `world_map.tscn`'s
+`OverlayLayer`, which sits after the NavBar so the dim covers it, and before
+`LoadingScreen`. The one API every popup screen opens through:
+`open(scene: PackedScene) -> Control` / `close()` / `is_open()` /
+`top_content()`, found via `get_tree().get_first_node_in_group("overlay_host")`.
+Popups stack (a reward popup over the Store closes back to the Store); `open`
+calls the content's `_refresh()`, and closing refreshes the popup underneath and
+emits `overlay_closed`, on which `world_map.gd` refreshes the current tab
+screen. Escape (`ui_cancel`) and `NOTIFICATION_WM_GO_BACK_REQUEST` close the top
+popup; full back-button rules are 10-08. `world_map.gd._navigate()` refuses while
+a popup is open),
+`badge_button_base.gd` (`scenes/ui/widget/` root, **not a widget** — the red
+notification badge for any Button: the `badge_*` knobs, `_build_badge()` and
+`_layout_badge()`. `nav_button` and `home_side_button` both extend it, so the
+badge exists once),
+`home_side_button` (Epic 10 10-02, `@tool` Button — a home-screen icon button,
+Archero-style: icon with an optional word under it, no plate, shared badge.
+`icon_texture` or, while art is missing, a drawn `placeholder_glyph`
+(CALENDAR / GEAR) named for the final `icon_home_daily.png` /
+`icon_home_settings.png`. Knobs: `button_size`, `icon_size`, `icon_scale`,
+`label_font_size`, `pressed_dim`, `glyph_color`. Emits `pressed` only),
+`coming_soon_content.tscn` (`scenes/ui/`, 10-02 — the placeholder popup content
+every home button opens until its real screen lands; the opener sets `title`),
 
 **Wired screens:** `world_map.tscn` is the home screen and the project's
 `main_scene`. Top to bottom: `top_bar` (pills fed from
@@ -838,7 +885,10 @@ tints red, for a spot with nothing left to buy),
 `selected = WORLDMAP`. The nav bar spans the **full 1080 width, flush to the
 bottom edge** (y 1730–1920) on all three meta screens — the tiles are the bar, so
 insetting it would leave the strip floating. Background is `bg_worldmap.png`
-full-screen.
+full-screen. Home buttons (10-02): `ChestsButton` and `DailyButton` down the left
+beside the picture, the `SettingsButton` gear top-right (all `home_side_button`),
+each opening a popup through `overlay_host`. The Store is a nav TAB (slot 0 of the
+shell's Track, `store_content.tscn`, a "Coming soon" page until 10-04).
 **Pressing Play** — not the artwork — spends energy and starts the run.
 The chapter's picture is data-driven: `ChapterDefinition.map_image` (new
 `@export`, set to `chapter_01_image_v2.png` in `chapter_01.tres`), the same

@@ -11,7 +11,9 @@ var tower_material: int = 0
 var scroll_materials: Dictionary = {}  # Constants.DamageType int -> int amount
 var energy: int = Constants.MAX_ENERGY
 var last_energy_timestamp: int = 0
-var premium_currency: int = 0
+## Premium currency (10-03). Saved as SaveData.premium_currency — the field keeps
+## its 09-01 name so old saves load. Only award_gems() / spend_gems() change it.
+var gems: int = 0
 var selected_tower_id: String = "ancient_tower"
 ## The chapter picked on the chapter screen (09-09, Enter). An id, not a
 ## position, so adding chapters never points it at the wrong one.
@@ -64,6 +66,25 @@ func award_scroll_material(damage_type: int, amount: int) -> void:
 	scroll_materials[damage_type] = get_scroll_material(damage_type) + amount
 	save()
 	EventBus.scroll_material_earned.emit(damage_type, amount)
+
+## Gems come only from the store (10-04), rewards (10-05 / 10-06) and tests —
+## there is no free source by accident. Non-positive amounts are ignored.
+func award_gems(amount: int) -> void:
+	if amount <= 0:
+		return
+	gems += amount
+	save()
+	EventBus.gems_changed.emit(gems)
+
+## Spends `amount` gems if the player has them. Returns false (and changes
+## nothing) when they can't afford it, so gems never go negative.
+func spend_gems(amount: int) -> bool:
+	if amount < 0 or amount > gems:
+		return false
+	gems -= amount
+	save()
+	EventBus.gems_changed.emit(gems)
+	return true
 
 ## THE one way a tower becomes owned (09-05): a chapter's first victory
 ## (unlock_towers_for_chapter) or, later, a gem-chest drop (10-05). Never touches
@@ -146,7 +167,7 @@ func save() -> void:
 		return
 	var data := SaveData.new()
 	data.save_version = Constants.SAVE_VERSION
-	data.premium_currency = premium_currency
+	data.premium_currency = gems
 	data.selected_tower_id = selected_tower_id
 	data.last_chapter_id = last_chapter_id
 	data.cleared_chapters = cleared_chapters
@@ -177,7 +198,7 @@ func load(path: String = SAVE_PATH) -> void:
 		scroll_materials = {}
 		energy = Constants.MAX_ENERGY
 		last_energy_timestamp = int(Time.get_unix_time_from_system())
-		premium_currency = 0
+		gems = 0
 		selected_tower_id = "ancient_tower"
 		last_chapter_id = "chapter_01"
 		cleared_chapters = []
@@ -194,7 +215,7 @@ func load(path: String = SAVE_PATH) -> void:
 	last_energy_timestamp = data.last_energy_timestamp
 	music_volume = data.music_volume
 	sfx_volume = data.sfx_volume
-	premium_currency = data.premium_currency
+	gems = data.premium_currency
 	selected_tower_id = data.selected_tower_id
 	last_chapter_id = data.last_chapter_id
 	cleared_chapters = data.cleared_chapters
@@ -224,9 +245,10 @@ func _migrate_from(version: int) -> void:
 			push_error("MetaManager: missing save migration step %s" % step)
 	print("MetaManager: savegame migrated from version %d to %d" % [version, Constants.SAVE_VERSION])
 
-# v2: premium_currency joins the save (it existed in memory but was never written).
+# v2: premium_currency (MetaManager.gems) joins the save (it existed in memory but
+# was never written).
 func _migrate_1_to_2() -> void:
-	premium_currency = 0
+	gems = 0
 
 # v3: the garage selection is saved (it used to reset to Ancient on every launch).
 func _migrate_2_to_3() -> void:

@@ -1,10 +1,10 @@
 extends Control
 
-## Persistent hub shell for the Garage / World Map / Spell Codex loop.
+## Persistent hub shell for the Store / Garage / World Map / Spell Codex loop.
 ##
 ## Holds one shared NavBar and a horizontal filmstrip ("Track") with one slot per
-## screen, laid out in NavBar's own Garage/Worldmap/Codex order so Worldmap — the
-## default — sits in the physical middle. Navigating slides the whole Track
+## screen, laid out in NavBar's own Store/Garage/Worldmap/Codex order (Store added
+## as a tab in 10-02). Navigating slides the whole Track
 ## instead of swapping scenes, so nothing is ever freed once shown.
 ##
 ## Every screen is instanced up front in _ready(), under a blank LoadingScreen
@@ -26,6 +26,7 @@ const NavBarScript := preload("res://scenes/ui/widget/nav_bar/nav_bar.gd")
 const SLOT_WIDTH := 1080.0
 
 const CONTENT_SCENES := {
+	NavBarScript.Nav.STORE: preload("res://scenes/ui/store_content.tscn"),
 	NavBarScript.Nav.GARAGE: preload("res://scenes/ui/tower_garage_content.tscn"),
 	NavBarScript.Nav.WORLDMAP: preload("res://scenes/ui/world_map_content.tscn"),
 	NavBarScript.Nav.CODEX: preload("res://scenes/ui/spell_codex_content.tscn"),
@@ -35,8 +36,11 @@ const CONTENT_SCENES := {
 @onready var track: Control = $Viewport/Track
 @onready var input_blocker: Control = $InputBlocker
 @onready var loading_screen: Control = $LoadingScreen
+## Popups (Chests, Daily, Settings, rewards) open here — overlay_host.gd.
+@onready var overlay_layer: Control = $OverlayLayer
 
 @onready var _slot_parents: Dictionary = {
+	NavBarScript.Nav.STORE: $Viewport/Track/StoreSlot,
 	NavBarScript.Nav.GARAGE: $Viewport/Track/GarageSlot,
 	NavBarScript.Nav.WORLDMAP: $Viewport/Track/WorldmapSlot,
 	NavBarScript.Nav.CODEX: $Viewport/Track/CodexSlot,
@@ -51,9 +55,11 @@ var _tween: Tween
 
 func _ready() -> void:
 	nav_bar.selected = NavBarScript.Nav.WORLDMAP
+	$NavBar/StoreButton.pressed.connect(_navigate.bind(NavBarScript.Nav.STORE))
 	$NavBar/GarageButton.pressed.connect(_navigate.bind(NavBarScript.Nav.GARAGE))
 	$NavBar/WorldmapButton.pressed.connect(_navigate.bind(NavBarScript.Nav.WORLDMAP))
 	$NavBar/CodexButton.pressed.connect(_navigate.bind(NavBarScript.Nav.CODEX))
+	overlay_layer.overlay_closed.connect(_refresh_current)
 
 	for nav in CONTENT_SCENES:
 		_ensure_instanced(nav)
@@ -75,7 +81,9 @@ func _ready() -> void:
 	loading_screen.visible = false
 
 func _navigate(target: int) -> void:
-	if target == _current or (_tween != null and _tween.is_running()):
+	# The popup dim already covers the NavBar; this is the backstop.
+	if target == _current or (_tween != null and _tween.is_running()) \
+			or overlay_layer.is_open():
 		return
 	_ensure_instanced(target)
 	_current = target
@@ -97,6 +105,13 @@ func _navigate(target: int) -> void:
 
 func _on_slide_finished() -> void:
 	input_blocker.visible = false
+
+## After a popup closes, the screen under it may show something it changed
+## (e.g. a Store purchase changes the currency pills).
+func _refresh_current() -> void:
+	var screen: Control = _screens.get(_current)
+	if screen != null and screen.has_method("_refresh"):
+		screen._refresh()
 
 ## Instances a screen's content into its slot the first time it is called for
 ## (in practice, once each for all three, up front in _ready()), and keeps it

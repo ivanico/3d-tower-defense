@@ -1,0 +1,37 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/coming_soon_content.gd" id="1"]
+
+; Placeholder popup content (10-02). custom_minimum_size is the popup panel's
+; size (overlay_screen reads it). Opened via the 10-01 host, which supplies the
+; dim, panel background and X.
+
+[node name="ComingSoonContent" type="Control"]
+custom_minimum_size = Vector2(760, 520)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 760.0
+offset_bottom = 520.0
+script = ExtResource("1")
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 70.0
+offset_right = 720.0
+offset_bottom = 160.0
+theme_override_font_sizes/font_size = 56
+text = "Title"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ComingSoonLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 230.0
+offset_right = 720.0
+offset_bottom = 320.0
+theme_override_font_sizes/font_size = 44
+text = "Coming soon"
+horizontal_alignment = 1
+vertical_alignment = 1

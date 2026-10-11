@@ -1,8 +1,8 @@
 # Epic 10 — Meta Systems & Screens
 
-> Prerequisite: Epic 09 tasks 09-01 (save versioning) and 09-02 (docs cleanup).
+> Prerequisite: Epic 09 (done, `epic_done/epic_09_content.md`), tasks 09-01 (save versioning) and 09-02 (docs cleanup).
 > The rest of Epic 09 can run in parallel.
-> **Rules**: see `epic_09_content.md` → "Rules for Epics 09–13" (placeholders,
+> **Rules**: see `epic_done/epic_09_content.md` → "Rules for Epics 09–13" (placeholders,
 > previews, follow the skills/docs, decisions are yours, one task at a time,
 > no git).
 > Goal: every out-of-run screen a shipped mobile game needs (store, chests,
@@ -29,13 +29,15 @@
 
 **Covers**: B4, B10 and the design inputs this epic needs.
 
-- [ ] **Store entry point.** Options:
+- [x] **Store entry point.** Options:
   - (a) a 4th nav-bar tab. Store icons already exist: `nav/icon_nav_store.png`,
     `_v2_blue`, `_v3_purple`, and you pick the version. Note the nav bar keeps
     World Map in the middle on purpose, so a 4th tab changes that layout.
   - (b) a button on the home screen that opens the store over it.
 
-  Answer: ______
+  Answer: ✅ (2026-10-12) **(a) a 4th nav-bar tab**, Archero-style, far left:
+  Store · Garage · Map · Codex. Icon `nav/icon_nav_store.png`. Built in 10-02
+  as a "Coming soon" tab page; 10-04 fills it.
 - [ ] **What the store sells at launch** (layout only here, real prices in
       Epic 12). **Mostly decided in 09-00.1 "Store rule"**:
       - gems buy **material chests** (3/day, key included, may contain an
@@ -76,7 +78,7 @@
 
 ---
 
-## Task 10-01 — Overlay Screen Host (one mechanism for every popup screen)
+## Task 10-01 — Overlay Screen Host (one mechanism for every popup screen) ✅ DONE (2026-10-12, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -90,35 +92,48 @@
 **Files**: `scenes/ui/world_map.tscn` / `.gd`, new
 `scenes/ui/widget/overlay_screen/overlay_screen.tscn` / `.gd`
 
+> **✅ Decided 2026-10-12 (user: "make it just like in Archero")**:
+> - The dim covers **everything**, the bottom NavBar included; nothing behind
+>   is tappable.
+> - The popup is a **centred panel** (not a full page). Opening is a quick
+>   **pop-in** (scale up + fade), not a slide.
+> - Red **X on the panel's top-right corner**. **Tapping the dim outside the
+>   panel also closes it.** Both are per-popup options, so a reward popup can
+>   hide the X and use "tap anywhere" instead (10-05).
+> - `chapter_select` stays as it is (already an Archero-style full page with
+>   its own Back), not moved onto this host.
+
 Store, Chests, Daily, Settings, and the reward popup all open over the home
 screen and close back to it. They share **one** host so the open/close
 animation, dim background, back button and input blocking exist once (no
 duplicated code).
 
-- [ ] An `OverlayLayer` in the `world_map.tscn` shell (above Track, below
+- [x] An `OverlayLayer` in the `world_map.tscn` shell (above Track, below
       the `LoadingScreen`) with `open(scene: PackedScene)` / `close()`. It
       provides a dim background, a slide/fade in, and a close (X) button.
       Close reuses `common/ui_button_x_red_square_clean_transparent.png`,
       which already exists.
-- [ ] Opened screens get a `_refresh()` call, same as tab screens do today.
-- [ ] Android back / Escape closes the top overlay first (full back-button
-      handling in 10-08).
+- [x] Opened screens get a `_refresh()` call, same as tab screens do today.
+- [x] Android back / Escape closes the top overlay first (full back-button
+      handling in 10-08). Escape works now; on a real Android device back still
+      quits the app until 10-08 turns off `quit_on_go_back`.
 - [ ] If 10-00 chose the store as a **nav tab**, the Store screen goes into the
       Track as a 4th slot instead, and this host is still used by
-      Chests/Daily/Settings/rewards.
+      Chests/Daily/Settings/rewards. (Open: waits on the 10-00 store answer;
+      the work itself belongs to 10-04. The host is the same either way.)
 
 **Placeholders**: none (reuses existing X button art).
 **Preview**: `overlay_screen.tscn` opens in the editor showing the dim, the frame
 and the X over a sample child.
 
 **Acceptance criteria**:
-- [ ] Any content scene can be opened and closed through this one API.
-- [ ] Nav-bar sliding still works, and taps can't reach the screen underneath
+- [x] Any content scene can be opened and closed through this one API.
+- [x] Nav-bar sliding still works, and taps can't reach the screen underneath
       while an overlay is open.
 
 ---
 
-## Task 10-02 — Home Screen Entry Points (+ preview)
+## Task 10-02 — Home Screen Entry Points (+ preview) ✅ DONE (2026-10-12, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -131,16 +146,25 @@ and the X over a sample child.
 >   yourself.
 
 **Files**: `scenes/ui/world_map_content.tscn` / `.gd`, new
-`scenes/ui/widget/home_side_button/`
+`scenes/ui/widget/home_side_button/`, `widget/badge_button_base.gd` (badge shared
+with `nav_button`), `nav_bar` (4th tab), new `store_content.tscn` /
+`coming_soon_content.tscn`
 
-- [ ] A small `@tool` `home_side_button` widget: icon, optional label, and
+> **✅ Decided 2026-10-12**:
+> - Store = a **nav-bar tab**, far left (Store · Garage · Map · Codex), icon
+>   `nav/icon_nav_store.png`. So no Store button on the home screen.
+> - Layout **C**: Chests and Daily down the left beside the chapter picture,
+>   the Settings gear top-right beside the currency pills. ⚠️ 10-03 adds a
+>   third (gems) pill to that top row, so 10-03 must fit the gear in too.
+
+- [x] A small `@tool` `home_side_button` widget: icon, optional label, and
       an optional notification badge (reuse `ui_notification_badge.png` and
       the badge knobs `nav_button` already has; share the code, don't copy
       it).
-- [ ] Add Store / Chests / Daily / Settings buttons to the home screen in the
+- [x] Add Store / Chests / Daily / Settings buttons to the home screen in the
       layout you approve. Each calls the 10-01 host. The Daily and Chests
       badges light up when something can be claimed or opened.
-- [ ] The buttons exist before their screens: each opens a "Coming soon"
+- [x] The buttons exist before their screens: each opens a "Coming soon"
       placeholder until its task (10-04 … 10-09) lands. That way the home
       screen layout can be reviewed on its own.
 
@@ -157,12 +181,12 @@ and the X over a sample child.
 on) in the editor. `home_side_button.tscn` previews on its own.
 
 **Acceptance criteria**:
-- [ ] You approve the home layout from the editor preview before 10-04 starts.
-- [ ] Each button opens its (placeholder) screen and closes back.
+- [x] You approve the home layout from the editor preview before 10-04 starts.
+- [x] Each button opens its (placeholder) screen and closes back.
 
 ---
 
-## Task 10-03 — Premium Currency (Gems)
+## Task 10-03 — Premium Currency (Gems) ✅ DONE (2026-10-12, user approved)
 
 > **🔎 Fresh-session check** (written 2026-09-27; re-verify, since files and line numbers may have changed since)
 >
@@ -174,24 +198,38 @@ on) in the editor. `home_side_button.tscn` previews on its own.
 >   - `scenes/ui/widget/currency_pill/currency_pill.gd` + `pill_base.gd`.
 >   - Every screen that sets pills: grep `set_amount`.
 
+**Note (10-02)**: the Settings gear now sits top-right beside the pills; the third
+pill must fit beside it.
 **Covers**: B2 · **Files**: `MetaManager`, `SaveData` (field added in 09-01),
 `widget/top_bar/`
 
-- [ ] `MetaManager.award_gems(n)` / `spend_gems(n) -> bool`: save
+> **✅ Decided 2026-10-12**:
+> - Code name `MetaManager.gems`; the save field stays `premium_currency`.
+> - **Garage**: Materials · Gems · Tower Material — energy is dropped there
+>   (`top_bar.show_energy = false`). Gems show even though nothing in the
+>   Garage costs gems yet. Every other screen: Energy · Materials · Gems.
+> - **Home**: pills stay centred, gear top-right; gaps 40 → 24 px everywhere.
+> - Built: `top_bar.gd` fills its own numbers (`refresh()`, live on
+>   `gems_changed`), replacing the per-screen `set_amount` lines.
+> - Placeholder icon: a multiply tint can't turn the blue gem pink, so the
+>   pill got `icon_hue_shift` (`hue_shift.gdshader`) instead, at 0.28.
+> - No dev tool grants gems yet (none exists); tests call `award_gems()`.
+
+- [x] `MetaManager.award_gems(n)` / `spend_gems(n) -> bool`: save
       immediately and emit `EventBus.gems_changed`. `premium_currency` is the
       field (it already exists); expose it under one name.
-- [ ] A third `currency_pill` in `top_bar.tscn`, with the same widget and the
+- [x] A third `currency_pill` in `top_bar.tscn`, with the same widget and the
       same `icon_scale` correction method (`ui_tuning.md` "Icons are not the
       size you think": measure with `Image.get_used_rect()`).
-- [ ] Gems are only granted in the store (10-04), rewards (10-05/10-06) and
+- [x] Gems are only granted in the store (10-04), rewards (10-05/10-06) and
       dev tools. There is no free gem source by accident.
 
-**Placeholders**: gem icon = `topbar/icon_currency_materials1.png` tinted pink /
+**Placeholders**: gem icon = `topbar/icon_currency_materials1.png` hue-shifted pink
 purple → final `topbar/icon_currency_gems.png`.
 **Preview**: `top_bar.tscn` shows three pills.
 
 **Acceptance criteria**:
-- [ ] Gems persist, display on every meta screen, and can't go negative.
+- [x] Gems persist, display on every meta screen, and can't go negative.
 
 ---
 
@@ -206,7 +244,9 @@ purple → final `topbar/icon_currency_gems.png`.
 >   - `addons/ui_icon_cap/plugin.gd` `SIZE_RULES`.
 > - **Remember**: `ui_panel_dark_v2.png` is 0.73 aspect; keep it.
 
-**Covers**: B1, D2 (placeholders) · **Blocked by**: 10-00 (entry point, catalog).
+**Covers**: B1, D2 (placeholders) · **Blocked by**: 10-00 (catalog; the entry point is
+decided: a nav TAB, and `scenes/ui/store_content.tscn` already exists as its
+"Coming soon" page from 10-02 — build the store into it, not as a popup).
 **Files**: new `scenes/ui/store_content.tscn` / `.gd`,
 `scenes/ui/widget/store_item_card/`, `resources/store/store_item_definition.gd`
 + `*.tres`, `autoloads/store_service.gd` (or a run-agnostic helper, to be
@@ -275,7 +315,7 @@ price type.
       closed → open swap and then the `reward_popup`.
 - [ ] Chest sources wired as decided in 10-00, each calling one
       `MetaManager.award_chest(id)`.
-- [ ] **Store chests follow `epic_09_content.md` 09-00.1 "Store rule"**:
+- [ ] **Store chests follow `epic_done/epic_09_content.md` 09-00.1 "Store rule"**:
   - bought with gems, **max 3 per day** (daily counter in `SaveData` +
     migration)
   - **the key comes with the chest**; keys are never sold separately. If

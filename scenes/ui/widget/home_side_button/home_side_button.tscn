@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://plv2rn8p3wbv"]
+
+[ext_resource type="Script" uid="uid://dl0bupty2k4x4" path="res://scenes/ui/widget/home_side_button/home_side_button.gd" id="1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ingtk"]
+
+[node name="HomeSideButton" type="Button"]
+custom_minimum_size = Vector2(130, 150)
+offset_right = 130.0
+offset_bottom = 150.0
+focus_mode = 0
+theme_override_styles/focus = SubResource("StyleBoxEmpty_ingtk")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ingtk")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ingtk")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ingtk")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ingtk")
+script = ExtResource("1")
+placeholder_glyph = 1
+label_text = "Daily"
+badge_visible = true

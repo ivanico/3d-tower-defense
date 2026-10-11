@@ -8,8 +8,7 @@ const MetaRowScene := preload("res://scenes/ui/widget/meta_row/meta_row.tscn")
 
 @onready var spell_list: VBoxContainer = $ScrollContainer/SpellList
 
-@onready var energy_pill: Control = $TopBar/EnergyPill
-@onready var materials_pill: Control = $TopBar/MaterialsPill
+@onready var top_bar: Control = $TopBar
 
 # One CostChip per school, in the same Fire/Frost/Void/Poison/Nature order as
 # Constants.DamageType and CombatUtils.SCROLL_ICONS.
@@ -25,8 +24,7 @@ func _ready() -> void:
 	_refresh()
 
 func _refresh() -> void:
-	energy_pill.set_amount(MetaManager.energy)
-	materials_pill.set_amount(MetaManager.base_material)
+	top_bar.refresh()
 	for damage_type in scroll_mat_chips:
 		var chip: CostChip = scroll_mat_chips[damage_type]
 		chip.set_balance(MetaManager.get_scroll_material(damage_type), CombatUtils.get_scroll_icon(damage_type))

@@ -76,7 +76,7 @@ We copy this exactly:
 | `mechanics.md` | Every gameplay mechanic, with priority labels and v1-vs-later scope |
 | `components.md` | Every Godot scene, script, autoload, and resource — component-based, no monolith scripts |
 | `assets.md` | Required assets only: models, materials, UI, audio. Includes the Archero-reference setup guide (camera angle, sizes, proportions). No "how it should look" art direction beyond what's needed to match Archero's *staging*. |
-| `epic_done/epic_01_foundation.md` → `epic_done/epic_08_polish.md` (built), `epic_09_content.md` → `epic_13_release.md` (open work) | Build epics, in order, scrum-style with tasks and acceptance criteria |
+| `epic_done/epic_01_foundation.md` → `epic_done/epic_09_content.md` (built), `epic_10_meta_systems.md` → `epic_13_release.md` (open work) | Build epics, in order, scrum-style with tasks and acceptance criteria |
 | `skills/` | Godot/GDScript reference skills for Claude Code to consult while implementing |
 
 ---
@@ -324,7 +324,7 @@ obsolete (it predates spells).
 | Poison | beating Ch3 | **Plague Cloud** around the tower, 6 s | bigger + longer | poison spreads on death |
 | Fire | beating Ch4 | **Ring of Fire** around the tower, 6 s | longer | ring +25% vs burning |
 
-Ults are designed in `epic_09_content.md` 09-13 and not built yet. The
+Ults are designed in `epic_done/epic_09_content.md` 09-13 and not built yet. The
 auto-fire vs tap-to-fire trigger is picked after play-testing both. Poison and
 Fire borrow the Ancient model until they get their own.
 
@@ -417,7 +417,7 @@ res://
 Full file list with node types and script signatures: see `components.md`.
 Full asset list: see `assets.md`.
 Full mechanic descriptions: see `mechanics.md`.
-Full build plan: see `epic_done/epic_01_foundation.md` through `epic_done/epic_08_polish.md` (built) and `epic_09_content.md` through `epic_13_release.md` (open work).
+Full build plan: see `epic_done/epic_01_foundation.md` through `epic_done/epic_09_content.md` (built) and `epic_10_meta_systems.md` through `epic_13_release.md` (open work).
 Godot/GDScript implementation patterns for Claude Code: see `skills/`.
 
 ---

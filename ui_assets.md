@@ -193,6 +193,21 @@ C. REWARDS & MATERIALS — all 16 exist in `rewards/`
                               .glb (Void / Poison / Fire sets; placeholder: the
                               chap1 models, tinted via EnemyDefinition.model_tint;
                               Epic 09 09-08 model-borrow table)
+- [ ] topbar/icon_currency_gems.png (gems pill icon — placeholder today:
+                              icon_currency_materials1.png hue-shifted pink,
+                              `icon_hue_shift = 0.28` on GemsPill in
+                              widget/top_bar/top_bar.tscn; Epic 10 10-03. When
+                              swapped in, set icon_hue_shift back to 0 and
+                              re-measure icon_scale)
+- [ ] world_map/icon_home_daily.png (home Daily button — placeholder today:
+                              calendar drawn by widget/home_side_button/
+                              `placeholder_glyph = CALENDAR`; Epic 10 10-02)
+- [ ] world_map/icon_home_settings.png (home Settings gear — placeholder
+                              today: gear drawn by widget/home_side_button/
+                              `placeholder_glyph = GEAR`; Epic 10 10-02)
+- [ ] store/bg_store.png      (Store tab background — placeholder today:
+                              garage/bg_garage.png in scenes/ui/store_content.tscn;
+                              Epic 10 10-02 / 10-04)
 - [ ] bg_victory.png          (optional)
 - [ ] bg_defeat.png           (optional)
 

@@ -50,7 +50,7 @@ drags freely.
 | Component | Where it lives | How to change it |
 |---|---|---|
 | Background image | node `BG` · art `assets/ui/garage/bg_garage.png` | Swap `texture`. `stretch_mode` 6 = fill & crop, 5 = fit & letterbox, 1 = stretch |
-| Energy + materials pills | node `TopBar` → widget `widget/top_bar/top_bar.tscn` | Which icon/amount: on `EnergyPill` / `MaterialsPill` inside `top_bar.tscn`. Size & shape: `widget/currency_pill/currency_pill.tscn` |
+| Materials + gems pills | node `HeaderRow/TopBar` → widget `widget/top_bar/top_bar.tscn` | Which icon: on the pills inside `top_bar.tscn`. Size & shape: `widget/currency_pill/currency_pill.tscn`. **Energy is hidden here** (`show_energy` off on this instance, 10-03); `TowerMatPill` beside it is Garage-only |
 | The 3D tower model | node `Preview3D` → widget `widget/tower_preview_3d/` | Drag the **panel** here. The tower **inside** it is a camera: `look_height` (bigger = tower moves down) and `camera_distance` (bigger = tower looks smaller) on the widget root |
 | lvl5 waterfalls | `scenes/game_object/tower/ancient_tower/ancient_tower_lvl5/ancient_tower_lvl5_fx.tscn` | Edit that scene — plane positions, sizes, and each `water_color`. The **gameplay tower and the garage preview both instance it**, so one edit changes both. `show_effects` on the preview root turns it off |
 | Tower name text | node `NameLabel` | Drag it. `theme_override_font_sizes/font_size`, outline size and colours on the node |
@@ -79,11 +79,12 @@ The screen the game opens on.
 | Component | Where it lives | How to change it |
 |---|---|---|
 | Background image | node `BG` · art `assets/ui/world_map/bg_worldmap.png` | Same as the garage: swap `texture`, `stretch_mode` controls fill vs fit |
-| Energy + materials pills | node `TopBar` → widget `widget/top_bar/` | Identical to the garage — one widget, both screens |
+| Energy + materials + gems pills | node `TopBar` → widget `widget/top_bar/` | Same widget as the garage, with energy showing. Centred; the Settings gear sits to its right |
 | Chapter title text | node `TitleLabel` | Drag it. Font size / colours on the node. The **text** comes from the chapter `.tres`, not here |
 | Chapter artwork | node `ChapterImage` → widget `widget/chapter_node/` | Drag/resize on this screen. The picture itself is `chapter_image` on the widget, fed from `resources/chapters/chapter_01.tres`. `locked` greys it out |
 | "Not enough energy" message | node `OutOfEnergyLabel` | Drag it. Hidden until you press Play without energy; it shows for `OUT_OF_ENERGY_DISPLAY_SEC` in `world_map.gd` |
 | Play button | node `PlayButton` → widget `widget/play_button/` | Position here; size and insides in `play_button.tscn` — `button_width`, `margin_h/top/bottom`, `play_font_size`, `cost_icon_size`. See its own section below, it has a warning |
+| Chests / Daily buttons (left) and Settings gear (top-right) | nodes `ChestsButton`, `DailyButton`, `SettingsButton` → widget `widget/home_side_button/` | Position here; look in `home_side_button.tscn` (see its section below). Per button: `icon_texture` or `placeholder_glyph`, `label_text`. The Settings gear also sets its own smaller `button_size` here |
 | Bottom nav bar | node `NavBar` → widget `widget/nav_bar/` | See the Nav bar section below |
 
 ---
@@ -93,7 +94,7 @@ The screen the game opens on.
 | Component | Where it lives | How to change it |
 |---|---|---|
 | Background image | node `BG` | Currently **borrows `assets/ui/garage/bg_garage.png`** — the codex has no art of its own yet (`bg_menu_generic.png` is still unmade) |
-| Energy + materials pills | node `TopBar` → widget `widget/top_bar/` | Same widget again |
+| Energy + materials + gems pills | node `TopBar` → widget `widget/top_bar/` | Same widget again |
 | Scroll material balances (5 schools) | node `ScrollMatsRow` (`FireChip`/`FrostChip`/`VoidChip`/`PoisonChip`/`NatureChip`) → widget `widget/cost_chip/` | Codex-only, not in `top_bar.tscn`. Each chip is driven by `spell_codex.gd`'s `_refresh()` via `set_balance()` — a plain readout, never red. See the Cost chip section below |
 | Title text | node `TitleLabel` | Drag it, font size on the node |
 | The scrolling list | nodes `ScrollContainer` → `SpellList` | Drag/resize the `ScrollContainer`. `SpellList` is a `VBoxContainer` — **rows can't be dragged**; the gap between them is its `separation`. `horizontal_scroll_mode` is 0 on purpose so a wide row can never make a sideways scrollbar |
@@ -156,8 +157,8 @@ The three menu screens are broken down piece by piece above. The rest:
 | Currency pill (icon + amount) | `scenes/ui/widget/currency_pill/` |
 | Stat pill (garage LEVEL / ATK / HP) | `scenes/ui/widget/stat_pill/` |
 | ↳ shape both pills share | `scenes/ui/widget/pill_base.gd` |
-| Top bar (holds two pills) | `scenes/ui/widget/top_bar/` |
-| Nav bar (bottom 3 buttons) | `scenes/ui/widget/nav_bar/` |
+| Top bar (energy, materials, gems pills) | `scenes/ui/widget/top_bar/` |
+| Nav bar (bottom 4 tabs) | `scenes/ui/widget/nav_bar/` |
 | Nav button (one entry: icon, label, badge) | `scenes/ui/widget/nav_button/` |
 | Play button | `scenes/ui/widget/play_button/` |
 | Chapter artwork | `scenes/ui/widget/chapter_node/` |
@@ -178,6 +179,9 @@ The three menu screens are broken down piece by piece above. The rest:
 | Spell/upgrade icon (rounded mask + school-color fallback) | `scenes/ui/widget/spell_icon/` |
 | Spell rank pips (diamond row, draft card + HUD row) | `scenes/ui/widget/spell_rank_pips/` |
 | HUD spell-stack row (icon + pick-count per active spell, replaces the OFF/ARM/UTL tag row — Draft Card polish follow-up) | `scenes/ui/widget/spell_stack_row/` |
+| Popup frame (dim + centred panel + red X) for Chests / Daily / Settings / rewards | `scenes/ui/widget/overlay_screen/` |
+| Home-screen icon button (Chests / Daily / Settings) | `scenes/ui/widget/home_side_button/` |
+| ↳ the red badge both it and the nav tiles use | `scenes/ui/widget/badge_button_base.gd` |
 
 ### Art
 
@@ -204,6 +208,7 @@ it top and bottom.
 | `icon_offset` `[0, 0]` | Free nudge in pixels. +x right, +y **down**. For art that is not centred in its own canvas. |
 | `icon_overlap` `[62]` | How many pixels of the icon sit on the pill. Bigger = icon further right / more overlap. |
 | `icon_rotation_deg` `[0]` | Tilts the icon about its own centre. Layout is unaffected. |
+| `icon_hue_shift` `[0]` | Turns the icon's colours around the colour wheel (`hue_shift.gdshader`). Per instance, for placeholder art borrowed in another colour: the Gems pill uses `0.28` to make the blue gem pink. 0 = no shader at all. |
 | `font_size` `[40]` | Size of the amount text. |
 | `icon`, `amount` | Per-instance. Set in `top_bar.tscn`, not here. |
 
@@ -261,18 +266,25 @@ The codex's `ScrollMatsRow` (5 chips, one per school) uses this same
 
 ### Top bar — `scenes/ui/widget/top_bar/top_bar.tscn`
 
-Holds the two pills. This is where you say *which* currency each pill shows.
-`separation` `[40]` is the gap between them. Its height (124) is the **icon's**
+Holds three pills: Energy · Materials · Gems (10-03). This is where you say *which*
+currency each pill shows. It also fills in the numbers itself (`refresh()`, and the
+gems pill updates live), so a screen never sets amounts. Per screen there is one
+switch, `show_energy` (off on the Garage). The Gems pill borrows the materials gem
+with `icon_hue_shift = 0.28` (pink) until `topbar/icon_currency_gems.png` exists.
+`separation` `[24]` is the gap between them (24 so three pills and the home gear
+fit; the Garage's `HeaderRow` matches it). Its height (124) is the **icon's**
 height, not the pill's.
 
 ### Nav bar — `scenes/ui/widget/nav_bar/nav_bar.tscn`
 
-Order is **Garage · Worldmap · Codex** — worldmap in the middle on purpose,
-because it is the screen the game opens on.
+Order is **Store · Garage · Worldmap · Codex** (Store added in 10-02, far left like
+Archero). Worldmap is selected at start, because it is the screen the game opens on.
+Adding a tab = a new `Nav` entry in `nav_bar.gd`, a matching `<Name>Button` here,
+and its name in `_buttons()`; the widths divide by the tab count.
 
-Three square-cornered tiles sit flush against each other and fill the bar's whole
+Square-cornered tiles sit flush against each other and fill the bar's whole
 width, over a dark frame. The one you are on is wider, shaded tan instead of grey,
-and shows its name. **No artwork is involved** except the three icons.
+and shows its name. **No artwork is involved** except the tab icons.
 
 The tiles always add up to exactly the bar's inner width, so `selected_extra_width`
 only *redistributes* space; it never leaves a seam or overflows.
@@ -307,7 +319,7 @@ Every default below was **sampled off the reference art**, not guessed.
 | `selected_highlight_color` `[#e2c1a6]` | Its top line is tinted, not white. |
 | **Tiles** | |
 | `highlight_height` `[4]` | Thickness of the bright top line, both looks. |
-| `divider_width` `[3]` / `divider_color` `[#272923]` | The seam. Its own strip at each INTERNAL boundary (two of them for three entries), so this is the exact width you see and the outer sides of the bar stay clean. `0` removes the seams. |
+| `divider_width` `[3]` / `divider_color` `[#272923]` | The seam. Its own strip at each INTERNAL boundary (one fewer than the tabs), so this is the exact width you see and the outer sides of the bar stay clean. `0` removes the seams. |
 | `selected_extra_width` `[90]` | How many pixels wider the selected tile is. |
 | `selected_rise` `[0]` | How far the selected tile pokes above the others. |
 | `row_offset` `[0, 0]` | Free nudge for the whole row. +y moves down. |
@@ -323,14 +335,14 @@ There is **no corner-radius knob**: the reference's tiles are square, so the
 rounding was removed rather than left in at 0.
 
 Per-entry settings live on the buttons *inside* `nav_bar.tscn` — select
-`GarageButton` / `WorldmapButton` / `CodexButton` and set `icon_texture`
+`StoreButton` / `GarageButton` / `WorldmapButton` / `CodexButton` and set `icon_texture`
 (files are in `assets/ui/nav/`) and `label_text`. Each also has an optional
 badge: `badge_visible`, `badge_text`, `badge_size` `[52]`,
 `badge_anchor` `[1, 0]` (a fraction — `(0,0)` top-left, `(1,0)` top-right) and
 `badge_offset`.
 
 ⚠️ Don't set colours or sizes on an individual `NavButton` — `nav_bar.gd` pushes
-the same values into all three every time it lays out, so anything you set there
+the same values into every tab each time it lays out, so anything you set there
 is overwritten. Tune on the **NavBar root**.
 
 **The transition and scene changes.** Each screen is its own scene, so tapping an
@@ -446,6 +458,46 @@ screen would start a run.
 have roughly 145px on a 260px button. **`play_font_size` and `cost_icon_size`
 cannot both be large** — if you raise one, lower the other or the content pushes
 onto the frame.
+
+### Popup frame — `scenes/ui/widget/overlay_screen/overlay_screen.tscn`
+
+The Archero-style popup every home-screen popup opens in: the screen goes dark
+(bottom menu included), a panel pops in at the centre, red X on its top-right
+corner, tap outside or press back to close. Tune it **here** and every popup
+changes. The "Sample content" text is an editor-only preview; real content
+replaces it.
+
+| Knob | What it does |
+|---|---|
+| `dim_color` `[black, 65%]` | The dark layer. Alpha = how dark. |
+| `panel_size` `[900, 1200]` | Panel size for a popup that doesn't set its own. A popup sets its own with `custom_minimum_size` on its root. |
+| `panel_color` `[#1a0d2e, 95%]`, `corner_radius` `[28]`, `border_color` `[gold]`, `border_width` `[4]` | The panel's drawn background. `panel_color` alpha 0 hides it for a popup that brings its own art. |
+| `close_button_size` `[120]` | The X's edge length. Keep it at 80 or more for touch. |
+| `close_button_offset` `[-20, 20]` | Where the X's **centre** sits relative to the panel's top-right corner. +x right, +y down. |
+| `close_pressed_dim` `[0.25]` | How much the X darkens while held. |
+| `open_time` `[0.18]`, `close_time` `[0.12]`, `open_scale` `[0.85]` | The pop-in: the panel grows from `open_scale` to full size while everything fades in. |
+
+Per popup (set on the popup's own root, not here): `overlay_show_close = false`
+hides the X, `overlay_tap_outside_closes = false` stops a tap on the dark area
+from closing it (the reward popup will use both).
+
+### Home button — `scenes/ui/widget/home_side_button/home_side_button.tscn`
+
+The Archero-style icon buttons on the home screen: Chests and Daily down the
+left, the Settings gear top-right. Icon with a word under it, no plate behind,
+optional red badge. The scene previews a Daily button with its badge on.
+
+| Knob | What it does |
+|---|---|
+| `icon_texture` | The art. Per button, set on the home screen. Empty = use `placeholder_glyph`. |
+| `placeholder_glyph` `[NONE]` | A drawn CALENDAR or GEAR standing in for missing art (`icon_home_daily.png` / `icon_home_settings.png`). Setting `icon_texture` hides it. |
+| `label_text` | The word under the icon. Empty = icon only, centred (the Settings gear). |
+| `button_size` `[130, 150]` | The whole touch area. Keep it at or above 80×80. |
+| `icon_size` `[110]`, `icon_scale` `[1.0]` | Icon slot, and a fine-tune for art that fills less of its canvas. |
+| `label_font_size` `[26]` | The word. |
+| `pressed_dim` `[0.25]` | How much the button darkens while held. |
+| `glyph_color` | Main colour of the drawn calendar/gear. |
+| `badge_visible`, `badge_text`, `badge_size` `[52]`, `badge_anchor` `[1, 0]`, `badge_offset` | The red badge, same knobs as the nav tiles (shared code, `badge_button_base.gd`). The game turns it on when something can be claimed (10-05 / 10-06). |
 
 ### Pause button — `scenes/ui/widget/pause_button/pause_button.tscn`
 

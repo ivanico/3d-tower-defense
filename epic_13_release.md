@@ -3,7 +3,7 @@
 > Prerequisite: content (09), systems (10), audio (11) and monetization (12) in
 > place for the final checks. **13-01 (Android export) can and should be pulled
 > forward**: real-device testing of 10-08 / 12-xx needs it.
-> **Rules**: see `epic_09_content.md` → "Rules for Epics 09–13".
+> **Rules**: see `epic_done/epic_09_content.md` → "Rules for Epics 09–13".
 > Google Play's rules change over time. Every Play requirement quoted here was
 > true when `remaining_to_do_list.md` was written. **Re-check each one against
 > Google's current docs when doing the task**, and don't trust these numbers

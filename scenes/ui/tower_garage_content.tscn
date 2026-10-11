@@ -113,11 +113,12 @@ offset_left = 60.0
 offset_top = 24.0
 offset_right = 1020.0
 offset_bottom = 148.0
-theme_override_constants/separation = 40
+theme_override_constants/separation = 24
 alignment = 1
 
 [node name="TopBar" parent="HeaderRow" instance=ExtResource("3")]
 layout_mode = 2
+show_energy = false
 
 [node name="TowerMatPill" parent="HeaderRow" instance=ExtResource("16")]
 layout_mode = 2

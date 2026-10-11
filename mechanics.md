@@ -30,7 +30,7 @@
   - ~~Screen shake~~ — **not wanted** (removed from the to-do list;
     `camera_rig.gd::shake()` exists but is never called).
   - ~~A brief zoom/pan on boss intro~~ — **decided against** (2026-09-28,
-    `epic_09_content.md` 09-16): the boss intro is a "BOSS" banner only;
+    `epic_done/epic_09_content.md` 09-16): the boss intro is a "BOSS" banner only;
     the camera never moves.
 
 ---

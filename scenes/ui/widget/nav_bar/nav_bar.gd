@@ -3,10 +3,11 @@ extends Control
 
 ## Bottom navigation shared by every meta screen.
 ##
-## Order is Garage · Worldmap · Codex, with Worldmap deliberately in the MIDDLE:
-## the world map is what opens when the game starts, so it is the home position.
+## Order is Store · Garage · Worldmap · Codex (10-02, 2026-10-12: Store added as
+## the far-left tab, Archero-style). Worldmap is the home position the game opens
+## on; with four tabs it is third rather than dead centre.
 ##
-## Three square-cornered tiles sit flush against each other and fill the bar's
+## Square-cornered tiles sit flush against each other and fill the bar's
 ## whole width, over a dark frame. The entry you are on is wider, shaded tan
 ## instead of grey, and carries its name under the icon. Changing `selected` at
 ## runtime cross-fades and grows into that state rather than snapping — see
@@ -22,8 +23,11 @@ extends Control
 ## gradient at all, which is the entire look. They are generated textures — see
 ## `bar_texture.gd`'s `make_tile()` — stretched through a NinePatchRect.
 ##
-## No artwork is involved beyond the three icons, which already exist in
+## No artwork is involved beyond the tab icons, which already exist in
 ## `assets/ui/nav/`.
+##
+## Adding a tab: a new `Nav` entry, a matching `<Name>Button` child in
+## nav_bar.tscn, and its name in `_buttons()`. Widths divide by the tab count.
 ##
 ## This is a plain Control that positions its buttons itself rather than an
 ## HBoxContainer, because a container will not let one child be wider or taller
@@ -31,7 +35,7 @@ extends Control
 
 const BarTexture := preload("res://scenes/ui/widget/bar_texture.gd")
 
-enum Nav { GARAGE, WORLDMAP, CODEX }
+enum Nav { STORE, GARAGE, WORLDMAP, CODEX }
 
 ## Which screen we are on. The matching tile grows, changes shade, shows its label
 ## and is disabled so the current screen cannot navigate to itself. Setting this at
@@ -140,8 +144,8 @@ enum Nav { GARAGE, WORLDMAP, CODEX }
 		highlight_height = maxi(value, 0)
 		_apply()
 
-## The seam between tiles. Drawn as its own strip at each INTERNAL boundary — two
-## of them for three entries — so this is the exact width you see, and the outer
+## The seam between tiles. Drawn as its own strip at each INTERNAL boundary — one
+## fewer than there are tabs — so this is the exact width you see, and the outer
 ## sides of the bar stay clean. 0 removes the seams entirely.
 @export var divider_width: int = 3:
 	set(value):
@@ -153,7 +157,7 @@ enum Nav { GARAGE, WORLDMAP, CODEX }
 		divider_color = value
 		_apply()
 
-## How many pixels wider the selected tile is than an unselected one. The three
+## How many pixels wider the selected tile is than an unselected one. The
 ## tiles always add up to the bar's full inner width, so this only redistributes.
 @export var selected_extra_width: int = 90:
 	set(value):
@@ -173,7 +177,7 @@ enum Nav { GARAGE, WORLDMAP, CODEX }
 		_apply()
 
 @export_group("Icons")
-## Icon edge length on the two entries you are NOT on.
+## Icon edge length on the entries you are NOT on.
 @export var normal_icon_size: int = 120:
 	set(value):
 		normal_icon_size = maxi(value, 8)
@@ -195,7 +199,7 @@ enum Nav { GARAGE, WORLDMAP, CODEX }
 
 @export_group("Labels")
 ## Reference behaviour: only the entry you are on is named. Turn this off to
-## label all three.
+## label every tab.
 @export var label_on_selected_only: bool = true:
 	set(value):
 		label_on_selected_only = value
@@ -274,6 +278,7 @@ func _device_scale() -> float:
 ## Buttons in `Nav` order, so the enum indexes straight into this.
 func _buttons() -> Array:
 	return [
+		get_node_or_null("StoreButton"),
 		get_node_or_null("GarageButton"),
 		get_node_or_null("WorldmapButton"),
 		get_node_or_null("CodexButton"),
@@ -303,12 +308,13 @@ func _apply(animated: bool = false) -> void:
 	var inner := Vector2(
 			size.x - float(frame_side * 2),
 			size.y - float(frame_top + frame_bottom))
-	# The three tiles are sized to add up to exactly the inner width, so the
+	# The tiles are sized to add up to exactly the inner width, so the
 	# selected one absorbs the rounding rather than leaving a seam at the edge.
-	var normal_w: float = floorf((inner.x - float(selected_extra_width)) / 3.0)
-	var selected_w: float = inner.x - normal_w * 2.0
+	var count := float(buttons.size())
+	var normal_w: float = floorf((inner.x - float(selected_extra_width)) / count)
+	var selected_w: float = inner.x - normal_w * (count - 1.0)
 
-	# Rasterised once per layout, then shared by all three buttons — the tiles
+	# Rasterised once per layout, then shared by every button — the tiles
 	# differ only in which of the two is faded in.
 	var normal_texture := BarTexture.make_tile(int(inner.y),
 			tile_color_top, tile_color_split, tile_color_bottom, tile_split,

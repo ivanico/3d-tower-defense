@@ -39,8 +39,7 @@ const PAGE_SPACING := 720.0
 @onready var locked_label: Label = $LockedLabel
 @onready var enter_button: Button = $EnterButton
 @onready var back_button: Button = $BackButton
-@onready var energy_pill: Control = $TopBar/EnergyPill
-@onready var materials_pill: Control = $TopBar/MaterialsPill
+@onready var top_bar: Control = $TopBar
 
 var _chapters: Array = []
 var _current_index: int = 0
@@ -88,8 +87,7 @@ func _strip_x(index: int) -> float:
 	return -index * PAGE_SPACING
 
 func _refresh() -> void:
-	energy_pill.set_amount(MetaManager.energy)
-	materials_pill.set_amount(MetaManager.base_material)
+	top_bar.refresh()
 	var chapter_def := _current_chapter()
 	title_label.text = "%d. %s" % [_current_index + 1, chapter_def.chapter_name]
 	length_label.text = "Chapter Length: %d" % chapter_def.wave_count

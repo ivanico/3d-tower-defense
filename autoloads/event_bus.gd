@@ -41,4 +41,6 @@ signal tower_material_earned(amount: int)
 signal scroll_material_earned(damage_type: int, amount: int)
 signal tower_upgraded(tower_id: String, star: int)
 signal tower_unlocked(tower_id: String)
+## New gem total after any award_gems / spend_gems (10-03).
+signal gems_changed(total: int)
 signal spell_ranked_up(spell_id: String, rank: int)

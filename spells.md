@@ -191,7 +191,7 @@ task, not done yet.
 
 ## 3. Resistances (armor vs. schools)
 
-> **Decided 2026-09-27 (`epic_09_content.md` 09-00.5), revised 2026-10-03
+> **Decided 2026-09-27 (`epic_done/epic_09_content.md` 09-00.5), revised 2026-10-03
 > (09-07) and 2026-10-06 (09-11):** the **WC3 armor table** (`project.md`
 > "Damage Type vs Armor Table (v2)") is the counterplay system for
 > **every** enemy. On top of it, **every enemy of a themed set resists that
@@ -201,7 +201,7 @@ task, not done yet.
 > **Current data** (each `.tres` `resisted_school`): Nature set (chap1) 4,
 > Frost set (chap2) 1, Void set (chap3) -1, Poison set (chap4) 3, Fire set
 > (chap5) 0. Chapters 6–10 reuse those sets unchanged. The per-chapter
-> table is in `epic_09_content.md` 09-11.
+> table is in `epic_done/epic_09_content.md` 09-11.
 
 - Each `EnemyDefinition` has a `resisted_school` (`-1` = none), copied onto
   its `HurtboxComponent` by `enemy.gd`. **Rule: every enemy sets its themed
@@ -548,7 +548,7 @@ of the Void, Orb of Venom, Orb of Thorns
 - [x] **Stacking**: not designed yet — exported `stack_max` shipped at `1`
 	  (duplicate picks simply won't be offered once owned). No stacking
 	  behavior invented — `[TBD]`. *(Designed since: cap 3, one extra zone
-	  per pick — `epic_09_content.md` 09-00.3, built in 09-15.)*
+	  per pick — `epic_done/epic_09_content.md` 09-00.3, built in 09-15.)*
 - [x] Exported/Inspector-tunable: `damage` (per tick), `range` (cast
 	  range), `aoe_radius`, `duration`, `tick_interval`,
 	  `shard_spawn_interval`, `cooldown`. *(Defaults in

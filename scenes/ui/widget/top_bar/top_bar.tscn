@@ -1,14 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://daey7ebm0ucnd"]
+[gd_scene load_steps=5 format=3 uid="uid://daey7ebm0ucnd"]
 
 [ext_resource type="PackedScene" uid="uid://3355i6eil4wv" path="res://scenes/ui/widget/currency_pill/currency_pill.tscn" id="1"]
 [ext_resource type="Texture2D" uid="uid://cp7dcawp1hqwp" path="res://assets/ui/topbar/icon_currency_energy1.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://clnsjsmjgm6ey" path="res://assets/ui/topbar/icon_currency_materials1.png" id="3"]
+[ext_resource type="Script" path="res://scenes/ui/widget/top_bar/top_bar.gd" id="4"]
+
+; GemsPill (10-03) borrows the materials gem, hue-shifted pink, until the final
+; topbar/icon_currency_gems.png exists — swap its `icon` and set icon_hue_shift
+; back to 0. Same art as materials, so the same icon_scale 0.82 applies.
 
 [node name="TopBar" type="HBoxContainer"]
 offset_right = 600.0
 offset_bottom = 124.0
-theme_override_constants/separation = 40
+theme_override_constants/separation = 24
 alignment = 1
+script = ExtResource("4")
 
 [node name="EnergyPill" parent="." instance=ExtResource("1")]
 layout_mode = 2
@@ -20,3 +26,10 @@ layout_mode = 2
 amount = 999
 icon_scale = 0.82
 icon = ExtResource("3")
+
+[node name="GemsPill" parent="." instance=ExtResource("1")]
+layout_mode = 2
+amount = 50
+icon_scale = 0.82
+icon = ExtResource("3")
+icon_hue_shift = 0.28

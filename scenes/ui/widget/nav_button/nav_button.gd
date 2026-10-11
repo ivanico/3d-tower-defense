@@ -1,8 +1,9 @@
 @tool
-extends Button
+extends "res://scenes/ui/widget/badge_button_base.gd"
 
 ## One entry in the bottom nav bar: a filled tile with an icon, an optional word
-## under it, and an optional badge pinned to a corner.
+## under it, and an optional badge pinned to a corner (the badge knobs and
+## placement live in `badge_button_base.gd`, shared with `home_side_button`).
 ##
 ## Colour, tile size, icon scale and font are NOT set here — nav_bar.gd owns them
 ## and pushes the same values into all three entries, so the tiles cannot drift
@@ -21,8 +22,6 @@ extends Button
 ## for the same reason: a stale baked copy inside a screen would silently override
 ## whatever you set on the widget itself.
 
-const BADGE_TEXTURE := preload("res://assets/ui/common/ui_notification_badge.png")
-
 ## Artwork for this entry. Files live in `assets/ui/nav/`.
 @export var icon_texture: Texture2D:
 	set(value):
@@ -37,39 +36,6 @@ const BADGE_TEXTURE := preload("res://assets/ui/common/ui_notification_badge.png
 		label_text = value
 		if _label != null:
 			_label.text = value
-		_layout()
-
-@export_group("Badge")
-## Show the little red notification badge on this entry.
-@export var badge_visible: bool = false:
-	set(value):
-		badge_visible = value
-		_layout()
-
-## Number or text inside the badge. Leave empty for a plain dot.
-@export var badge_text: String = "":
-	set(value):
-		badge_text = value
-		if _badge_label != null:
-			_badge_label.text = value
-
-## Badge size in pixels (square).
-@export var badge_size: int = 52:
-	set(value):
-		badge_size = maxi(value, 4)
-		_layout()
-
-## Which corner of the tile the badge sits in, as a fraction: (0,0) top-left,
-## (1,0) top-right, (0.5,0.5) dead centre.
-@export var badge_anchor: Vector2 = Vector2(1, 0):
-	set(value):
-		badge_anchor = value
-		_layout()
-
-## Free pixel nudge on top of `badge_anchor`. Positive y moves it DOWN.
-@export var badge_offset: Vector2 = Vector2.ZERO:
-	set(value):
-		badge_offset = value
 		_layout()
 
 
@@ -99,8 +65,6 @@ var _bg_normal: NinePatchRect
 var _bg_selected: NinePatchRect
 var _icon: TextureRect
 var _label: Label
-var _badge: TextureRect
-var _badge_label: Label
 
 # Pushed in by nav_bar via set_content(); see _layout().
 var _icon_offset: Vector2 = Vector2.ZERO
@@ -158,21 +122,7 @@ func _build_children() -> void:
 	_label.text = label_text
 	add_child(_label, false, Node.INTERNAL_MODE_BACK)
 
-	_badge = TextureRect.new()
-	_badge.name = "Badge"
-	_badge.texture = BADGE_TEXTURE
-	_badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_badge, false, Node.INTERNAL_MODE_BACK)
-
-	_badge_label = Label.new()
-	_badge_label.name = "BadgeLabel"
-	_badge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_badge_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_badge_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_badge_label.text = badge_text
-	_badge.add_child(_badge_label, false, Node.INTERNAL_MODE_BACK)
+	_build_badge()
 
 
 ## Called by nav_bar. Every entry gets the same numbers, so styling stays in one
@@ -254,11 +204,4 @@ func _layout() -> void:
 		var top: float = (size.y - icon_px) * 0.5
 		_icon.position = Vector2((size.x - icon_px) * 0.5, top) + _icon_offset
 
-	_badge.visible = badge_visible
-	if badge_visible:
-		var badge := Vector2(badge_size, badge_size)
-		_badge.size = badge
-		_badge.position = (size - badge) * badge_anchor + badge_offset
-		_badge_label.size = badge
-		_badge_label.position = Vector2.ZERO
-		_badge_label.add_theme_font_size_override("font_size", int(badge_size * 0.55))
+	_layout_badge()

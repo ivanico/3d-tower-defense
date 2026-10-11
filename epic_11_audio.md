@@ -3,7 +3,7 @@
 > Prerequisite: none strictly, but it's easiest after Epic 10, because the
 > screens that make sounds (store, chests, pause, settings) exist by then.
 > Every task here works with **zero real sound files**.
-> **Rules**: see `epic_09_content.md` → "Rules for Epics 09–13".
+> **Rules**: see `epic_done/epic_09_content.md` → "Rules for Epics 09–13".
 > **Skill**: `skills/godot3d-vfx-audio/SKILL.md` (reactive AudioManager, small
 > SFX pool that skips instead of queueing, `EventBus` over direct calls).
 > Base asset list: `assets.md` §6.

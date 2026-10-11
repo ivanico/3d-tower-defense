@@ -15,8 +15,14 @@ extends Control
 ## directly. Play still goes through a real `change_scene_to_file` into
 ## `game_world.tscn` — that is a genuine change of game mode, not a hop between
 ## meta screens, so it is unaffected by the shell's slide navigation.
+##
+## Home buttons (10-02): Chests and Daily down the left, the Settings gear
+## top-right. Each opens a popup through the 10-01 host; until its own screen
+## lands (10-05 / 10-06 / 10-09) that popup is the "Coming soon" placeholder.
 
 const ChapterRegistry := preload("res://scripts/chapter_registry.gd")
+const OverlayHost := preload("res://scenes/ui/widget/overlay_screen/overlay_host.gd")
+const COMING_SOON_SCENE := preload("res://scenes/ui/coming_soon_content.tscn")
 const OUT_OF_ENERGY_DISPLAY_SEC := 2.0
 
 @onready var title_label: Label = $TitleLabel
@@ -24,8 +30,10 @@ const OUT_OF_ENERGY_DISPLAY_SEC := 2.0
 @onready var out_of_energy_label: Label = $OutOfEnergyLabel
 @onready var play_button: Button = $PlayButton
 @onready var chapter_select: Control = $ChapterSelectLayer/ChapterSelect
-@onready var energy_pill: Control = $TopBar/EnergyPill
-@onready var materials_pill: Control = $TopBar/MaterialsPill
+@onready var top_bar: Control = $TopBar
+@onready var chests_button: Button = $ChestsButton
+@onready var daily_button: Button = $DailyButton
+@onready var settings_button: Button = $SettingsButton
 
 var _chapters: Array = []
 var _current_index: int = 0
@@ -43,11 +51,17 @@ func _ready() -> void:
 	play_button.pressed.connect(_on_play_pressed)
 	chapter_image.gui_input.connect(_on_chapter_image_input)
 	chapter_select.chapter_entered.connect(_on_chapter_entered)
+	chests_button.pressed.connect(_open_coming_soon.bind("Chests"))
+	daily_button.pressed.connect(_open_coming_soon.bind("Daily Rewards"))
+	settings_button.pressed.connect(_open_coming_soon.bind("Settings"))
+	# Nothing is claimable until chests (10-05) and daily rewards (10-06) exist;
+	# the scene shows a badge only as an editor preview.
+	chests_button.badge_visible = false
+	daily_button.badge_visible = false
 	_refresh()
 
 func _refresh() -> void:
-	energy_pill.set_amount(MetaManager.energy)
-	materials_pill.set_amount(MetaManager.base_material)
+	top_bar.refresh()
 	var chapter_def := _current_chapter()
 	title_label.text = chapter_def.chapter_name
 	if chapter_def.map_image != null:
@@ -68,6 +82,15 @@ func _on_chapter_image_input(event: InputEvent) -> void:
 func _on_chapter_entered(chapter_id: String) -> void:
 	_current_index = maxi(ChapterRegistry.index_of(chapter_id), 0)
 	_refresh()
+
+## Opens the placeholder popup. Does nothing when this screen runs on its own,
+## outside the world_map shell (no popup host there).
+func _open_coming_soon(title: String) -> void:
+	var host: Control = get_tree().get_first_node_in_group(OverlayHost.GROUP)
+	if host == null:
+		return
+	var popup: Control = host.open(COMING_SOON_SCENE)
+	popup.title = title
 
 func _on_play_pressed() -> void:
 	# Never reachable through the UI (Enter refuses locked chapters and _ready

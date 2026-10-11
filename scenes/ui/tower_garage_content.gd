@@ -36,8 +36,7 @@ const ChapterRegistry := preload("res://scripts/chapter_registry.gd")
 @onready var base_chip: HBoxContainer = $ActionBar/BaseChip
 @onready var rare_chip: HBoxContainer = $ActionBar/RareChip
 @onready var unlock_label: Label = $ActionBar/UnlockLabel
-@onready var energy_pill: Control = $HeaderRow/TopBar/EnergyPill
-@onready var materials_pill: Control = $HeaderRow/TopBar/MaterialsPill
+@onready var top_bar: Control = $HeaderRow/TopBar
 # Garage-only — a sibling of the shared top_bar inside a wrapping HBoxContainer
 # (HeaderRow), not a third child added to top_bar.tscn itself, so it doesn't
 # leak onto the World Map or Spell Codex where Tower Material can't be spent.
@@ -100,8 +99,7 @@ func _cell_size() -> Vector2:
 
 
 func _refresh() -> void:
-	energy_pill.set_amount(MetaManager.energy)
-	materials_pill.set_amount(MetaManager.base_material)
+	top_bar.refresh()
 	tower_mat_pill.set_amount(MetaManager.tower_material)
 
 	var tower_def: Resource = TowerRegistry.get_by_id(_viewing_id)

@@ -315,4 +315,4 @@ offset_bottom = 83.0
 [node name="NavBar" parent="." instance=ExtResource("4")]
 offset_top = 1730.0
 offset_bottom = 1920.0
-selected = 0
+selected = 1
