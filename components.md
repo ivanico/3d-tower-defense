@@ -174,7 +174,7 @@ const SYNERGY_THRESHOLD_LOW:    int   = 3
 const SYNERGY_THRESHOLD_HIGH:   int   = 5
 const TOWER_MAX_STARS:          int   = 5
 const SPELL_MAX_RANK:           int   = 5
-const MAX_ENERGY:               int   = 5
+const MAX_ENERGY:               int   = 20     # Archero energy (10-00): 5 per run, 12 min regen
 const CAMERA_PITCH_DEGREES:     float = 60.0
 
 # --- Balance tuning constants ---
@@ -234,7 +234,9 @@ Signals (grouped):
 - Synergy: `synergy_threshold_reached(tag, level)`.
 - Meta: `run_ended(victory)`, `materials_earned(amount)`,
   `tower_upgraded(tower_id, star)`, `spell_ranked_up(spell_id, rank)`,
-  `gems_changed(total)` (10-03, after every `award_gems` / `spend_gems`).
+  `gems_changed(total)` (10-03, after every `award_gems` / `spend_gems`),
+  `energy_changed(total)` (10-04, after a spend, refill or regen),
+  `store_item_purchased(item_id)` (10-04, after a purchase is granted).
 
 **Location**: `res://autoloads/event_bus.gd` · **Autoload order**: 2
 
@@ -289,6 +291,15 @@ Change it ONLY through `award_gems(n)` (ignores n ≤ 0) and `spend_gems(n) -> b
 (refuses when you can't afford it, so gems never go negative). Both save at once
 and emit `EventBus.gems_changed(total)`. Gems are granted only by the store
 (10-04), rewards (10-05 / 10-06) and tests.
+**Energy (10-04, Archero's numbers)**: `MAX_ENERGY = 20`, `spend_energy()` takes
+`ENERGY_COST_PER_RUN = 5` (false if fewer), 1 back every 720 s.
+`restore_energy()` caps at max and emits `EventBus.energy_changed` but doesn't
+save (callers do). Save v6 migration scales an old save's energy ×4.
+**Store state (10-04, save v6)**: `bought_items`, `daily_deals_day` /
+`daily_deals_bought`, `monthly_card_end_day` / `_last_paid_day`,
+`free_revives` (`award_free_revives(n)`), `owned_chests`
+(`award_chest(id, n)`). These are saved facts only — `StoreService` owns the
+rules.
 `save()`/`load()` read/write a `SaveData` resource to `user://savegame.tres`.
 
 **Location**: `res://autoloads/meta_manager.gd` · **Autoload order**: 4
@@ -381,6 +392,27 @@ pool code. **Enemies are not pooled** — they `queue_free()` on death.
 list). No gameplay logic lives here — purely reactive to events.
 
 **Location**: `res://autoloads/audio_manager.gd` · **Autoload order**: 7
+
+---
+
+### `StoreService.gd` (10-04)
+**What it does**: The store's rules and THE one purchase path:
+`purchase(item)` → gems spent here (`MetaManager.spend_gems`), or the payment
+provider for real money (`scripts/store/fake_purchase_provider.gd`, which always
+succeeds, deferred like real billing; Epic 12 swaps in Google Play Billing) →
+`grant(item)`. Result arrives on its own `purchase_completed(item, success)` and
+`EventBus.store_item_purchased`. Also: `visible_items(section)` (hides bought
+one-time items, shows only the next chapter pack, today's deals, no skins),
+`todays_deals()` (seeded by the day number), `current_gem_price(item)` (repeat-buy
+discount, reset by `reset_session()` when the Store tab is shown),
+`block_reason(item)` (`Block` enum: CANT_AFFORD, AD_NOT_READY until Epic 12,
+CHEST_NOT_READY until 10-05, CARD_ACTIVE, BOUGHT, PENDING), and
+`collect_monthly_card()`. Items = every `StoreItemDefinition` `.tres` in
+`resources/store/` (`load_sorted()` is static for @tool callers).
+Days come from `scripts/day_clock.gd` (`today()`, local time) — the one day
+helper; 10-06 reuses it.
+
+**Location**: `res://autoloads/store_service.gd` · **Autoload order**: 8
 
 ---
 
@@ -627,7 +659,7 @@ text_gap` so the amount always clears the icon. Knobs: `pill_size`, `icon_size`
 `icon_scale = 0.82`, gems = the same materials gem at `icon_scale = 0.82` with
 `icon_hue_shift = 0.28` (pink) as a placeholder for `topbar/icon_currency_gems.png`.
 **It fills its own numbers**: screens call `top_bar.refresh()` (reads `MetaManager`),
-and the gems pill also updates live on `EventBus.gems_changed`. `show_energy` is the
+and the gems and energy pills also update live on `EventBus.gems_changed` / `energy_changed`. `show_energy` is the
 one per-screen switch (off on the Garage, 10-03). Gap `separation = 24`, so three
 pills plus the home Settings gear fit. Its height is the ICON's height, not the pill's, because of
 that overhang. **The icon PNGs are all 1254×1254 but their artwork fills wildly
@@ -837,7 +869,22 @@ set_upgrade_costs|set_upgrade_maxed/show_select` and connect its
 `upgrade_pressed`/`select_pressed` signals — **never build row Controls in
 code, and never copy this scene per screen**. Its panel is a
 **StyleBoxFlat**, not the panel art — see the sizing rules below).
-`cost_chip` (`class_name CostChip` — the ONE currency readout for a dual-cost
+`store_item_card` (`@tool` Control, 10-04 — one store tile: BG
+`ui_panel_dark_v2.png` at its 0.73 aspect (300x412), ribbon, icon, name, a
+contents line (`contents_text(item)`, static), and a buy button showing a gem
+`cost_chip` / the `price_label` text / "Watch ad" / "Free"; a note line under it
+for blocked items. `show_item(item, gem_price, affordable, note)` — the store
+screen passes what StoreService says; the card never decides. Preview knobs:
+`preview_item` (any store `.tres`), `preview_unaffordable`, `preview_note`.
+Gem icon placeholder = the materials gem at hue 0.28, via the shared
+`widget/hue_shift.gd` helper (also used by `pill_base`).)
+`reward_popup` (`@tool`, 10-04 — THE reward reveal for the store now and
+chests / daily rewards later: popup content for the 10-01 host, no X, tap
+anywhere closes. `show_rewards(list)` with entries `{icon, amount,
+hue_shift?, name?}` popping in one by one; `rewards_for_store_item(granted)`
+(static) turns StoreService's grant report into that list. Preview knob:
+`preview_rewards`. Don't build a second reward screen.)
+`cost_chip` (`class_name CostChip`, `@tool` since 10-04 so cards preview it — the ONE currency readout for a dual-cost
 upgrade: icon + amount, tinted `UNAFFORDABLE_COLOR` red when you can't pay.
 Used twice per upgrade by BOTH `meta_row`'s CostRow and the garage's ActionBar,
 so the icon/label/affordability logic exists once. `set_cost(amount, icon,

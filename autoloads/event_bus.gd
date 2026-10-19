@@ -43,4 +43,8 @@ signal tower_upgraded(tower_id: String, star: int)
 signal tower_unlocked(tower_id: String)
 ## New gem total after any award_gems / spend_gems (10-03).
 signal gems_changed(total: int)
+## New energy total after a spend, refill or regen (10-04).
+signal energy_changed(total: int)
+## A store purchase finished and its grants were applied (10-04).
+signal store_item_purchased(item_id: String)
 signal spell_ranked_up(spell_id: String, rank: int)

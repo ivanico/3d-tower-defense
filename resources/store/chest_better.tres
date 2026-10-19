@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="StoreItemDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/store/store_item_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/rewards/icon_chest_rare.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+item_id = "chest_better"
+display_name = "Better Chest"
+icon = ExtResource("2")
+section = 2
+sort_order = 2
+price_type = 1
+gem_prices = Array[int]([300, 280, 260])
+chest_id = "chest_better"
+chest_count = 1
+open_on_buy = true

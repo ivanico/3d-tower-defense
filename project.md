@@ -204,11 +204,16 @@ towers and rank up spells. Stars give +10% HP/damage each and power up the
 tower's ult at star 3 / 5. Ranks give +8% damage each and unlock a behavior
 at rank 3 / 5 (09-00.7).
 
-**Monetization**: **"capped pay-to-skip"** (09-00.1 Store rule): gem
-material chests, 3/day with key included, capped at one energy bar's worth
-of materials and may contain an unowned tower (towers are never sold
-directly); unlimited gem energy refills; cosmetic skins; battle pass later.
-Energy: 5 max, 20 min regen. Mildly pay-to-win, accepted by the user.
+**Monetization**: **"capped pay-to-skip"**, modelled on the original
+Archero (09-00.1 Store rule, revised in 10-00 on 2026-10-19). Gem chests in
+two kinds (cheap / better), with no daily limit; a chest opens with its
+earned key or with gems. Materials are capped at one energy bar's worth
+(measured at the highest cleared chapter), and a chest may contain an
+unowned tower (towers are never sold directly). Also: gem packs, Base
+Material for gems, unlimited energy refills, a beginner pack, chapter packs,
+a monthly card, daily deals, revives, skins, and a battle pass at launch.
+Energy: 20 max, 5 per run, 12 min regen (Archero's numbers). Mildly
+pay-to-win, accepted by the user.
 
 ---
 

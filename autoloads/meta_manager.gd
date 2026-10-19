@@ -24,6 +24,22 @@ var cleared_chapters: Array[String] = []
 var music_volume: float = 1.0
 var sfx_volume: float = 1.0
 
+# Store state (10-04, save v6). StoreService owns the rules; these are only the
+# saved facts. Day numbers come from scripts/day_clock.gd.
+## Ids of one-time store items already bought (beginner pack, chapter packs).
+var bought_items: Array[String] = []
+## The day `daily_deals_bought` belongs to; a new day starts it empty.
+var daily_deals_day: int = 0
+var daily_deals_bought: Array[String] = []
+## Monthly card: pays on each day before `monthly_card_end_day` (exclusive),
+## once per day. 0 = never bought.
+var monthly_card_end_day: int = 0
+var monthly_card_last_paid_day: int = 0
+## Free revives (10-15 spends them; the beginner pack grants 5).
+var free_revives: int = 0
+## Unopened chests, chest_id -> count. 10-05 opens them.
+var owned_chests: Dictionary = {}
+
 # True when the save on disk was written by a NEWER game version than this
 # one. Its values are still used, but save() refuses to write, so this build
 # can never overwrite (and lose) data it doesn't understand.
@@ -36,18 +52,37 @@ var _save_path: String = SAVE_PATH
 func _ready() -> void:
 	self.load()
 
+## Pays one run's energy (Constants.ENERGY_COST_PER_RUN). False, and nothing
+## spent, when the player has less than that.
 func spend_energy() -> bool:
-	if energy <= 0:
+	if energy < Constants.ENERGY_COST_PER_RUN:
 		return false
 	# A full bar doesn't regenerate, so the clock starts with this spend.
 	if energy >= Constants.MAX_ENERGY:
 		last_energy_timestamp = int(Time.get_unix_time_from_system())
-	energy -= 1
+	energy -= Constants.ENERGY_COST_PER_RUN
 	save()
+	EventBus.energy_changed.emit(energy)
 	return true
 
+## Adds energy, capped at MAX_ENERGY. Doesn't save: regen catch-up batches it
+## with its own save, and refills (StoreService) save once after all grants.
 func restore_energy(amount: int) -> void:
 	energy = min(energy + amount, Constants.MAX_ENERGY)
+	EventBus.energy_changed.emit(energy)
+
+## Adds unopened chests (store packs now; runs and rewards in 10-05/10-06).
+func award_chest(chest_id: String, count: int = 1) -> void:
+	if chest_id.is_empty() or count <= 0:
+		return
+	owned_chests[chest_id] = int(owned_chests.get(chest_id, 0)) + count
+	save()
+
+func award_free_revives(count: int) -> void:
+	if count <= 0:
+		return
+	free_revives += count
+	save()
 
 func get_scroll_material(damage_type: int) -> int:
 	return scroll_materials.get(damage_type, 0)
@@ -183,6 +218,13 @@ func save() -> void:
 	data.last_energy_timestamp = last_energy_timestamp
 	data.music_volume = music_volume
 	data.sfx_volume = sfx_volume
+	data.bought_items = bought_items
+	data.daily_deals_day = daily_deals_day
+	data.daily_deals_bought = daily_deals_bought
+	data.monthly_card_end_day = monthly_card_end_day
+	data.monthly_card_last_paid_day = monthly_card_last_paid_day
+	data.free_revives = free_revives
+	data.owned_chests = owned_chests
 	ResourceSaver.save(data, _save_path)
 
 ## `path` is only ever passed by tests (a temp file); the game always uses the
@@ -202,6 +244,7 @@ func load(path: String = SAVE_PATH) -> void:
 		selected_tower_id = "ancient_tower"
 		last_chapter_id = "chapter_01"
 		cleared_chapters = []
+		_reset_store_state()
 		save()
 		return
 	var data: Resource = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
@@ -219,6 +262,13 @@ func load(path: String = SAVE_PATH) -> void:
 	selected_tower_id = data.selected_tower_id
 	last_chapter_id = data.last_chapter_id
 	cleared_chapters = data.cleared_chapters
+	bought_items = data.bought_items
+	daily_deals_day = data.daily_deals_day
+	daily_deals_bought = data.daily_deals_bought
+	monthly_card_end_day = data.monthly_card_end_day
+	monthly_card_last_paid_day = data.monthly_card_last_paid_day
+	free_revives = data.free_revives
+	owned_chests = data.owned_chests
 	var version: int = data.save_version
 	if version > Constants.SAVE_VERSION:
 		_read_only = true
@@ -262,6 +312,21 @@ func _migrate_3_to_4() -> void:
 # guessing past wins from owned towers, so only chapter 1 is open after this.
 func _migrate_4_to_5() -> void:
 	cleared_chapters = []
+
+# v6: the store's saved state (10-04), and energy becomes Archero's 20-point bar:
+# an old save's energy (out of 5) is scaled up, so a full bar stays full.
+func _migrate_5_to_6() -> void:
+	_reset_store_state()
+	energy = mini(energy * Constants.ENERGY_MIGRATION_SCALE_V6, Constants.MAX_ENERGY)
+
+func _reset_store_state() -> void:
+	bought_items = []
+	daily_deals_day = 0
+	daily_deals_bought = []
+	monthly_card_end_day = 0
+	monthly_card_last_paid_day = 0
+	free_revives = 0
+	owned_chests = {}
 
 ## The chapter picked with Enter on the chapter screen. Saved at once, so it
 ## survives a restart.

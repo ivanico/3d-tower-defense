@@ -4,8 +4,9 @@ extends HBoxContainer
 ## The currency row at the top of every meta screen: Energy · Materials · Gems.
 ##
 ## It fills its OWN numbers from MetaManager (`refresh()`), so screens call one
-## method instead of each setting every pill. Gems also update live through
-## `EventBus.gems_changed`, since a purchase can happen while the row is showing.
+## method instead of each setting every pill. Gems and energy also update live
+## through `EventBus.gems_changed` / `energy_changed`, since a purchase can happen
+## while the row is showing.
 ##
 ## Which pills show is per screen: the Garage turns `show_energy` off (10-03,
 ## user decision — energy only matters for Play). Look and spacing stay here.
@@ -29,6 +30,7 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	EventBus.gems_changed.connect(_on_gems_changed)
+	EventBus.energy_changed.connect(_on_energy_changed)
 	refresh()
 
 
@@ -40,3 +42,7 @@ func refresh() -> void:
 
 func _on_gems_changed(total: int) -> void:
 	gems_pill.set_amount(total)
+
+
+func _on_energy_changed(total: int) -> void:
+	energy_pill.set_amount(total)

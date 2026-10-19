@@ -4,9 +4,11 @@
 [ext_resource type="Texture2D" path="res://assets/ui/garage/bg_garage.png" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/ui/widget/top_bar/top_bar.tscn" id="3"]
 
-; Store tab placeholder (10-02). BG borrows bg_garage.png until the final
-; store/bg_store.png exists (10-04 placeholder table). 10-04 replaces
-; ComingSoonLabel with the real store sections.
+; Store tab (10-04). BG borrows bg_garage.png until the final
+; store/bg_store.png exists. Sections/Cards are built by store_content.gd (in
+; the editor too, as the preview); they have no owner and are never saved here.
+; ScrollContainer follows the codex rules (horizontal_scroll_mode = 0) and
+; ends at 1700 like the codex, above the NavBar.
 
 [node name="StoreContent" type="Control"]
 offset_right = 1080.0
@@ -28,21 +30,23 @@ offset_bottom = 148.0
 
 [node name="TitleLabel" type="Label" parent="."]
 offset_left = 140.0
-offset_top = 226.0
+offset_top = 196.0
 offset_right = 940.0
-offset_bottom = 326.0
+offset_bottom = 296.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_constants/outline_size = 8
 theme_override_font_sizes/font_size = 56
 text = "Store"
 horizontal_alignment = 1
 
-[node name="ComingSoonLabel" type="Label" parent="."]
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
 offset_left = 60.0
-offset_top = 800.0
+offset_top = 316.0
 offset_right = 1020.0
-offset_bottom = 900.0
-theme_override_font_sizes/font_size = 48
-text = "Coming soon"
-horizontal_alignment = 1
-vertical_alignment = 1
+offset_bottom = 1700.0
+horizontal_scroll_mode = 0
+
+[node name="Sections" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 24

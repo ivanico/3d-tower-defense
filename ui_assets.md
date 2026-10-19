@@ -208,6 +208,27 @@ C. REWARDS & MATERIALS — all 16 exist in `rewards/`
 - [ ] store/bg_store.png      (Store tab background — placeholder today:
                               garage/bg_garage.png in scenes/ui/store_content.tscn;
                               Epic 10 10-02 / 10-04)
+- [ ] store/icon_store_gems_s.png / _m.png / _l.png (gem pack art — placeholder
+                              today: topbar/icon_currency_materials1.png in the
+                              six resources/store/gems_*.tres, plus the beginner
+                              pack, monthly card, Base Material packs and daily
+                              gift; Epic 10 10-04 step 1)
+- [ ] store/ui_store_card_bg.png (store tile background — placeholder today:
+                              common/ui_panel_dark_v2.png at 300x412 in
+                              widget/store_item_card/store_item_card.tscn `BG`;
+                              Epic 10 10-04. Name it ui_store_* and add the prefix
+                              to ui_icon_cap SIZE_RULES if drawn above 256px)
+- [ ] rewards/icon_revive.png (revive reward/pack icon — placeholder today:
+                              the word "Revive" in widget/reward_popup entries;
+                              Epic 10 10-04 / 10-15)
+- [ ] store/ui_store_ribbon.png (Offer ribbon — placeholder today: drawn
+                              StyleBoxFlat `Ribbon` label in store_item_card.tscn)
+- [ ] store/icon_store_base_material.png (optional; Base Material pack art —
+                              placeholder: icon_currency_materials1.png)
+- [ ] store/icon_store_monthly_card.png / icon_store_beginner_pack.png /
+                              icon_store_chapter_pack.png (offer art —
+                              placeholders: gem icon, rewards/icon_chest_rare.png
+                              in resources/store/*.tres; Epic 10 10-04)
 - [ ] bg_victory.png          (optional)
 - [ ] bg_defeat.png           (optional)
 

@@ -5,6 +5,18 @@
 > checked against the actual code/assets (2026-09-25).
 > This is the **raw list** — it gets turned into epic/task docs once agreed.
 > Items marked **(decide)** need a design decision before they can be built.
+>
+> **Status (updated 2026-10-19)**: this list was turned into Epics 09–13, and
+> since then progress has been tracked **in the epic files**, not here. The
+> table "Where every `remaining_to_do_list.md` item lives" in
+> `epic_done/epic_09_content.md` maps each item to its task. Ticked here:
+> all of **A** (Epic 09, done), **B2** (10-03), **F6** (09-01), **H1** (09-02).
+> Decided but not built: **B4** (10-06a–d: login gift, daily quests,
+> achievements, ad reward + spin), **B10** (10-13: remove all), **C4**
+> (battle pass moved to launch, 12-06). New since: revives (10-15).
+> The "Already done" section below is the 2026-09-25 snapshot (before
+> Epic 09) and isn't kept up to date. When a task finishes, tick its item
+> here too.
 
 ---
 
@@ -32,41 +44,41 @@
 
 ## A. Content
 
-- [ ] **A1. More towers** — Frost and Void models exist but have no
+- [x] **A1. More towers** — Frost and Void models exist but have no
       `TowerDefinition`, passive, or gameplay scenes. The garage still shows
       5 `tower_locked_0N` placeholders.
-- [ ] **A2. Tower unlock method** **(decide)** — how does the player get
+- [x] **A2. Tower unlock method** **(decide)** — how does the player get
       tower #2+? (materials / chapter reward / store)
-- [ ] **A3. Chapter 2** — models exist in `assets/models/chap2/` (5 enemies,
+- [x] **A3. Chapter 2** — models exist in `assets/models/chap2/` (5 enemies,
       2 bosses), but no scenes, no enemy `.tres`, no `chapter_02.tres`, no
       arena colors.
-- [ ] **A4. More chapters** **(decide how many at launch)** — each needs
+- [x] **A4. More chapters** **(decide how many at launch)** — each needs
       enemies, boss(es), arena.
-- [ ] **A5. Chapter select** — `world_map_content.gd` has
+- [x] **A5. Chapter select** — `world_map_content.gd` has
       `CHAPTER_IDS = ["chapter_01"]` hardcoded; no carousel or way to switch.
-- [ ] **A6. Chapter progression & locks** — beat chapter N to unlock N+1,
+- [x] **A6. Chapter progression & locks** — beat chapter N to unlock N+1,
       save cleared chapters.
-- [ ] **A7. Difficulty curve & balancing** across all chapters (known issue:
+- [x] **A7. Difficulty curve & balancing** across all chapters (known issue:
       short-range spells rarely fire because enemies die before getting close).
-- [ ] **A8. Boss depth** — multi-phase bosses / boss intro (docs mark these
+- [x] **A8. Boss depth** — multi-phase bosses / boss intro (docs mark these
       [LATER]).
-- [ ] **A9. Tower passives + star 3 / star 5 enhancements** — stars are
+- [x] **A9. Tower passives + star 3 / star 5 enhancements** — stars are
       currently pure stat bumps.
-- [ ] **A10. Spell rank behaviors** — ranks currently only scale numbers; the
+- [x] **A10. Spell rank behaviors** — ranks currently only scale numbers; the
       richer "rank adds a behavior" version is [LATER] in the docs.
-- [ ] **A11. Open spell design decisions** **(decide)** — stacking for AoE
+- [x] **A11. Open spell design decisions** **(decide)** — stacking for AoE
       Area and Lances (currently one-pick), and whether to fill the 5 empty
       grid spells.
-- [ ] **A12. Second material type per chapter** — docs plan it once a second
+- [x] **A12. Second material type per chapter** — docs plan it once a second
       chapter exists.
-- [ ] **A13. Check enemy resistances** **(decide)** — every chapter-1 enemy and
+- [x] **A13. Check enemy resistances** **(decide)** — every chapter-1 enemy and
       boss has `resisted_school = 4` (Nature), and Ancient Tower is the Nature
       tower. Intentional or a leftover default?
 
 ## B. Game Systems
 
-- [ ] **B1. Store / shop screen** — nothing exists yet.
-- [ ] **B2. Premium currency (gems)** — `MetaManager.premium_currency` exists
+- [x] **B1. Store / shop screen** — nothing exists yet. **Done in 10-04 (2026-10-19)**; look polish in 10-16.
+- [x] **B2. Premium currency (gems)** — `MetaManager.premium_currency` exists
       but is unused.
 - [ ] **B3. Chests + rewards screen** — all 16 chest/key/scroll icons are
       painted, nothing displays them.
@@ -92,7 +104,8 @@
 - [ ] **C2. Rewarded ads** (e.g. AdMob) — energy refill, double rewards,
       revive.
 - [ ] **C3. Tower skins.**
-- [ ] **C4. Battle pass** — docs say post-launch.
+- [ ] **C4. Battle pass** — docs say post-launch. **→ At launch** (2026-10-19,
+      like the original Archero; 12-06).
 - [ ] **C5. Consent / privacy** — GDPR / UMP consent form, needed if ads ship.
 
 ## D. Art
@@ -121,7 +134,7 @@
       notches, aspect ratios other than 1080×1920.
 - [ ] **F5. Cloud save** (e.g. Google Play Games Services) — local save is
       plaintext and marked "temporary v1" in `project.md`.
-- [ ] **F6. Save versioning / migration** — so updates don't wipe progress.
+- [x] **F6. Save versioning / migration** — so updates don't wipe progress.
 - [ ] **F7. Crash reporting + analytics.**
 - [ ] **F8. Server-side purchase validation** — once IAP exists.
 - [ ] **F9. Localization** **(decide)** — launch or post-launch?
@@ -140,7 +153,7 @@
 
 ## H. Docs Cleanup
 
-- [ ] **H1.** `components.md`, `mechanics.md`, `spells.md` §6.2 / §6.7 are stale
+- [x] **H1.** `components.md`, `mechanics.md`, `spells.md` §6.2 / §6.7 are stale
       in places — synergy tags, starting spell, enemy pooling, "resistances
       not used yet", missing HUD file.
 

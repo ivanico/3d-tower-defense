@@ -7,13 +7,18 @@
 > **Rules**: see `epic_done/epic_09_content.md` → "Rules for Epics 09–13".
 > **Design constraint (updated 2026-09-27)**: the old rule (`project.md`,
 > `mechanics.md` §12: "time-saving, not power") was replaced by the user with
-> **capped pay-to-skip**. See `epic_done/epic_09_content.md` 09-00.1 "Store rule":
-> - material chests: 3/day, key included, chance of an unowned tower
-> - energy refills: unlimited
-> - skins
+> **capped pay-to-skip**. See `epic_done/epic_09_content.md` 09-00.1 "Store rule",
+> **revised 2026-10-19 in `epic_10_meta_systems.md` 10-00 ("same as the
+> original Archero")**:
+> - material chests: two kinds, **no daily limit**, opened with an earned
+>   key or gems, chance of an unowned tower
+> - energy (20 max, 5 per run, 12 min): 100 gems → 20, unlimited; ad +5,
+>   4 times a day
+> - gem packs, Base Material for gems, beginner + chapter packs, monthly
+>   card, daily deals, revives, skins, **battle pass at launch**
 > - no direct tower packs
 >
-> Update `project.md` / `mechanics.md` §12 to match (09-02).
+> `project.md` / `mechanics.md` §12 updated to match (2026-10-19).
 > Source: `remaining_to_do_list.md` section **C**, plus **F8** and the final-art
 > half of **D2**.
 > Completed epic delivers: real Google Play purchases and rewarded ads behind
@@ -45,11 +50,25 @@
       - no direct tower packs
 
       Still to answer: gem pack sizes and prices, chest and refill gem
-      prices, bundles. Answer: ______
+      prices, bundles.
+      **Update 2026-10-19**: catalog, gem pack sizes, chest and refill gem
+      prices, bundles and the cap's chapter (highest cleared) were answered
+      in 10-00, copying the original Archero; the chest limit is gone. See
+      `epic_10_meta_systems.md` 10-00 / 10-04. Still to answer here:
+      **real-money prices only** (Archero's USD prices are listed in 10-00
+      for reference; the user decides whether to match them). Answer: ______
 - [ ] **Rewarded ad placements** named in the list: energy refill / double
       run rewards / revive. Which ones, and any daily cap? Answer: ______
 - [ ] **Revive** (if chosen): how much HP, how many times per run?
-      This is a new gameplay mechanic in `game_world.gd`. Answer: ______
+      This is a new gameplay mechanic in `game_world.gd`. **Update
+      2026-10-19**: revives are in (gems + free revives), built in
+      `epic_10_meta_systems.md` 10-15, which also answers HP / times per run;
+      copy its answer here. Only the ad revive is left for 12-04.
+      Answer: ______
+- [ ] **Ad placements, 2026-10-19 additions from 10-00** (all Archero):
+      energy +5 (4/day), free cheap chest (1/day), free better chest
+      (1/week), daily ad reward (30 gems + energy), lucky-spin ad spins
+      (up to 5/day), ad revive. Confirm in the placements question above.
 - [ ] **Plugins**: which Google Play Billing plugin and which ad SDK
       (the list names AdMob as an example). Claude checks each candidate's
       **current Godot 4.4 support** before you choose; no guessing.
@@ -57,8 +76,10 @@
 - [ ] **Backend for purchase validation (F8)**: `project.md` names Firebase /
       PlayFab / Supabase / custom as the options. It must be the same one
       used for cloud save if 13-05 needs a server. Answer: ______
-- [ ] **C4 Battle pass**: the docs say post-launch. Confirm it stays out of
-      launch? Answer: ______
+- [x] **C4 Battle pass**: the docs say post-launch. Confirm it stays out of
+      launch? Answer: ✅ (2026-10-19, user in 10-00: "if Archero has one, add
+      it"). The original Archero has one (Battle Pass $4.99, Battle Pass 2
+      $16.99), so it's **at launch**. See 12-06.
 
 **Acceptance criteria**:
 - [ ] Every blank is filled or marked "later".
@@ -225,14 +246,17 @@ viewed in the editor.
 >
 > - **Nothing to read.** Record the decision only.
 
-**Covers**: C4 · **Default**: post-launch per the docs, unless 12-00 says
-otherwise.
+**Covers**: C4 · **✅ At launch** (user, 2026-10-19, `epic_10_meta_systems.md`
+10-00: the original Archero has a battle pass, so we do too).
 
-- [ ] If still post-launch: nothing is built; this task only records the
-      design notes you give.
-- [ ] If pulled into launch: split into its own tasks (season data, tier
-      track, free/paid rows) before building, following the same data-driven
-      and preview rules.
+- [x] ~~If still post-launch: nothing is built~~ (not post-launch).
+- [ ] Pulled into launch: **research how the original Archero's battle pass
+      works** (not Archero 2): season length, tiers, how XP is earned, free
+      vs paid rows, the two tiers ($4.99 / $16.99). Then ask the user, then
+      split into its own tasks (season data, tier track, free/paid rows)
+      before building, following the same data-driven and preview rules.
+      Daily quests (10-06b) are the likely XP source; Archero's monthly
+      subscription also gave daily pass XP.
 
 **Acceptance criteria**:
 - [ ] The decision is recorded here.

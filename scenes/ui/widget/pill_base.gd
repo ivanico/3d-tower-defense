@@ -14,7 +14,7 @@ extends Control
 ## override `_apply_content()`. A subclass that needs room above the pill (a title
 ## sitting outside it) overrides `_header_height()`.
 
-const HUE_SHIFT_SHADER := preload("res://scenes/ui/widget/hue_shift.gdshader")
+const HueShift := preload("res://scenes/ui/widget/hue_shift.gd")
 
 ## Size of the pill itself, in pixels. The widget is wider than this by however
 ## much of the icon hangs off to the left, and taller by `_header_height()`.
@@ -113,7 +113,7 @@ func _apply() -> void:
 	# changes how big the icon is drawn inside that slot, centred on it.
 	icon_rect.texture = icon
 	icon_rect.visible = icon != null
-	_apply_hue_shift(icon_rect)
+	HueShift.apply(icon_rect, icon_hue_shift)
 	var drawn: float = icon_size * icon_scale
 	icon_rect.custom_minimum_size = Vector2(drawn, drawn)
 	icon_rect.size = Vector2(drawn, drawn)
@@ -124,19 +124,6 @@ func _apply() -> void:
 	icon_rect.rotation = deg_to_rad(icon_rotation_deg)
 
 	_apply_content()
-
-
-## No material at all at 0, so every unshifted icon draws exactly as before.
-func _apply_hue_shift(icon_rect: TextureRect) -> void:
-	if is_zero_approx(icon_hue_shift):
-		icon_rect.material = null
-		return
-	var mat := icon_rect.material as ShaderMaterial
-	if mat == null:
-		mat = ShaderMaterial.new()
-		mat.shader = HUE_SHIFT_SHADER
-		icon_rect.material = mat
-	mat.set_shader_parameter("hue_shift", icon_hue_shift)
 
 
 ## Room reserved ABOVE the pill, for a subclass that puts a title outside it.

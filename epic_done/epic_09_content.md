@@ -79,11 +79,18 @@
    - Assume the user's Godot editor is open:
      - **Never** kill Godot by image name.
      - Run headless checks with
-       `timeout <sec> "/f/Godot/Godot_v4.4-stable_win64.exe" --headless -s <script> --path <repo>`.
+       `timeout <sec> "/c/Users/Ivan/Documents/Godot_v4.4-stable_win64.exe/Godot_v4.4-stable_win64_console.exe" --headless -s <script> --path <repo>`
+       (path corrected 2026-10-19; the old `/f/Godot/...` doesn't exist. The
+       `.exe` in the path is a **folder** holding the real exes; use the
+       `_console` one so output prints).
      - Ask the user to close a scene before editing its `.tscn`.
    - Before any test that saves, back up
      `%APPDATA%\Godot\app_userdata\TowersLastStand3D\savegame.tres` and
-     restore it afterwards.
+     restore it afterwards. **Copy it fresh right before EACH test run** and
+     restore that same copy — never an older backup: the user may have played
+     in between (lesson from 2026-10-19, when reusing a morning backup wiped
+     the user's newer play). Since save v6 (10-04), merely launching the game
+     headless migrates and rewrites the save, so this applies to every run.
 
 ### Where every `remaining_to_do_list.md` item lives
 
@@ -190,6 +197,19 @@ Q8).
 - **Superseded the same day**: tower shards dropped by bosses and found in
   chests; "gems must never buy upgrade materials". The user accepted capped
   pay-to-skip instead (below).
+
+> **⚠️ Superseded in part (user, 2026-10-19, `epic_10_meta_systems.md`
+> 10-00: "make it same as the original Archero")**:
+> - Chests have **no daily limit** (the "3 per day" below is gone). There are
+>   two kinds, a cheap and a better one, like Archero's Golden / Obsidian.
+> - A chest opens with **its key or with gems**. Keys are **earned**, never
+>   sold.
+> - Energy is Archero's: **20 max, 5 per run, 12 min regen**, so "one energy
+>   bar's worth" = **4 runs**, measured at the **highest cleared chapter**.
+> - The **battle pass is at launch** (12-06).
+>
+> Still in force: a chest may hold an unowned tower, towers are never sold
+> directly, unlimited energy refills, skins.
 
 **Store rule — "capped pay-to-skip"** (user, 2026-09-27). This constrains
 Epics 10 and 12:

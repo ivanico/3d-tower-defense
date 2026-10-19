@@ -287,7 +287,8 @@ with code examples.
   09-14):** rank 3 and rank 5 also unlock a behavior, per spell (Bolt
   splash, Chain +bounces, Orb faster/bigger, AoE longer/bigger, Lance
   bigger/trail).
-- **Energy**: 5 runs/day, regenerates over time, gates run starts.
+- **Energy**: 20 max, 5 per run, 1 back every 12 min (Archero's numbers,
+  switched in 10-04 on 2026-10-19). Gates run starts.
 - **Save/load**: single save file (`user://savegame.save` or a `.tres`
   `SaveData` resource) holding owned towers, tower stars, spell ranks,
   materials, energy, timestamps.
@@ -298,11 +299,15 @@ with code examples.
 
 **Decided 2026-09-27 (09-00.1 "Store rule"): capped pay-to-skip.** This
 replaces the old "convenience only" line:
-- **Material chest** (gems): 3 per day, key included, materials capped at
-  one energy bar's worth, plus a chance of a random tower the player
-  doesn't own. Towers are never sold directly.
-- **Energy refill** (gems): no limit.
+- **Material chests** (gems, revised 2026-10-19 in 10-00 to match the
+  original Archero): two kinds (cheap / better), **no daily limit**, opened
+  with an earned key or with gems. Materials are capped at one energy bar's
+  worth (4 runs, measured at the highest cleared chapter), plus a chance of a
+  random tower the player doesn't own. Towers are never sold directly.
+- **Energy refill** (gems): 20 energy for 100 gems, no limit; ad +5, up to 4
+  times a day.
 - **Skins**: look only.
-- Battle pass: later.
+- Also at launch: gem packs, Base Material for gems, beginner and chapter
+  packs, a monthly card, daily deals, revives, and a **battle pass**.
 
 The user accepts this is mildly pay-to-win. Built in Epics 10 and 12.

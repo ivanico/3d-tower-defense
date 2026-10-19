@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StoreItemDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/store/store_item_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/rewards/icon_chest_rare.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+item_id = "chapter_pack_06"
+display_name = "Chapter 6 Pack"
+icon = ExtResource("2")
+section = 1
+sort_order = 2
+price_type = 0
+price_label = "$9.99"
+ribbon_text = "Offer"
+gems = 500
+base_material = 1500
+chest_id = "chest_better"
+chest_count = 1
+one_time = true
+chain_index = 6

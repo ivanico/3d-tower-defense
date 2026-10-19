@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StoreItemDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/store/store_item_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/topbar/icon_currency_materials1.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+item_id = "daily_free"
+display_name = "Daily Gift"
+icon = ExtResource("2")
+section = 0
+sort_order = 1
+price_type = 3
+base_material = 100
+daily_deal = true

@@ -6,6 +6,10 @@ enum ArmorType      { UNARMORED, HEAVY, LIGHT, MEDIUM, FORTIFIED }
 enum SpellCategory  { PROJECTILE, PASSIVE, ORB, AOE_AREA }
 enum CardRarity     { COMMON, RARE, EPIC }
 enum SynergyTag     { OFFENSE, ARMOR, UTILITY }
+# Store (10-04). Section order = the order the store screen draws them, top to
+# bottom (Archero's layout). FREE = a daily deal claimed for nothing.
+enum StoreSection   { DAILY_DEALS, OFFERS, CHESTS, BASE_MATERIAL, GEMS, ENERGY, SKINS }
+enum StorePriceType { REAL_MONEY, GEMS, AD, FREE }
 
 const TOTAL_WAVES:              int   = 20     # reference only; each chapter's wave_count is what runs
 const WAVE_DURATION_MAX:        float = 60.0
@@ -33,12 +37,13 @@ const SYNERGY_THRESHOLD_LOW:    int   = 3
 const SYNERGY_THRESHOLD_HIGH:   int   = 5
 const TOWER_MAX_STARS:          int   = 5
 const SPELL_MAX_RANK:           int   = 5
-const MAX_ENERGY:               int   = 5
-const ENERGY_COST_PER_RUN:      int   = 1
+# Energy = the original Archero's (10-00, 2026-10-19): 20 max, 5 per run.
+const MAX_ENERGY:               int   = 20
+const ENERGY_COST_PER_RUN:      int   = 5
 const CAMERA_PITCH_DEGREES:     float = 60.0
 # Version of the savegame.tres layout. Bump it (and add a MetaManager
 # _migrate_N_to_N+1 step) whenever a field is added to SaveData.
-const SAVE_VERSION:             int   = 5
+const SAVE_VERSION:             int   = 6
 
 # Balance tuning constants — never use bare literals in gameplay logic, always reference these
 const XP_LEVEL_SCALE_PER_LEVEL:          float = 1.2
@@ -150,7 +155,14 @@ const MATERIAL_CHECKPOINT_CHANCES: Array[float] = [0.06, 0.11, 0.17, 0.25]
 const RARE_MATERIAL_DROP_AMOUNT: int = 1
 
 # Energy regen (Epic 05) — tunable
-const ENERGY_REGEN_INTERVAL_SEC:         float = 1200.0  # 20 min per energy point
+const ENERGY_REGEN_INTERVAL_SEC:         float = 720.0  # 12 min per energy point (Archero, 10-00)
+# v5 → v6 save migration: old energy (max 5) is scaled to the new bar (max 20).
+const ENERGY_MIGRATION_SCALE_V6:         int   = 4
+
+# Store (10-04). How many daily deals show each day: the free one is always
+# among them, the rest are drawn from the pool (StoreItemDefinition.daily_deal)
+# by the day number. Placeholder, tuned in balancing.
+const DAILY_DEALS_SHOWN:                 int   = 3
 
 # Tower star / spell rank upgrade costs (Epic 05) — index by current level to
 # get the cost of upgrading to the next level; index 0 is unused (no level 0).

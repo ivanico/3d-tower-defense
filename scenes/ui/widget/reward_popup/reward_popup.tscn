@@ -1,0 +1,56 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/reward_popup/reward_popup.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/topbar/icon_currency_materials1.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/topbar/icon_currency_energy1.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/ui/rewards/icon_chest_rare.png" id="4"]
+
+; The ONE reward reveal (10-04 step 6). Popup content for the 10-01 host:
+; custom_minimum_size is the panel size; no X, tap anywhere closes.
+; Entries are built by reward_popup.gd (in the editor from preview_rewards);
+; they have no owner and are never saved here.
+
+[node name="RewardPopup" type="Control"]
+custom_minimum_size = Vector2(860, 560)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 860.0
+offset_bottom = 560.0
+script = ExtResource("1")
+preview_rewards = Array[Dictionary]([{"amount": 300, "hue_shift": 0.28, "icon": ExtResource("2")}, {"amount": 1000, "icon": ExtResource("2")}, {"amount": 20, "icon": ExtResource("3")}, {"amount": 5, "name": "Revive"}, {"amount": 1, "icon": ExtResource("4")}])
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 50.0
+offset_right = 820.0
+offset_bottom = 140.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.45, 1)
+theme_override_font_sizes/font_size = 60
+text = "You got"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Entries" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 180.0
+offset_right = 830.0
+offset_bottom = 420.0
+mouse_filter = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="HintLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 450.0
+offset_right = 820.0
+offset_bottom = 510.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.75, 0.77, 0.85, 1)
+theme_override_font_sizes/font_size = 28
+text = "Tap to continue"
+horizontal_alignment = 1
+vertical_alignment = 1

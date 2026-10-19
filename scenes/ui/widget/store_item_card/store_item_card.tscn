@@ -1,0 +1,130 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/widget/store_item_card/store_item_card.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/common/ui_panel_dark_v2.png" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/primary_button/primary_button.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/widget/cost_chip/cost_chip.tscn" id="4"]
+[ext_resource type="Resource" path="res://resources/store/gems_pile.tres" id="5"]
+
+; Store tile (10-04). Placeholders, named after their final art:
+; - BG borrows common/ui_panel_dark_v2.png at its own 0.73 aspect (300x412)
+;   → final store/ui_store_card_bg.png
+; - Ribbon is a drawn StyleBoxFlat label → final store/ui_store_ribbon.png
+
+[sub_resource type="StyleBoxFlat" id="1"]
+content_margin_left = 14.0
+content_margin_top = 4.0
+content_margin_right = 14.0
+content_margin_bottom = 4.0
+bg_color = Color(0.86, 0.2, 0.24, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.85, 0.5, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="StoreItemCard" type="Control"]
+custom_minimum_size = Vector2(300, 412)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 300.0
+offset_bottom = 412.0
+script = ExtResource("1")
+preview_item = ExtResource("5")
+
+[node name="BG" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2")
+expand_mode = 1
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 26.0
+offset_top = 30.0
+offset_right = -26.0
+offset_bottom = -26.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="Icon" type="TextureRect" parent="Content"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLabel" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "Name"
+horizontal_alignment = 1
+clip_text = true
+
+[node name="ContentsLabel" type="Label" parent="Content"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.8, 0.82, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "80 Gems"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BuyButton" parent="Content" instance=ExtResource("3")]
+custom_minimum_size = Vector2(220, 86)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 30
+text = "$0.99"
+
+[node name="GemChip" parent="Content/BuyButton" instance=ExtResource("4")]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="NoteLabel" type="Label" parent="Content"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.45, 1)
+theme_override_font_sizes/font_size = 18
+text = "Coming soon"
+horizontal_alignment = 1
+
+[node name="Ribbon" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = -8.0
+offset_top = 10.0
+offset_right = 112.0
+offset_bottom = 46.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("1")
+text = "Offer"
+horizontal_alignment = 1
+vertical_alignment = 1

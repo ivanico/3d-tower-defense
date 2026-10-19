@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="StoreItemDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/store/store_item_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/topbar/icon_currency_materials1.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+item_id = "gems_chest"
+display_name = "Chest of Gems"
+icon = ExtResource("2")
+icon_hue_shift = 0.28
+section = 4
+sort_order = 5
+price_type = 0
+price_label = "$49.99"
+gems = 6500

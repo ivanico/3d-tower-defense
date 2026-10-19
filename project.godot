@@ -25,6 +25,7 @@ SpellRegistry="*res://autoloads/spell_registry.gd"
 TowerRegistry="*res://autoloads/tower_registry.gd"
 ObjectPool="*res://autoloads/object_pool.gd"
 AudioManager="*res://autoloads/audio_manager.gd"
+StoreService="*res://autoloads/store_service.gd"
 
 [display]
 
